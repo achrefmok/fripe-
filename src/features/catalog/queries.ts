@@ -1,0 +1,451 @@
+import "server-only";
+import { createPublicClient } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/server";
+import { parsePriceToMillimes } from "@/lib/utils/price";
+import { CATALOG_PAGE_SIZE } from "./constants";
+import type { CategoryOption } from "./csv-import";
+import type { CatalogFilters } from "./schemas";
+
+const CARD_COLUMNS =
+  "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, governorate_id), product_images (path, position)";
+
+type RawCard = {
+  id: string;
+  title: string | null;
+  brand: string | null;
+  size: string | null;
+  condition: string | null;
+  price_millimes: number | null;
+  status: "available" | "reserved" | "sold";
+  shops: { name: string; slug: string; governorate_id: number };
+  product_images: { path: string; position: number }[];
+};
+
+export type ProductCardData = ReturnType<typeof toCard>;
+
+function toCard(row: RawCard) {
+  return {
+    id: row.id,
+    title: row.title ?? "",
+    brand: row.brand,
+    size: row.size,
+    condition: row.condition,
+    priceMillimes: row.price_millimes ?? 0,
+    status: row.status,
+    shopName: row.shops.name,
+    shopSlug: row.shops.slug,
+    imagePath: [...row.product_images].sort((a, b) => a.position - b.position)[0]?.path ?? null,
+  };
+}
+
+function escapeLike(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
+
+// Même normalisation que le déclencheur SQL prepare_product.
+export function searchTokens(query: string) {
+  return query
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 6);
+}
+
+// Réservé aux membres de la boutique et aux administrateurs : la vue filtre selon la session.
+export async function getReferences(productIds: string[]) {
+  if (!productIds.length) return new Map<string, string>();
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("product_references")
+    .select("product_id, reference")
+    .in("product_id", productIds);
+
+  return new Map(data?.map((row) => [row.product_id!, row.reference!]));
+}
+
+async function withReferences<T extends { id: string }>(rows: T[]) {
+  const references = await getReferences(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, reference: references.get(row.id) ?? "" }));
+}
+
+export async function getReservationTtlMinutes() {
+  const { data } = await createPublicClient().rpc("reservation_ttl_minutes");
+  return data ?? 120;
+}
+
+export async function getCategories(): Promise<(CategoryOption & { parentId: string | null })[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, slug, name_fr, name_ar, parent_id")
+    .eq("is_active", true)
+    .order("position");
+
+  if (error) throw error;
+
+  return data.map((category) => ({
+    id: category.id,
+    slug: category.slug,
+    nameFr: category.name_fr,
+    nameAr: category.name_ar,
+    parentId: category.parent_id,
+  }));
+}
+
+export async function searchProducts(filters: CatalogFilters) {
+  const supabase = createPublicClient();
+  const from = (filters.page - 1) * CATALOG_PAGE_SIZE;
+
+  let query = supabase
+    .from("products")
+    .select(CARD_COLUMNS, { count: "exact" })
+    .eq("publication_status", "published")
+    .in("status", ["available", "reserved"])
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" });
+
+  for (const token of searchTokens(filters.q)) {
+    query = query.ilike("search_text", `%${escapeLike(token)}%`);
+  }
+
+  if (filters.categorie) {
+    const categories = await getCategories();
+    const parent = categories.find((category) => category.slug === filters.categorie);
+    const ids = categories
+      .filter((category) => category.id === parent?.id || category.parentId === parent?.id)
+      .map((category) => category.id);
+
+    query = query.in("category_id", parent ? ids : []);
+  }
+
+  if (filters.taille) query = query.ilike("size", escapeLike(filters.taille));
+  if (filters.marque) query = query.ilike("brand", `%${escapeLike(filters.marque)}%`);
+  if (filters.etat) query = query.eq("condition", filters.etat);
+
+  if (filters.gouvernorat) {
+    query = query.eq("shops.governorate_id", Number(filters.gouvernorat) || 0);
+  }
+
+  const minimum = parsePriceToMillimes(filters.prixMin);
+  const maximum = parsePriceToMillimes(filters.prixMax);
+  if (minimum !== null) query = query.gte("price_millimes", minimum);
+  if (maximum !== null) query = query.lte("price_millimes", maximum);
+
+  query =
+    filters.tri === "recent"
+      ? query.order("published_at", { ascending: false })
+      : query.order("price_millimes", { ascending: filters.tri === "price_asc" });
+
+  const { data, count, error } = await query
+    .order("id")
+    .range(from, from + CATALOG_PAGE_SIZE - 1);
+
+  if (error) throw error;
+
+  return { products: (data as unknown as RawCard[]).map(toCard), total: count ?? 0 };
+}
+
+async function feed(
+  order: "published_at" | "favorite_count",
+  limit: number,
+  offset = 0,
+  extra?: { popularOnly?: boolean },
+) {
+  const supabase = createPublicClient();
+
+  let query = supabase
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("publication_status", "published")
+    .in("status", ["available", "reserved"])
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" })
+    .order(order, { ascending: false })
+    .order("id")
+    .range(offset, offset + limit - 1);
+
+  if (extra?.popularOnly) query = query.gt("favorite_count", 0);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data as unknown as RawCard[]).map(toCard);
+}
+
+export async function getHomeFeed() {
+  const supabase = createPublicClient();
+
+  const [arrivals, recent, popular, categories, shops, collections] = await Promise.all([
+    feed("published_at", 10),
+    feed("published_at", 8, 10),
+    feed("favorite_count", 8, 0, { popularOnly: true }),
+    getCategories(),
+    supabase.rpc("top_shops", { p_limit: 6 }),
+    supabase
+      .from("collections")
+      .select("id, name, shops!inner (name, slug), collection_products (count)")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(6),
+  ]);
+
+  if (shops.error) throw shops.error;
+  if (collections.error) throw collections.error;
+
+  return {
+    arrivals,
+    recent,
+    popular,
+    categories: categories.filter((category) => !category.parentId),
+    // Classement factuel : les boutiques qui proposent le plus de pièces publiées.
+    shops: shops.data,
+    collections: collections.data,
+  };
+}
+
+export async function getProduct(productId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      "id, shop_id, category_id, title, description, brand, size, color, condition, defects, price_millimes, status, publication_status, published_at, moderated_at, favorite_count, shops (id, name, slug, status, logo_path, governorates (name_fr, name_ar), cities (name_fr, name_ar)), categories (slug, name_fr, name_ar), product_images (id, path, position)",
+    )
+    .eq("id", productId)
+    .order("position", { referencedTable: "product_images" })
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function getSimilarProducts(product: {
+  id: string;
+  category_id: string | null;
+  price_millimes: number | null;
+}) {
+  if (!product.category_id) return [];
+
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("publication_status", "published")
+    .eq("status", "available")
+    .eq("category_id", product.category_id)
+    .neq("id", product.id)
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" })
+    .order("published_at", { ascending: false })
+    .limit(4);
+
+  if (error) throw error;
+
+  return (data as unknown as RawCard[]).map(toCard);
+}
+
+export async function getViewerProductState(productId: string, viewerId: string) {
+  const supabase = await createClient();
+
+  const [favorite, cart, reservation] = await Promise.all([
+    supabase
+      .from("favorites")
+      .select("product_id")
+      .eq("product_id", productId)
+      .eq("user_id", viewerId)
+      .maybeSingle(),
+    supabase
+      .from("cart_items")
+      .select("product_id")
+      .eq("product_id", productId)
+      .eq("user_id", viewerId)
+      .maybeSingle(),
+    supabase
+      .from("reservations")
+      .select("id, expires_at")
+      .eq("product_id", productId)
+      .eq("client_id", viewerId)
+      .eq("status", "active")
+      .maybeSingle(),
+  ]);
+
+  return {
+    isFavorite: Boolean(favorite.data),
+    inCart: Boolean(cart.data),
+    reservation: reservation.data,
+  };
+}
+
+export async function getFavorites(viewerId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("favorites")
+    .select(`created_at, products (${CARD_COLUMNS})`)
+    .eq("user_id", viewerId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data as unknown as { products: RawCard | null }[])
+    .flatMap((row) => (row.products ? [toCard(row.products)] : []));
+}
+
+export async function getShopCatalog(shopId: string, page: number) {
+  const supabase = createPublicClient();
+  const from = (page - 1) * CATALOG_PAGE_SIZE;
+
+  const { data, count, error } = await supabase
+    .from("products")
+    .select(CARD_COLUMNS, { count: "exact" })
+    .eq("shop_id", shopId)
+    .eq("publication_status", "published")
+    .in("status", ["available", "reserved"])
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" })
+    .order("published_at", { ascending: false })
+    .order("id")
+    .range(from, from + CATALOG_PAGE_SIZE - 1);
+
+  if (error) throw error;
+
+  return { products: (data as unknown as RawCard[]).map(toCard), total: count ?? 0 };
+}
+
+export async function getPublicShop(slug: string) {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shops")
+    .select(
+      "id, name, slug, description, phone, logo_path, follower_count, rating_count, rating_sum, governorates (name_fr, name_ar), cities (name_fr, name_ar)",
+    )
+    .eq("slug", slug)
+    .eq("status", "approved")
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function listPublicShops(page: number) {
+  const supabase = createPublicClient();
+  const from = (page - 1) * CATALOG_PAGE_SIZE;
+
+  const { data, count, error } = await supabase
+    .from("shops")
+    .select("id, name, slug, logo_path, description, cities (name_fr, name_ar)", { count: "exact" })
+    .eq("status", "approved")
+    .order("name")
+    .range(from, from + CATALOG_PAGE_SIZE - 1);
+
+  if (error) throw error;
+
+  return { shops: data, total: count ?? 0 };
+}
+
+export async function getPublicCollection(collectionId: string) {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("collections")
+    .select(
+      `id, name, description, shops!inner (name, slug), collection_products (position, products (${CARD_COLUMNS}))`,
+    )
+    .eq("id", collectionId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const items = data.collection_products as unknown as { products: RawCard | null }[];
+
+  return {
+    ...data,
+    products: items.flatMap((item) =>
+      item.products && item.products.status !== "sold" ? [toCard(item.products)] : [],
+    ),
+  };
+}
+
+// Espace vendeur : client de session, donc limité par RLS aux boutiques du vendeur.
+export async function listShopProducts(
+  shopId: string,
+  publication: "draft" | "published" | "archived",
+  search: string,
+  page: number,
+) {
+  const supabase = await createClient();
+  const from = (page - 1) * CATALOG_PAGE_SIZE;
+
+  let query = supabase
+    .from("products")
+    .select(
+      "id, title, price_millimes, size, status, publication_status, category_id, condition, moderated_at, product_images (path, position)",
+      { count: "exact" },
+    )
+    .eq("shop_id", shopId)
+    .eq("publication_status", publication)
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" })
+    .order("created_at", { ascending: false })
+    .order("id")
+    .range(from, from + CATALOG_PAGE_SIZE - 1);
+
+  if (search) {
+    const { data: matches } = await supabase
+      .from("product_references")
+      .select("product_id")
+      .eq("shop_id", shopId)
+      .ilike("reference", `%${escapeLike(search.trim())}%`)
+      .limit(50);
+
+    const text = searchTokens(search)
+      .map((token) => `search_text.ilike.%${token.replace(/[,()\\%_]/g, "")}%`)
+      .join(",");
+    const ids = matches?.length
+      ? `id.in.(${matches.map((match) => match.product_id).join(",")})`
+      : null;
+
+    query = query.or(ids ? `and(${text}),${ids}` : `and(${text})`);
+  }
+
+  const { data, count, error } = await query;
+  if (error) throw error;
+
+  return { products: await withReferences(data), total: count ?? 0 };
+}
+
+export async function getProductForEdit(shopId: string, productId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, shop_id, category_id, title, description, brand, size, color, condition, defects, price_millimes, status, publication_status, published_at, moderated_at, favorite_count, product_images (id, path, position)")
+    .eq("id", productId)
+    .eq("shop_id", shopId)
+    .order("position", { referencedTable: "product_images" })
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const [product] = await withReferences([data]);
+  return product;
+}
+
+export async function listOfferableProducts(shopId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, title, price_millimes")
+    .eq("shop_id", shopId)
+    .eq("publication_status", "published")
+    .eq("status", "available")
+    .order("published_at", { ascending: false })
+    .limit(200);
+
+  if (error) throw error;
+
+  return withReferences(data);
+}

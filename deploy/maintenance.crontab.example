@@ -1,0 +1,4 @@
+# Exemple inactif. Voir docs/maintenance.md.
+# Le fichier d'environnement contient MAINTENANCE_URL et MAINTENANCE_TOKEN, lisible par ce seul compte
+# (chmod 600) : le jeton ne doit jamais figurer sur la ligne de commande.
+*/15 * * * * cd /srv/fripe && node --env-file=/etc/fripe/maintenance.env scripts/run-maintenance.mjs >> /var/log/fripe-maintenance.log 2>&1

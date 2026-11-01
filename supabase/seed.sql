@@ -1,0 +1,2 @@
+-- Aucune donnée de démonstration en phase 1.
+-- Les données de référence (gouvernorats, catégories) sont dans les migrations.

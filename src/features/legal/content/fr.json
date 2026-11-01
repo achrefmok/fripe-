@@ -1,0 +1,310 @@
+{
+  "draftNotice": "Document en préparation. Les passages surlignés doivent être complétés et validés avant l'ouverture publique.",
+  "pages": {
+    "notice": {
+      "title": "Mentions légales",
+      "sections": [
+        {
+          "heading": "Éditeur du service",
+          "body": [
+            "FRIPE est édité par [[À valider : raison sociale ou nom de l'exploitant]], [[À valider : forme juridique]], [[À valider : adresse du siège]].",
+            "Identifiant fiscal ou registre : [[À valider : matricule fiscal et numéro au registre]].",
+            "Responsable de la publication : [[À valider : nom du responsable]]."
+          ]
+        },
+        {
+          "heading": "Hébergement",
+          "body": ["Le service est hébergé par [[À valider : nom et adresse de l'hébergeur]]."]
+        },
+        {
+          "heading": "Contact",
+          "body": ["Toutes les demandes passent par la page Support."]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Conditions générales d'utilisation",
+      "sections": [
+        {
+          "heading": "Objet",
+          "body": [
+            "FRIPE met en relation des clients et des boutiques indépendantes de vêtements de seconde main en Tunisie.",
+            "Ces conditions s'appliquent à toute personne qui utilise le service. Date d'entrée en vigueur : [[À valider : date]]."
+          ]
+        },
+        {
+          "heading": "Compte",
+          "body": [
+            "Créer un compte demande une adresse e-mail confirmée et un mot de passe. Tu es responsable de ce qui se fait depuis ton compte.",
+            "Âge minimum pour créer un compte : [[À valider : âge minimum]]."
+          ]
+        },
+        {
+          "heading": "Boutiques",
+          "body": [
+            "Une boutique n'apparaît publiquement qu'après validation par l'équipe FRIPE. Elle reste responsable des pièces qu'elle publie, de leur description et de leur prix."
+          ]
+        },
+        {
+          "heading": "Contenus et comportement",
+          "body": [
+            "Sont interdits les contrefaçons, les contenus inappropriés, les arnaques et le harcèlement.",
+            "Chacun peut signaler un produit, une vidéo, une conversation, une boutique, un avis ou un compte. Seule l'équipe FRIPE décide des suites, et chaque décision est conservée dans un historique.",
+            "Le blocage entre un client et une boutique empêche les messages et les demandes d'articles. Il ne modifie pas les commandes déjà passées."
+          ]
+        },
+        {
+          "heading": "Suspension",
+          "body": [
+            "L'équipe FRIPE peut retirer un contenu et suspendre une boutique ou un compte qui ne respecte pas ces conditions.",
+            "Procédure de contestation : [[À valider : modalités et délais]]."
+          ]
+        },
+        {
+          "heading": "Avis",
+          "body": [
+            "Seul un client qui a reçu une pièce peut publier un avis sur celle-ci, une seule fois. Un avis peut recevoir une réponse de la boutique et être masqué par la modération."
+          ]
+        },
+        {
+          "heading": "Responsabilité et droit applicable",
+          "body": [
+            "Limites de responsabilité de l'exploitant : [[À valider : clause à rédiger par un juriste]].",
+            "Droit applicable et juridiction compétente : [[À valider : droit et tribunal compétent]]."
+          ]
+        }
+      ]
+    },
+    "sales": {
+      "title": "Conditions générales de vente",
+      "sections": [
+        {
+          "heading": "Le vendeur",
+          "body": [
+            "Chaque pièce est vendue par la boutique indiquée sur sa fiche. Le rôle juridique de FRIPE dans la vente : [[À valider : intermédiaire, mandataire ou autre qualification]]."
+          ]
+        },
+        {
+          "heading": "Pièces et prix",
+          "body": [
+            "Chaque article est une pièce unique, décrite avec son état et ses défauts éventuels.",
+            "Les prix sont affichés en dinars tunisiens. Le total comprend les frais de livraison de chaque boutique. Si un prix change avant la validation, la commande est refusée et le nouveau total t'est présenté. Une pièce réservée ou en commande garde son prix.",
+            "Taxes applicables : [[À valider : mention fiscale]]."
+          ]
+        },
+        {
+          "heading": "Réservation",
+          "body": [
+            "Une pièce peut être réservée pour une durée limitée, affichée au moment de la réservation. À l'expiration, elle redevient disponible."
+          ]
+        },
+        {
+          "heading": "Commande et paiement",
+          "body": [
+            "Une commande peut regrouper plusieurs boutiques : chacune la traite séparément.",
+            "Le paiement se fait uniquement à la livraison ou au retrait. FRIPE ne collecte aucune donnée de carte bancaire."
+          ]
+        },
+        {
+          "heading": "Annulation",
+          "body": [
+            "Tu peux annuler une commande tant que la boutique ne l'a pas confirmée. La boutique peut l'annuler tant qu'elle n'a pas été expédiée.",
+            "Voir aussi la politique de retour et d'annulation."
+          ]
+        },
+        {
+          "heading": "Litiges",
+          "body": ["Procédure de réclamation et de médiation : [[À valider : procédure et délais]]."]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "sections": [
+        {
+          "heading": "Responsable du traitement",
+          "body": [
+            "[[À valider : identité du responsable du traitement et coordonnées]].",
+            "Déclaration ou autorisation auprès de l'autorité de protection des données : [[À valider : démarches et numéro]]."
+          ]
+        },
+        {
+          "heading": "Données collectées",
+          "body": [
+            "Compte : adresse e-mail, nom affiché, langue, téléphone si tu le renseignes.",
+            "Commande : nom du destinataire, téléphone, adresse de livraison, pièces achetées.",
+            "Activité : favoris, panier, réservations, boutiques suivies, alertes, tenues, préférences de style, messages, demandes d'articles, avis et signalements.",
+            "Boutiques : informations de la boutique, photos et vidéos publiées."
+          ]
+        },
+        {
+          "heading": "Pourquoi ces données",
+          "body": [
+            "Elles servent à faire fonctionner le service : compte, commandes, livraison, messagerie, alertes et modération. Aucune publicité ciblée n'est diffusée.",
+            "Base légale de chaque traitement : [[À valider : à compléter par un juriste]]."
+          ]
+        },
+        {
+          "heading": "Qui y a accès",
+          "body": [
+            "Une boutique voit le nom, le téléphone et l'adresse uniquement pour ses propres commandes, et les messages et demandes qui la concernent. Elle ne voit pas l'identité de ses abonnés.",
+            "L'équipe FRIPE n'a pas accès aux conversations privées. Un signalement de conversation lui transmet un extrait des 20 derniers messages.",
+            "Sous-traitants et lieu d'hébergement : [[À valider : liste et pays]]. Transferts hors de Tunisie : [[À valider : existence et garanties]]."
+          ]
+        },
+        {
+          "heading": "Durée de conservation",
+          "body": ["Durées pour le compte, les commandes, les messages et les journaux : [[À valider : durées par catégorie]]."]
+        },
+        {
+          "heading": "Tes droits",
+          "body": [
+            "Tu peux modifier ton nom, ton téléphone et ta langue depuis ton profil.",
+            "Tu peux supprimer ton compte depuis ton profil. Tes données personnelles sont retirées ; l'historique des commandes est conservé sans lien avec ton compte. Durée légale de conservation : [[À valider : durée]].",
+            "Accès, rectification et opposition : [[À valider : procédure et délai]], via la page Support."
+          ]
+        },
+        {
+          "heading": "Géolocalisation",
+          "body": ["La position précise n'est jamais utilisée sans ton accord."]
+        }
+      ]
+    },
+    "cookies": {
+      "title": "Cookies et stockage local",
+      "sections": [
+        {
+          "heading": "Ce que FRIPE utilise",
+          "body": [
+            "Cookies de session : ils te gardent connecté. Sans eux, la connexion ne fonctionne pas.",
+            "Préférence de langue : elle conserve le français ou l'arabe.",
+            "Stockage local du navigateur : il conserve ton choix de thème clair ou sombre.",
+            "Cache de l'application : les pages publiques et les ressources sont gardées pour un usage hors ligne, sans donnée personnelle."
+          ]
+        },
+        {
+          "heading": "Ce que FRIPE n'utilise pas",
+          "body": ["Aucun cookie publicitaire et aucun outil de mesure d'audience tiers."]
+        },
+        {
+          "heading": "Consentement",
+          "body": [
+            "Ces éléments étant nécessaires au service ou à tes préférences, aucun bandeau de consentement n'est affiché. Conformité de ce choix : [[À valider : avis d'un juriste]].",
+            "L'ajout d'un outil de mesure d'audience demanderait de revoir cette page."
+          ]
+        }
+      ]
+    },
+    "returns": {
+      "title": "Retours et annulations",
+      "sections": [
+        {
+          "heading": "Annuler une commande",
+          "body": [
+            "Depuis Mes commandes, tant que la commande est en attente de confirmation.",
+            "Après confirmation, contacte la boutique depuis la messagerie.",
+            "Une annulation remet la pièce en vente."
+          ]
+        },
+        {
+          "heading": "Refuser à la livraison",
+          "body": ["Le paiement se fait à la réception. Conditions et frais en cas de refus : [[À valider : règle et prise en charge des frais]]."]
+        },
+        {
+          "heading": "Retourner une pièce",
+          "body": [
+            "Droit de retour et délai : [[À valider : durée et conditions légales]].",
+            "Pièce non conforme à sa description : [[À valider : procédure, preuve et remboursement]].",
+            "Modalités de remboursement d'un paiement en espèces : [[À valider : modalités]]."
+          ]
+        },
+        {
+          "heading": "Règles propres aux boutiques",
+          "body": ["Une boutique peut-elle fixer ses propres conditions ? [[À valider : décision de l'exploitant]]."]
+        }
+      ]
+    },
+    "delivery": {
+      "title": "Modalités de livraison",
+      "sections": [
+        {
+          "heading": "Deux possibilités",
+          "body": [
+            "Livraison à l'adresse indiquée, ou retrait gratuit en boutique. Le choix se fait boutique par boutique au moment de commander."
+          ]
+        },
+        {
+          "heading": "Frais",
+          "body": [
+            "Chaque boutique fixe ses frais, avec un tarif général et d'éventuels tarifs par gouvernorat. Ils sont affichés avant la validation."
+          ]
+        },
+        {
+          "heading": "Suivi",
+          "body": [
+            "Ta commande passe par les étapes en attente, confirmée, en préparation, expédiée et livrée. Tu les suis depuis Mes commandes."
+          ]
+        },
+        {
+          "heading": "Délais et transport",
+          "body": [
+            "Délais indicatifs : [[À valider : délais par zone]].",
+            "Transporteurs et responsabilité en cas de perte ou de dommage : [[À valider : organisation de la livraison]].",
+            "Zones desservies : [[À valider : couverture réelle]]."
+          ]
+        }
+      ]
+    },
+    "sellers": {
+      "title": "Informations sur les vendeurs",
+      "sections": [
+        {
+          "heading": "Qui vend sur FRIPE",
+          "body": [
+            "Chaque pièce est proposée par une boutique identifiée, validée par l'équipe FRIPE avant toute publication. Sa fiche indique son nom et sa ville.",
+            "Informations légales exigées de chaque boutique : [[À valider : liste et vérifications]]."
+          ]
+        },
+        {
+          "heading": "Devenir vendeur",
+          "body": [
+            "Crée une boutique depuis ton compte. Elle est examinée, puis validée ou refusée avec un motif.",
+            "Commission de la plateforme : [[À valider : montant et modalités]]."
+          ]
+        },
+        {
+          "heading": "Obligations",
+          "body": [
+            "Décrire honnêtement chaque pièce et ses défauts, publier ses propres photos et vidéos, honorer les commandes et respecter les clients.",
+            "Une boutique qui enfreint ces règles peut voir ses contenus retirés ou être suspendue."
+          ]
+        },
+        {
+          "heading": "Particuliers et professionnels",
+          "body": ["Statut exigé et obligations fiscales : [[À valider : règles applicables]]."]
+        }
+      ]
+    },
+    "support": {
+      "title": "Support",
+      "sections": [
+        {
+          "heading": "Nous joindre",
+          "body": [
+            "E-mail : [[À valider : adresse de support]].",
+            "Téléphone : [[À valider : numéro, si le service en propose un]].",
+            "Horaires : [[À valider : jours et heures]]."
+          ]
+        },
+        {
+          "heading": "Une commande en cours",
+          "body": ["Pour une question sur une pièce ou une livraison, écris d'abord à la boutique depuis ta commande ou depuis sa page."]
+        },
+        {
+          "heading": "Un problème avec un contenu ou un compte",
+          "body": ["Utilise le bouton Signaler sur le produit, la vidéo, la conversation, la boutique ou l'avis concerné. L'équipe FRIPE examine chaque signalement."]
+        }
+      ]
+    }
+  }
+}

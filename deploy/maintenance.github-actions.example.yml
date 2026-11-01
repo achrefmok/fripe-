@@ -1,0 +1,30 @@
+# Exemple inactif : ce fichier n'est pas dans .github/workflows.
+# Pour l'utiliser, le copier vers .github/workflows/maintenance.yml et créer les secrets
+# MAINTENANCE_URL et MAINTENANCE_TOKEN. Voir docs/maintenance.md.
+name: Maintenance FRIPE
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: fripe-maintenance
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/run-maintenance.mjs
+        env:
+          MAINTENANCE_URL: ${{ secrets.MAINTENANCE_URL }}
+          MAINTENANCE_TOKEN: ${{ secrets.MAINTENANCE_TOKEN }}

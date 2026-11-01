@@ -1,0 +1,11 @@
+allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false
+  esbuild: true
+  sharp: true
+  supabase: true
+  unrs-resolver: false
+overrides:
+  "@serwist/build>glob": 14.0.3
+  "glob>minimatch": 11.0.3
+  zod: 4.6.7
