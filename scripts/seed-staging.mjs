@@ -2,7 +2,6 @@
 // Usage : voir docs/staging-plan.md. FRIPE_ENV=staging et FRIPE_SEED_CONFIRM=<hôte Supabase> sont requis.
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { deflateSync, crc32 } from "node:zlib";
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,55 +27,37 @@ const ACCOUNTS = [
 ];
 
 const SHOPS = [
-  { key: "shopA", slug: "demo-boutique-a", name: "Boutique Démo A", city: "la-marsa", color: [176, 58, 46] },
-  { key: "shopB", slug: "demo-boutique-b", name: "Boutique Démo B", city: "sfax-ville", color: [46, 94, 120] },
+  { key: "shopA", slug: "demo-boutique-a", name: "Boutique Démo A", city: "la-marsa" },
+  { key: "shopB", slug: "demo-boutique-b", name: "Boutique Démo B", city: "sfax-ville" },
 ];
 
-const PIECES = [
-  ["Jean droit démo", "jeans", "M", 25000, "good"],
-  ["Veste en jean démo", "jeans", "L", 45000, "very_good"],
-  ["Pantalon démo", "jeans", "S", 30000, "like_new"],
-  ["Jean large démo", "jeans", "XL", 35000, "good"],
-];
+// Huit pièces par boutique, réparties dans les rayons. Les photos sont des vêtements seuls, sans
+// personne ni marque visible, sous licence Unsplash : voir scripts/seed-photos/SOURCES.md.
+const PIECES = {
+  shopA: [
+    ["Jean brut démo", "jeans", "M", 25000, "good", "jean-brut"],
+    ["Veste en cuir démo", "vestes-sport", "L", 85000, "very_good", "veste-cuir"],
+    ["Chemise en jean démo", "chemises", "M", 22000, "like_new", "chemise-jean"],
+    ["Sweat blanc démo", "pulls-sweats", "L", 28000, "good", "sweat-blanc"],
+    ["Bottines en cuir démo", "bottes", "42", 65000, "very_good", "bottines-cuir"],
+    ["Sac en osier démo", "sacs", "TU", 38000, "like_new", "sac-osier"],
+    ["Casquette délavée démo", "casquettes-bonnets", "TU", 12000, "good", "casquette-grise"],
+    ["Ceinture en cuir démo", "ceintures", "90", 15000, "very_good", "ceinture-cuir"],
+  ],
+  shopB: [
+    ["Jean délavé démo", "jeans", "S", 30000, "good", "jeans-delaves"],
+    ["T-shirt noir démo", "t-shirts", "M", 12000, "very_good", "tshirt-noir"],
+    ["Poncho en crochet démo", "pulls-sweats", "TU", 35000, "like_new", "poncho-crochet"],
+    ["Escarpins fleuris démo", "chaussures", "38", 45000, "very_good", "escarpins-fleuris"],
+    ["Baskets colorées démo", "baskets", "41", 55000, "good", "baskets-couleurs"],
+    ["Sac rose démo", "sacs", "TU", 32000, "like_new", "sac-rose"],
+    ["Sac à fleurs démo", "sacs", "TU", 48000, "very_good", "sac-fleuri"],
+    ["Casquette blanche démo", "casquettes-bonnets", "TU", 10000, "good", "casquette-blanche"],
+  ],
+};
 
-// Image neutre générée ici : aucune photo réelle, aucune personne.
-function placeholderPng([red, green, blue], variant) {
-  const width = 480;
-  const height = 640;
-  const row = Buffer.alloc(1 + width * 3);
-
-  const rows = [];
-  for (let y = 0; y < height; y += 1) {
-    const band = Math.floor(y / (40 + variant * 12)) % 2 === 0 ? 1 : 0.86;
-    for (let x = 0; x < width; x += 1) {
-      row[1 + x * 3] = red * band;
-      row[2 + x * 3] = green * band;
-      row[3 + x * 3] = blue * band;
-    }
-    rows.push(Buffer.from(row));
-  }
-
-  const chunk = (type, data) => {
-    const body = Buffer.concat([Buffer.from(type), data]);
-    const length = Buffer.alloc(4);
-    length.writeUInt32BE(data.length);
-    const checksum = Buffer.alloc(4);
-    checksum.writeUInt32BE(crc32(body));
-    return Buffer.concat([length, body, checksum]);
-  };
-
-  const header = Buffer.alloc(13);
-  header.writeUInt32BE(width, 0);
-  header.writeUInt32BE(height, 4);
-  header.set([8, 2, 0, 0, 0], 8);
-
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk("IHDR", header),
-    chunk("IDAT", deflateSync(Buffer.concat(rows))),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
-}
+// Chaque boutique présente un look, que l'accueil fait défiler.
+const LOOK_SIZE = 3;
 
 async function ensureAccounts() {
   const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
@@ -153,7 +134,7 @@ async function ensurePieces(shop, shopId) {
   const { count } = await supabase.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shopId);
   if (count) return;
 
-  for (const [index, [title, categorySlug, size, price, condition]] of PIECES.entries()) {
+  for (const [title, categorySlug, size, price, condition, photo] of PIECES[shop.key]) {
     const { data: category, error: categoryError } = await supabase
       .from("categories")
       .select("id")
@@ -181,10 +162,10 @@ async function ensurePieces(shop, shopId) {
 
     if (error) throw error;
 
-    const path = `${shopId}/${product.id}/demo.png`;
+    const path = `${shopId}/${product.id}/${photo}.jpg`;
     const { error: uploadError } = await supabase.storage
       .from("product-images")
-      .upload(path, placeholderPng(shop.color, index), { contentType: "image/png" });
+      .upload(path, readFileSync(new URL(`./seed-photos/${photo}.jpg`, import.meta.url)), { contentType: "image/jpeg" });
 
     if (uploadError) throw uploadError;
 
@@ -193,11 +174,43 @@ async function ensurePieces(shop, shopId) {
   }
 }
 
+async function ensureLook(shop, shopId) {
+  const name = `Look démo ${shop.name.slice(-1)}`;
+  const { data: existing } = await supabase.from("collections").select("id").eq("shop_id", shopId).eq("name", name).maybeSingle();
+  if (existing) return;
+
+  const { data: pieces, error: piecesError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("shop_id", shopId)
+    .eq("publication_status", "published")
+    .order("created_at")
+    .limit(LOOK_SIZE);
+
+  if (piecesError) throw piecesError;
+  if (!pieces.length) return;
+
+  const { data: look, error } = await supabase
+    .from("collections")
+    .insert({ shop_id: shopId, name, description: "Collection fictive pour les tests.", is_published: true })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+
+  const { error: linkError } = await supabase
+    .from("collection_products")
+    .insert(pieces.map((piece, position) => ({ collection_id: look.id, product_id: piece.id, position })));
+
+  if (linkError) throw linkError;
+}
+
 const accounts = await ensureAccounts();
 
 for (const shop of SHOPS) {
   const shopId = await ensureShop(shop, accounts[shop.key]);
   await ensurePieces(shop, shopId);
+  await ensureLook(shop, shopId);
 }
 
 console.log(`Données fictives prêtes sur ${host}. Identifiants : ${output}. Le rôle administrateur reste à attribuer après enrôlement.`);

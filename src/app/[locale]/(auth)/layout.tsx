@@ -6,7 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex min-h-svh flex-col overflow-x-clip bg-harissa text-harissa-ink">
       <header className="flex h-14 items-center gap-1 px-4 pt-[env(safe-area-inset-top)] md:px-6">
-        <BrandLink className="me-auto" />
+        <BrandLink className="me-auto" onHarissa />
         <LocaleSwitch />
         <ThemeToggle />
       </header>

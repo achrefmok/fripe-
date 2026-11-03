@@ -3,6 +3,10 @@ export function productImageUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${path}`;
 }
 
+export function shopAssetUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/shop-assets/${path}`;
+}
+
 export function publicVideoUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/shop-videos/${path}`;
 }

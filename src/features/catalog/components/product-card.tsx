@@ -1,6 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import type { ProductCardData } from "@/features/catalog/queries";
+import { ShopMark } from "@/features/shops/components/shop-mark";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils/price";
@@ -11,7 +12,7 @@ export function ProductCard({ product, className }: { product: ProductCardData; 
   const locale = useLocale();
 
   return (
-    <article className={cn("group min-w-0", className)}>
+    <article className={cn("card-rise group min-w-0", className)}>
       <Link href={`/produit/${product.id}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
           {product.imagePath ? (
@@ -38,8 +39,12 @@ export function ProductCard({ product, className }: { product: ProductCardData; 
           ) : null}
         </div>
         <h3 className="mt-2 truncate text-sm font-semibold">{product.title}</h3>
-        <p className="truncate text-sm text-muted-foreground">
-          {[product.brand, product.size].filter(Boolean).join(" · ") || product.shopName}
+        {product.brand || product.size ? (
+          <p className="truncate text-sm text-muted-foreground">{[product.brand, product.size].filter(Boolean).join(" · ")}</p>
+        ) : null}
+        <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-xs font-semibold">
+          <ShopMark name={product.shopName} logoPath={product.shopLogoPath} size="xs" />
+          <span className="truncate">{product.shopName}</span>
         </p>
       </Link>
     </article>

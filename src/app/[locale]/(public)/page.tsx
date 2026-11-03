@@ -1,12 +1,19 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
-import { Wordmark } from "@/components/layout/brand";
 import { HangTag } from "@/components/layout/hang-tag";
-import { Button } from "@/components/ui/button";
 import { ProductGrid, ProductRail } from "@/features/catalog/components/product-card";
-import { getHomeFeed } from "@/features/catalog/queries";
+import { getHomeFeed, getRunwayLooks, getUniverseShelves } from "@/features/catalog/queries";
+import { DressingHero } from "@/features/home/components/dressing-hero";
+import { Runway, type Look } from "@/features/home/components/runway";
+import { UniverseProvider } from "@/features/home/components/universe-context";
+import { UniverseShowcase, type Shelf } from "@/features/home/components/universe-showcase";
+import { Garment } from "@/features/home/components/garment";
+import { universeFor } from "@/features/home/universes";
+import { ShopMark } from "@/features/shops/components/shop-mark";
 import { Link } from "@/i18n/navigation";
+import { productImageUrl } from "@/lib/utils/storage";
+import Image from "next/image";
 import { localizedName } from "@/lib/utils/format";
 
 export const revalidate = 60;
@@ -23,19 +30,23 @@ function TagContent({ title, body }: { title: string; body: string }) {
   );
 }
 
+// Les sections d'un même chapitre partagent un filet : on voit ce qui va ensemble.
 function Section({
   title,
   href,
   linkLabel,
+  divided = false,
   children,
 }: {
   title: string;
   href?: string;
   linkLabel?: string;
+  divided?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
+    <section className="mx-auto max-w-7xl px-4 md:px-6">
+      <div className={divided ? "border-t-2 border-foreground/80 pt-8 pb-10 md:pt-10 md:pb-14" : "pt-10 pb-10 md:pt-14 md:pb-14"}>
       <div className="mb-5 flex items-baseline justify-between gap-4">
         <h2 className="font-display text-3xl leading-tight font-extrabold md:text-4xl">{title}</h2>
         {href ? (
@@ -45,8 +56,14 @@ function Section({
         ) : null}
       </div>
       {children}
+      </div>
     </section>
   );
+}
+
+// Le rayon le mieux fourni ouvre la vitrine : le visiteur voit d'abord des pièces.
+function busiestShelf(shelves: Shelf[]) {
+  return shelves.reduce<Shelf | null>((best, shelf) => (!best || shelf.total > best.total ? shelf : best), null)?.slug ?? null;
 }
 
 const EMPTY_FEED = {
@@ -66,30 +83,210 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const currentLocale = await getLocale();
 
   // L'accueil reste affichable si la base est momentanément injoignable.
-  const feed = await getHomeFeed().catch((error) => {
-    console.error("Accueil : flux indisponible", error);
-    return EMPTY_FEED;
-  });
+  const [feed, shelfRows, lookRows] = await Promise.all([
+    getHomeFeed().catch((error) => {
+      console.error("Accueil : flux indisponible", error);
+      return EMPTY_FEED;
+    }),
+    getUniverseShelves().catch((error) => {
+      console.error("Accueil : univers indisponibles", error);
+      return [];
+    }),
+    getRunwayLooks().catch((error) => {
+      console.error("Accueil : looks indisponibles", error);
+      return [];
+    }),
+  ]);
 
-  const modes = [
-    { title: t("modeOneTitle"), body: t("modeOneBody") },
-    { title: t("modeTwoTitle"), body: t("modeTwoBody") },
-    { title: t("modeThreeTitle"), body: t("modeThreeBody") },
-  ];
+  const ar = currentLocale === "ar";
+  const shelves: Shelf[] = shelfRows.map((row) => ({
+    slug: row.slug,
+    name: ar ? row.nameAr : row.nameFr,
+    description: row.children.map((child) => (ar ? child.nameAr : child.nameFr)).join(ar ? "، " : ", "),
+    products: row.products,
+    total: row.total,
+  }));
+
+  // Les collections des boutiques font les looks ; sans collection, chaque arrivage défile seul.
+  const looks: Look[] = lookRows.length
+    ? lookRows.map((row) => ({
+        id: row.id,
+        title: row.name,
+        shopName: row.shopName,
+        shopLogoPath: row.shopLogoPath,
+        href: `/boutique/${row.shopSlug}/collection/${row.id}`,
+        products: row.products,
+      }))
+    : feed.arrivals.slice(0, 6).map((product) => ({
+        id: product.id,
+        title: product.title,
+        shopName: product.shopName,
+        shopLogoPath: product.shopLogoPath,
+        href: `/produit/${product.id}`,
+        products: [product],
+      }));
+
+  // Les rails de pièces : les arrivages ne sont listés que si le défilé montre des collections.
+  const pieceSections = [
+    lookRows.length && feed.arrivals.length
+      ? { key: "arrivals", title: t("arrivalsTitle"), href: "/catalogue", node: <ProductRail products={feed.arrivals} /> }
+      : null,
+    feed.popular.length ? { key: "popular", title: t("popularTitle"), href: undefined, node: <ProductRail products={feed.popular} /> } : null,
+    feed.recent.length ? { key: "recent", title: t("recentTitle"), href: "/catalogue", node: <ProductGrid products={feed.recent} /> } : null,
+  ].filter((section) => section !== null);
 
   return (
     <>
-      <section className="overflow-hidden bg-harissa pt-5 text-harissa-ink md:pt-8">
-        <div className="mx-auto max-w-7xl px-4 pb-7 md:px-6 md:pb-9 lg:flex lg:items-end lg:justify-between lg:gap-10">
-          <h1 aria-label="FRIPE" className="-ms-[0.04em] leading-[0.8]">
-            <Wordmark className="block text-[33.5vw] lg:text-[25vw] xl:text-[22rem]" />
-          </h1>
-          <p className="mt-5 max-w-xl text-xl leading-snug font-medium md:mt-7 md:text-2xl lg:mt-0 lg:max-w-72 lg:pb-3">
-            {t("tagline")}
-          </p>
-        </div>
-
+      <UniverseProvider initial={busiestShelf(shelves)}>
+        <DressingHero categories={feed.categories} locale={currentLocale} hasRunway={looks.length > 0} />
         <div className="rail text-ink dark:text-paper" aria-hidden="true" />
+        <UniverseShowcase shelves={shelves} />
+      </UniverseProvider>
+
+      {looks.length ? (
+        <Runway
+          looks={looks}
+          title={t(lookRows.length ? "runwayLooksTitle" : "runwayArrivalsTitle")}
+          cta={t(lookRows.length ? "runwaySeeLook" : "runwaySeePiece")}
+        />
+      ) : null}
+
+      {pieceSections.length ? (
+        pieceSections.map((section, index) => (
+          <Section key={section.key} title={section.title} href={section.href} linkLabel={t("seeAll")} divided={index > 0}>
+            {section.node}
+          </Section>
+        ))
+      ) : (
+        <Section title={t("emptyTitle")}>
+          <p className="max-w-md text-muted-foreground">{t("emptyBody")}</p>
+        </Section>
+      )}
+
+      {feed.shops.length ? (
+        <Section title={t("shopsTitle")} href="/boutiques" linkLabel={t("seeAll")} divided>
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {feed.shops.map((shop) => (
+              <li key={shop.id}>
+                <Link href={`/boutique/${shop.slug}`} className="shop-tile">
+                  <span className="shop-tile__window" aria-hidden="true">
+                    {[0, 1, 2].map((slot) => (
+                      <span key={slot} className="shop-tile__photo">
+                        {shop.previews[slot] ? (
+                          <Image src={productImageUrl(shop.previews[slot])} alt="" fill unoptimized sizes="(min-width: 1024px) 9rem, 30vw" className="object-cover" />
+                        ) : null}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="shop-tile__label">
+                    <ShopMark name={shop.name} logoPath={shop.logoPath} size="lg" className="shop-tile__mark" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-xl font-bold">{shop.name}</span>
+                      <span className="block truncate text-sm text-muted-foreground">
+                        {localizedName({ name_fr: shop.city_fr, name_ar: shop.city_ar }, currentLocale)} ·{" "}
+                        {t("shopPieces", { count: shop.product_count })}
+                      </span>
+                    </span>
+                    <ArrowRight className="size-5 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* Sans look montrable, les collections restent listées : une collection vide reste une collection. */}
+      {!lookRows.length && feed.collections.length ? (
+        <Section title={t("collectionsTitle")} divided>
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 md:grid-cols-3">
+            {feed.collections.map((collection) => (
+              <li key={collection.id}>
+                <Link
+                  href={`/boutique/${collection.shops.slug}/collection/${collection.id}`}
+                  className="block bg-secondary px-4 py-4 transition-colors hover:bg-foreground hover:text-background"
+                >
+                  <span className="block truncate font-display text-lg font-bold">{collection.name}</span>
+                  <span className="block truncate text-sm opacity-75">{collection.shops.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      <Section title={t("discoverTitle")} divided>
+        <ul className="discover">
+          <li className="discover__stylist">
+            <Link href="/stylist" className="discover-tile discover-tile--ink">
+              <span className="discover-tile__name">{t("discoverStylist")}</span>
+              <span className="discover-tile__body">{t("discoverStylistBody")}</span>
+              <span className="discover-tile__go">
+                {t("discoverTry")}
+                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+              </span>
+              {/* Une tenue complète qui se compose sous une étiquette de budget. */}
+              <span className="discover-stylist" aria-hidden="true">
+                <span className="discover-stylist__tag">{t("discoverStylistTag")}</span>
+                <Garment universe={universeFor("hauts")} className="discover-stylist__piece" />
+                <Garment universe={universeFor("bas")} className="discover-stylist__piece" />
+                <Garment universe={universeFor("chaussures")} className="discover-stylist__piece" />
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link href="/tenues/nouvelle" className="discover-tile discover-tile--kraft">
+              <span className="discover-tile__name">{t("discoverOutfit")}</span>
+              <span className="discover-tile__body">{t("discoverOutfitBody")}</span>
+              <span className="discover-tile__go">
+                {t("discoverTry")}
+                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+              </span>
+              <span className="discover-outfit" aria-hidden="true">
+                <Garment universe={universeFor("vestes-manteaux")} className="discover-outfit__piece" />
+                <span className="discover-outfit__plus">+</span>
+                <Garment universe={universeFor("robes")} className="discover-outfit__piece" />
+                <span className="discover-outfit__plus">+</span>
+                <Garment universe={universeFor("accessoires")} className="discover-outfit__piece" />
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link href="/walk" className="discover-tile discover-tile--harissa">
+              <span className="discover-tile__name">{t("discoverWalk")}</span>
+              <span className="discover-tile__body">{t("discoverWalkBody")}</span>
+              <span className="discover-tile__go">
+                {t("discoverWatch")}
+                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+              </span>
+              {/* Trois écrans de vidéo verticale, avec les vraies dernières pièces. */}
+              <span className="discover-walk" aria-hidden="true">
+                {[0, 1, 2].map((slot) => (
+                  <span key={slot} className="discover-walk__frame">
+                    {feed.arrivals[slot]?.imagePath ? (
+                      <Image src={productImageUrl(feed.arrivals[slot].imagePath!)} alt="" fill unoptimized sizes="6rem" className="object-cover" />
+                    ) : null}
+                    {slot === 1 ? (
+                      <span className="discover-walk__play">
+                        <Play className="size-4 fill-current" />
+                      </span>
+                    ) : null}
+                  </span>
+                ))}
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </Section>
+
+      <section className="mt-6 overflow-hidden bg-harissa text-harissa-ink" aria-labelledby="fin-titre">
+        <div className="rail text-ink dark:text-paper" aria-hidden="true" />
+        <div className="mx-auto max-w-7xl px-4 pt-12 pb-8 md:px-6 md:pt-16 md:pb-10">
+          <h2 id="fin-titre" className="max-w-2xl font-display text-4xl leading-[1.02] font-extrabold md:text-6xl">
+            {t("closeTitle")}
+          </h2>
+          <p className="mt-4 max-w-lg text-lg leading-relaxed">{t("closeBody")}</p>
+        </div>
 
         <div className="rail-scroll mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 pb-10 text-ink md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-6 md:pb-14 dark:text-paper">
           <HangTag
@@ -121,143 +318,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      {feed.arrivals.length ? (
-        <Section title={t("arrivalsTitle")} href="/catalogue" linkLabel={t("seeAll")}>
-          <ProductRail products={feed.arrivals} />
-        </Section>
-      ) : (
-        <Section title={t("emptyTitle")}>
-          <p className="max-w-md text-muted-foreground">{t("emptyBody")}</p>
-        </Section>
-      )}
-
-      {feed.categories.length ? (
-        <Section title={t("categoriesTitle")}>
-          <ul className="flex flex-wrap gap-2">
-            {feed.categories.map((category) => (
-              <li key={category.id}>
-                <Link
-                  href={{ pathname: "/catalogue", query: { categorie: category.slug } }}
-                  className="status-tag !h-10 bg-secondary !px-5 !text-sm hover:bg-foreground hover:text-background"
-                >
-                  {currentLocale === "ar" ? category.nameAr : category.nameFr}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {feed.popular.length ? (
-        <Section title={t("popularTitle")}>
-          <ProductRail products={feed.popular} />
-        </Section>
-      ) : null}
-
-      {feed.shops.length ? (
-        <Section title={t("shopsTitle")} href="/boutiques" linkLabel={t("seeAll")}>
-          <ul className="divide-y border-y md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0">
-            {feed.shops.map((shop) => (
-              <li key={shop.id} className="md:border-b">
-                <Link href={`/boutique/${shop.slug}`} className="flex items-baseline justify-between gap-3 py-3">
-                  <span className="truncate font-display text-xl font-bold">{shop.name}</span>
-                  <span className="shrink-0 text-sm text-muted-foreground">
-                    {localizedName({ name_fr: shop.city_fr, name_ar: shop.city_ar }, currentLocale)} ·{" "}
-                    {t("shopPieces", { count: shop.product_count })}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {feed.collections.length ? (
-        <Section title={t("collectionsTitle")}>
-          <ul className="grid gap-2 md:grid-cols-3">
-            {feed.collections.map((collection) => (
-              <li key={collection.id}>
-                <Link
-                  href={`/boutique/${collection.shops.slug}/collection/${collection.id}`}
-                  className="block bg-secondary px-4 py-4 transition-colors hover:bg-foreground hover:text-background"
-                >
-                  <span className="block font-display text-lg font-bold">{collection.name}</span>
-                  <span className="block text-sm opacity-75">{collection.shops.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {feed.recent.length ? (
-        <Section title={t("recentTitle")} href="/catalogue" linkLabel={t("seeAll")}>
-          <ProductGrid products={feed.recent} />
-        </Section>
-      ) : null}
-
-      <Section title={t("discoverTitle")}>
-        <ul className="grid gap-2 md:grid-cols-3">
-          {[
-            { href: "/walk", title: t("discoverWalk"), body: t("discoverWalkBody") },
-            { href: "/stylist", title: t("discoverStylist"), body: t("discoverStylistBody") },
-            { href: "/tenues/nouvelle", title: t("discoverOutfit"), body: t("discoverOutfitBody") },
-          ].map((entry) => (
-            <li key={entry.href}>
-              <Link
-                href={entry.href}
-                className="block bg-secondary px-4 py-4 transition-colors hover:bg-foreground hover:text-background"
-              >
-                <span className="block font-display text-lg font-bold">{entry.title}</span>
-                <span className="block text-sm opacity-75">{entry.body}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <section className="mt-8 bg-[oklch(0.2_0.014_55)] text-[oklch(0.955_0.016_88)]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-[1.1fr_1fr] md:gap-16 md:px-6 md:py-28">
-          <div>
-            <h2 className="font-display text-4xl leading-[1.02] font-extrabold md:text-6xl">
-              {t("proTitle")}
-            </h2>
-            <p className="mt-5 max-w-md text-lg leading-relaxed opacity-85">{t("proBody")}</p>
-          </div>
-          <ul className="divide-y divide-current/20 border-y border-current/20">
-            {modes.map((mode) => (
-              <li key={mode.title} className="py-5 md:py-6">
-                <h3 className="font-display text-2xl font-bold">{mode.title}</h3>
-                <p className="mt-1 leading-relaxed opacity-85">{mode.body}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
-        <h2 className="max-w-3xl font-display text-4xl leading-[1.02] font-extrabold md:text-6xl">
-          {t("localTitle")}
-        </h2>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
-          {t("localBody")}
-        </p>
-
-        <div className="mt-14 border-t-[5px] border-foreground pt-8 md:mt-20 md:flex md:items-end md:justify-between md:gap-10">
-          <div>
-            <h2 className="font-display text-3xl leading-tight font-extrabold md:text-5xl">
-              {t("closeTitle")}
-            </h2>
-            <p className="mt-3 max-w-lg text-muted-foreground">{t("closeBody")}</p>
-          </div>
-          <Button asChild size="lg" className="mt-6 w-full md:mt-0 md:w-auto">
-            <Link href="/vendeur/creer-boutique">
-              {t("closeCta")}
-              <ArrowRight className="rtl:-scale-x-100" />
-            </Link>
-          </Button>
-        </div>
-      </section>
     </>
   );
 }

@@ -35,11 +35,30 @@ En sombre, l'encre devient le fond et le harissa s'éclaircit. Le harissa sert p
 
 ## Mouvement
 
-Une seule idée : l'étiquette qui se stabilise au chargement et se balance au survol ou au focus. `prefers-reduced-motion` la désactive.
+Une seule idée : ce qui pend bouge comme ce qui pend. L'étiquette se stabilise au chargement et se balance au survol ou au focus, les vêtements de l'armoire aussi.
+
+Trois moments forts, réservés à l'accueil et à l'entrée dans le catalogue :
+
+- L'armoire (`src/features/home/components/dressing-hero.tsx`) : un objet en 3D CSS dans le héros harissa. Les portes s'ouvrent une fois par visite, la lumière s'allume, les vêtements se balancent. Le bouton « Fermer le dressing » la referme et la rouvre. Fermée, son intérieur est `inert`.
+- Les rayons (`universe-showcase.tsx`) : toucher un vêtement ouvre son univers plus bas sur l'accueil, la section prend sa couleur. « Tout voir » mène au catalogue par le rideau (`universe-link.tsx`), qui se lève sur un bandeau de la même couleur.
+- Le défilé (`runway.tsx`) : les collections des boutiques deviennent des looks, posés sur un podium ; sans collection, chaque arrivage défile seul. Les pièces arrivent du fond en quatre pas, la pièce principale ondule légèrement, puis fait demi-tour et sort ; le projecteur se rallume à chaque look. Une barre fine montre le temps avant le look suivant. Le défilement automatique a toujours un bouton pause, s'arrête au survol et au focus, et reste coupé si l'utilisateur limite les animations. Flèches, pastilles et glisser au doigt.
+
+Seules `transform`, `opacity` et `clip-path` s'animent, en CSS ou en API Web Animations, sans bibliothèque d'animation. `prefers-reduced-motion` ouvre l'armoire d'emblée et retire balancement, rideau et défilement automatique.
+
+## Univers
+
+Chaque catégorie racine a sa matière, définie dans `src/features/home/universes.ts` : hauts harissa, bas denim, vestes kraft, robes garance, chaussures olive, accessoires ocre. Le texte posé sur chaque aplat dépasse 4,5:1. Ces couleurs vivent dans les rayons de l'accueil et le bandeau du catalogue, nulle part ailleurs. La description d'un rayon est la liste de ses sous-catégories, jamais un texte rédigé. Une catégorie ajoutée dans l'administration prend l'étiquette kraft ; une sous-catégorie garde l'univers de sa racine.
+
+`Garment` dessine les vêtements en SVG : un seul cintre, à plat, sans ombre de matière. Les tuiles « Découvrir autrement » en composent de petites scènes : une tenue sous une étiquette de budget, un assemblage pièce par pièce, trois écrans verticaux pour Fripe Walk.
+
+## Boutiques
+
+Chaque pièce affichée porte l'identité de sa boutique : `ShopMark` (`src/features/shops/components/shop-mark.tsx`) montre son logo, ou à défaut un monogramme. Le monogramme écarte les mots courants (« Boutique Démo A » donne « DA ») et sa couleur, tirée des matières des univers, reste la même pour une boutique donnée. Sur l'accueil, une boutique se présente par une vitrine de ses trois dernières pièces, le monogramme posé à cheval sur la vitrine.
 
 ## Surfaces
 
-- Accueil et authentification : expressifs, aplats harissa et encre.
+- Accueil : expressif. Héros harissa avec l'armoire, rayons aux couleurs des univers, podium sur encre chaude, puis étiquettes et tuiles franches.
+- Authentification : expressive, aplats harissa et encre.
 - Compte, vendeur et administration : sobres, listes à filets et tableaux, chiffres tabulaires.
 
 ## RTL

@@ -611,7 +611,9 @@ test("Drop Alert : notification interne, badge, pause, sans doublon", async ({ p
   await expect(page.getByTestId("account-badge")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Mettre en pause" }).click();
-  await expect(page.getByText(/en pause/)).toBeVisible();
+  // Le bouton « Mettre en pause » contient lui-même « en pause » : on attend que la pause soit enregistrée.
+  await expect(page.getByRole("button", { name: "Réactiver" })).toBeVisible();
+  await expect(page.getByText(/· en pause/)).toBeVisible();
 
   await publish(20000);
 

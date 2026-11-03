@@ -303,7 +303,1099 @@
   }
 }
 
+/* L'accueil : l'armoire, les rayons, le podium. Seules transform, opacity et clip-path s'animent. */
+@layer components {
+  .dressing {
+    position: relative;
+    overflow: hidden;
+    color: var(--harissa-ink);
+    background: var(--harissa);
+  }
+
+  .dressing__title {
+    margin-inline-start: -0.03em;
+    font-size: min(33.5vw, 9.5rem);
+    line-height: 0.8;
+  }
+
+  .dressing__button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 1.25rem;
+    border: 2px solid currentcolor;
+    border-radius: 2px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    touch-action: manipulation;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .dressing__button:hover {
+    background: color-mix(in oklch, currentcolor 14%, transparent);
+  }
+
+  .dressing__button--solid,
+  .dressing__button--solid:hover {
+    border-color: var(--harissa-ink);
+    color: var(--harissa);
+    background: var(--harissa-ink);
+  }
+
+  /* L'armoire */
+  .armoire {
+    --door-ease: cubic-bezier(0.7, 0, 0.2, 1);
+    --open: 118deg;
+    --hanger: oklch(0.86 0.06 80);
+    position: relative;
+    width: min(74%, 27rem);
+    margin-inline: auto;
+    perspective: 1600px;
+    perspective-origin: 50% 40%;
+  }
+
+  .armoire__body {
+    position: relative;
+    padding: 0.7rem;
+    border-radius: 3px;
+    background: linear-gradient(oklch(0.25 0.02 50), oklch(0.18 0.015 50));
+    box-shadow: 0 34px 40px -20px oklch(0.15 0.06 30 / 0.65);
+    transform-style: preserve-3d;
+  }
+
+  .armoire__body::before {
+    content: "";
+    position: absolute;
+    inset-inline: -0.55rem;
+    inset-block-start: -0.7rem;
+    height: 0.8rem;
+    border-radius: 2px;
+    background: oklch(0.16 0.015 50);
+  }
+
+  .armoire__inside {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.1rem 0.4rem 0.6rem;
+    overflow: hidden;
+    background:
+      radial-gradient(95% 55% at 50% 0%, oklch(0.44 0.055 64), transparent 75%),
+      oklch(0.14 0.012 50);
+  }
+
+  /* La lumière s'allume quand les portes s'écartent. */
+  .armoire__inside::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: oklch(0.08 0.01 50);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+
+  .armoire[data-state="closed"] .armoire__inside::after {
+    opacity: 0.85;
+  }
+
+  .armoire[data-state="intro"] .armoire__inside::after {
+    animation: armoire-light 1.2s ease 0.7s both;
+  }
+
+  .armoire__rod {
+    height: 6px;
+    margin-inline: 0.2rem;
+    border-radius: 3px;
+    background: linear-gradient(oklch(0.88 0.07 82), oklch(0.6 0.08 70));
+    box-shadow: 0 3px 4px oklch(0 0 0 / 0.5);
+  }
+
+  .armoire__rack {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .armoire__rack > li {
+    transform-origin: 50% 0;
+  }
+
+  .armoire:not([data-state="closed"]) .armoire__rack > li {
+    animation: garment-settle 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(1.05s + var(--i) * 80ms);
+  }
+
+  .armoire__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-block-start: -0.45rem;
+    padding-block-end: 0.25rem;
+    color: oklch(0.955 0.016 88);
+    outline-color: oklch(0.955 0.016 88);
+    outline-offset: 2px;
+    transform-origin: 50% 0;
+    touch-action: manipulation;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .armoire__item:active {
+    transform: scale(0.96);
+  }
+
+  .armoire__garment {
+    width: 88%;
+    height: auto;
+    filter: drop-shadow(0 12px 10px oklch(0.05 0.01 50 / 0.6));
+  }
+
+  .armoire__name {
+    min-height: 2.3em;
+    font-family: var(--font-title);
+    font-size: clamp(0.78rem, 2.9vw, 0.95rem);
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .armoire__doors {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform-style: preserve-3d;
+  }
+
+  .armoire__door {
+    position: absolute;
+    inset-block: 0;
+    width: 50%;
+    transform-style: preserve-3d;
+    transition: transform 1s var(--door-ease);
+  }
+
+  .armoire__door--left {
+    left: 0;
+    transform-origin: 0 50%;
+  }
+
+  .armoire__door--right {
+    right: 0;
+    transform-origin: 100% 50%;
+  }
+
+  .armoire[data-state="open"] .armoire__door--left {
+    transform: rotateY(calc(var(--open) * -1));
+  }
+
+  .armoire[data-state="open"] .armoire__door--right {
+    transform: rotateY(var(--open));
+  }
+
+  .armoire[data-state="intro"] .armoire__door--left {
+    animation: armoire-left 1.4s var(--door-ease) 0.5s both;
+  }
+
+  .armoire[data-state="intro"] .armoire__door--right {
+    animation: armoire-right 1.4s var(--door-ease) 0.5s both;
+  }
+
+  .armoire__face {
+    position: absolute;
+    inset: 0;
+    border-radius: 2px;
+    backface-visibility: hidden;
+  }
+
+  .armoire__face--front {
+    background: linear-gradient(90deg, oklch(0.93 0.025 85), oklch(0.885 0.03 82));
+    box-shadow: inset 0 0 0 1px oklch(0.7 0.04 75);
+  }
+
+  .armoire__face--back {
+    background: oklch(0.86 0.03 82);
+    box-shadow: inset 0 0 0 1px oklch(0.7 0.04 75);
+    transform: rotateY(180deg);
+  }
+
+  .armoire__panel {
+    position: absolute;
+    inset: 1.1rem 0.9rem;
+    border: 1.5px solid oklch(0.72 0.045 75);
+    border-radius: 2px;
+  }
+
+  .armoire__handle {
+    position: absolute;
+    inset-block-start: 46%;
+    width: 0.35rem;
+    height: 3rem;
+    border-radius: 2px;
+    background: oklch(0.62 0.08 70);
+  }
+
+  .armoire__door--left .armoire__handle {
+    right: 0.55rem;
+  }
+
+  .armoire__door--right .armoire__handle {
+    left: 0.55rem;
+  }
+
+  .armoire__mirror {
+    position: absolute;
+    inset: 1rem 0.85rem;
+    border-radius: 999px 999px 3px 3px;
+    background: linear-gradient(115deg, oklch(0.96 0.005 240), oklch(0.82 0.012 240) 45%, oklch(0.93 0.006 240) 58%, oklch(0.78 0.012 240));
+    box-shadow: inset 0 0 0 3px oklch(0.72 0.045 75);
+  }
+
+  .armoire__feet {
+    position: relative;
+    height: 0.6rem;
+    margin-inline: 6%;
+    background: linear-gradient(
+      90deg,
+      oklch(0.16 0.015 50) 0 1.1rem,
+      transparent 1.1rem calc(100% - 1.1rem),
+      oklch(0.16 0.015 50) calc(100% - 1.1rem)
+    );
+  }
+
+  .armoire__feet::after {
+    content: "";
+    position: absolute;
+    inset-inline: -14%;
+    inset-block-start: 0.3rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, oklch(0.2 0.08 30 / 0.45), transparent);
+  }
+
+  /* Les rayons : la section prend la couleur de l'univers choisi. */
+  .showcase {
+    overflow: hidden;
+    scroll-margin-top: 3.5rem;
+    color: var(--u-ink);
+    background: var(--u-surface);
+    --hanger: color-mix(in oklch, var(--u-ink) 70%, transparent);
+    transition:
+      background-color 0.6s ease,
+      color 0.6s ease;
+  }
+
+  .showcase__tab {
+    flex: none;
+    min-height: 2.75rem;
+    padding-inline: 1.1rem;
+    border: 1.5px solid currentcolor;
+    border-radius: 2px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    touch-action: manipulation;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
+  }
+
+  .showcase__tab:hover {
+    background: color-mix(in oklch, currentcolor 14%, transparent);
+  }
+
+  .showcase__tab[aria-selected="true"] {
+    color: var(--u-surface);
+    background: var(--u-ink);
+  }
+
+  .showcase__name {
+    font-family: var(--font-title);
+    font-size: clamp(2.5rem, 11vw, 8.5rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    hyphens: manual;
+    overflow-wrap: break-word;
+    animation: rise-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .showcase__more {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: 1.25rem;
+    padding-inline: 1.1rem;
+    border: 2px solid currentcolor;
+    border-radius: 2px;
+    font-weight: 700;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .showcase__more:hover {
+    color: var(--u-surface);
+    background: var(--u-ink);
+  }
+
+  .showcase__garment {
+    flex: none;
+    width: clamp(5.5rem, 20vw, 10rem);
+    height: auto;
+    transform-origin: 50% 0;
+    animation: garment-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .showcase__card {
+    animation: rise-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(80ms + var(--i) * 60ms);
+  }
+
+  /* Le podium */
+  .runway {
+    position: relative;
+    overflow: hidden;
+    scroll-margin-top: 3.5rem;
+    color: oklch(0.955 0.016 88);
+    background: oklch(0.16 0.012 55);
+  }
+
+  .runway::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(42% 50% at 50% 28%, oklch(0.42 0.035 65 / 0.75), transparent 72%);
+    pointer-events: none;
+  }
+
+  .runway > * {
+    position: relative;
+  }
+
+  .runway__stage {
+    height: clamp(19rem, 64vw, 30rem);
+    perspective: 1100px;
+    perspective-origin: 50% 18%;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .runway__floor {
+    position: absolute;
+    left: 50%;
+    bottom: -6%;
+    width: min(150%, 70rem);
+    height: 62%;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 1px), oklch(0.74 0.085 72 / 0.35) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+      repeating-linear-gradient(90deg, oklch(0.27 0.02 55) 0 46px, oklch(0.23 0.018 55) 46px 48px);
+    mask: linear-gradient(0deg, #000 35%, transparent);
+    transform: translateX(-50%) rotateX(62deg);
+    transform-origin: 50% 100%;
+  }
+
+  .runway__scene {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  /* Le projecteur suit chaque nouveau look. */
+  .runway__light {
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(from 180deg at 50% -12%, transparent 162deg, oklch(0.92 0.04 80 / 0.17) 174deg 186deg, transparent 198deg);
+    pointer-events: none;
+    animation: light-on 1.2s ease-out both;
+  }
+
+  .runway__pose {
+    transform-origin: 50% 100%;
+    animation: pose 5.5s ease-in-out infinite alternate;
+    animation-delay: calc(1.2s + var(--i) * -1.8s);
+  }
+
+  .runway__figure {
+    --w: clamp(7.5rem, 30vw, 14rem);
+    position: absolute;
+    bottom: 9%;
+    left: 50%;
+    width: var(--w);
+    margin-left: calc(var(--w) / -2);
+    transform: var(--spot);
+    transform-style: preserve-3d;
+    animation: figure-walk 1.25s ease-in-out both;
+    animation-delay: calc(var(--i) * 130ms);
+  }
+
+  .runway__figure::after {
+    content: "";
+    position: absolute;
+    inset-inline: 8%;
+    bottom: -0.9rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, oklch(0 0 0 / 0.6), transparent);
+  }
+
+  .runway__figure--center {
+    --spot: translate3d(0, 0, 0);
+    z-index: 3;
+  }
+
+  .runway__figure--left {
+    --spot: translate3d(-96%, -6%, -240px);
+    z-index: 1;
+  }
+
+  .runway__figure--right {
+    --spot: translate3d(96%, -6%, -240px);
+    z-index: 1;
+  }
+
+  .runway__figure.is-leaving {
+    animation: figure-out 0.6s cubic-bezier(0.55, 0, 0.8, 0.2) both;
+  }
+
+  /* La pièce principale fait demi-tour et sort, comme au bout d'un podium. */
+  .runway__figure--center.is-leaving {
+    animation: figure-turn 0.7s cubic-bezier(0.55, 0, 0.8, 0.2) both;
+  }
+
+  .runway__photo {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 2px;
+    background: oklch(0.3 0.02 55);
+    box-shadow: 0 30px 30px -20px oklch(0 0 0 / 0.8);
+  }
+
+  .runway__figure--left .runway__photo,
+  .runway__figure--right .runway__photo {
+    filter: brightness(0.62) saturate(0.85);
+  }
+
+  .runway__card {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    overflow: hidden;
+    padding: 1.25rem;
+    border: 1px solid oklch(0.955 0.016 88 / 0.18);
+    border-radius: 2px;
+    background: oklch(0.2 0.014 55 / 0.75);
+  }
+
+  .runway__timer {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    height: 3px;
+    background: var(--harissa);
+    transform-origin: 0 50%;
+    animation-name: runway-timer;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+
+  [dir="rtl"] .runway__timer {
+    transform-origin: 100% 50%;
+  }
+
+  .runway__items li + li {
+    border-top: 1px solid oklch(0.955 0.016 88 / 0.14);
+  }
+
+  .runway__control {
+    display: inline-grid;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border: 1.5px solid oklch(0.955 0.016 88 / 0.5);
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+  }
+
+  .runway__control:hover {
+    background: oklch(0.955 0.016 88 / 0.12);
+  }
+
+  .runway__cta {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding-inline: 1.15rem;
+    border-radius: 2px;
+    color: var(--harissa-ink);
+    background: var(--harissa);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .runway__dot {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+  }
+
+  .runway__dot::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: oklch(0.955 0.016 88 / 0.35);
+    transition:
+      width 0.3s ease,
+      background-color 0.3s ease;
+  }
+
+  .runway__dot[aria-current="true"]::before {
+    width: 1.75rem;
+    background: oklch(0.955 0.016 88);
+  }
+
+  /* Identité des boutiques : leur logo, ou un monogramme stable à leurs couleurs. */
+  .shop-mark {
+    position: relative;
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 2px;
+    font-family: var(--font-title);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .shop-mark[data-size="xs"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.55rem;
+  }
+
+  .shop-mark[data-size="sm"] {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
+  }
+
+  .shop-mark[data-size="lg"] {
+    width: 3.25rem;
+    height: 3.25rem;
+    font-size: 1.15rem;
+  }
+
+  /* Boutiques : une vitrine de leurs trois dernières pièces. */
+  .shop-tile {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border: 2px solid var(--foreground);
+    border-radius: 2px;
+    transition: background-color 0.25s ease;
+  }
+
+  .shop-tile:hover {
+    background: var(--secondary);
+  }
+
+  .shop-tile__window {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    background: var(--foreground);
+  }
+
+  .shop-tile__photo {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--secondary);
+  }
+
+  .shop-tile__photo img {
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .shop-tile__label {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 1rem 1rem;
+    border-top: 2px solid var(--foreground);
+  }
+
+  .shop-tile__mark {
+    align-self: flex-start;
+    margin-block-start: -2.1rem;
+    box-shadow: 0 0 0 3px var(--background);
+  }
+
+  /* Découvrir autrement */
+  .discover {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .discover-tile {
+    position: relative;
+    display: flex;
+    height: 100%;
+    min-height: 17rem;
+    flex-direction: column;
+    padding: 1.5rem;
+    overflow: hidden;
+    border-radius: 2px;
+    isolation: isolate;
+  }
+
+  .discover__stylist .discover-tile {
+    min-height: 21rem;
+  }
+
+  .discover-tile--ink {
+    color: oklch(0.955 0.016 88);
+    background: oklch(0.2 0.014 55);
+    --hanger: oklch(0.8 0.03 80);
+  }
+
+  .discover-tile--kraft {
+    color: oklch(0.2 0.014 55);
+    background: oklch(0.74 0.085 72);
+    --hanger: oklch(0.35 0.04 60);
+  }
+
+  .discover-tile--harissa {
+    color: var(--harissa-ink);
+    background: var(--harissa);
+  }
+
+  .discover-tile__name {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .discover-tile__body {
+    position: relative;
+    z-index: 1;
+    max-width: 12ch;
+    margin-block-start: 0.5rem;
+    font-family: var(--font-title);
+    font-size: clamp(1.9rem, 4.2vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.02;
+  }
+
+  .discover__stylist .discover-tile__body {
+    font-size: clamp(2.2rem, 5vw, 3.75rem);
+  }
+
+  .discover-tile__go {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-block-start: auto;
+    padding-block-start: 1.25rem;
+    font-weight: 700;
+  }
+
+  .discover-tile:hover .discover-tile__go {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  .discover-stylist {
+    position: absolute;
+    inset-inline-end: 1.25rem;
+    inset-block-end: -0.5rem;
+    display: flex;
+    width: clamp(6.5rem, 30%, 11rem);
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .discover-stylist__tag {
+    margin-block-end: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    color: oklch(0.2 0.014 55);
+    background: oklch(0.74 0.085 72);
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 800;
+    white-space: nowrap;
+    rotate: -6deg;
+    transition: rotate 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .discover-stylist__piece {
+    width: 100%;
+    height: auto;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .discover-stylist__piece + .discover-stylist__piece {
+    margin-block-start: -38%;
+  }
+
+  .discover-outfit {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    inset-block-end: 0.75rem;
+    display: flex;
+    width: min(62%, 16rem);
+    align-items: center;
+  }
+
+  .discover-outfit__piece {
+    width: 30%;
+    height: auto;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .discover-outfit__plus {
+    flex: none;
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  .discover-walk {
+    position: absolute;
+    inset-inline-end: 1.25rem;
+    inset-block-end: 1.25rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.45rem;
+  }
+
+  .discover-walk__frame {
+    position: relative;
+    display: grid;
+    width: 3.5rem;
+    aspect-ratio: 9 / 16;
+    place-items: center;
+    overflow: hidden;
+    border: 2px solid currentcolor;
+    border-radius: 3px;
+    background: oklch(0.2 0.014 55);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .discover-walk__frame:nth-child(1) {
+    transform: translateY(0.4rem) rotate(-7deg);
+  }
+
+  .discover-walk__frame:nth-child(2) {
+    width: 4.5rem;
+  }
+
+  .discover-walk__frame:nth-child(3) {
+    transform: translateY(0.4rem) rotate(7deg);
+  }
+
+  .discover-walk__play {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 999px;
+    color: var(--harissa);
+    background: var(--harissa-ink);
+  }
+
+  @media (min-width: 48rem) {
+    .discover {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    }
+
+    .discover__stylist {
+      grid-row: span 2;
+    }
+  }
+
+  @media (hover: hover) {
+    .shop-tile:hover .shop-tile__photo img {
+      transform: scale(1.06);
+    }
+
+    .discover-tile:hover .discover-stylist__tag {
+      rotate: 4deg;
+    }
+
+    .discover-tile:hover .discover-stylist__piece:nth-of-type(1) {
+      transform: translateX(-0.4rem) rotate(-3deg);
+    }
+
+    .discover-tile:hover .discover-stylist__piece:nth-of-type(3) {
+      transform: translateX(0.4rem) rotate(3deg);
+    }
+
+    .discover-tile:hover .discover-outfit__piece {
+      transform: translateY(-0.5rem);
+    }
+
+    .discover-tile:hover .discover-outfit__piece:nth-of-type(2) {
+      transform: translateY(-0.9rem);
+    }
+
+    .discover-tile:hover .discover-walk__frame:nth-child(1) {
+      transform: translate(-0.4rem, 0.2rem) rotate(-12deg);
+    }
+
+    .discover-tile:hover .discover-walk__frame:nth-child(2) {
+      transform: translateY(-0.4rem);
+    }
+
+    .discover-tile:hover .discover-walk__frame:nth-child(3) {
+      transform: translate(0.4rem, 0.2rem) rotate(12deg);
+    }
+  }
+
+  /* Le rideau d'univers et le bandeau du catalogue */
+  .universe-wipe {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: var(--u-ink);
+    background: var(--u-surface);
+    font-family: var(--font-title);
+    font-size: clamp(2.75rem, 11vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .universe-band {
+    overflow: hidden;
+    color: var(--u-ink);
+    background: var(--u-surface);
+    --hanger: color-mix(in oklch, var(--u-ink) 70%, transparent);
+  }
+
+  .universe-band__title {
+    padding-block: 2.5rem 1.25rem;
+    font-family: var(--font-title);
+    font-size: clamp(2.75rem, 11vw, 6rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    animation: rise-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .universe-band__garment {
+    flex: none;
+    width: clamp(6rem, 22vw, 11rem);
+    height: auto;
+    margin-block-end: -2.5rem;
+    transform-origin: 50% 0;
+    animation: garment-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (min-width: 48rem) {
+    .runway__card {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) auto;
+      align-items: center;
+      gap: 2rem;
+      padding: 1.25rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .armoire {
+      width: min(78%, 30rem);
+    }
+  }
+
+  @media (hover: hover) {
+    .armoire__item:hover {
+      transform: rotate(-3deg);
+    }
+
+    .armoire__item:hover .armoire__name {
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+    }
+
+  }
+
+  @supports (animation-timeline: view()) {
+    .card-rise {
+      animation: card-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+@keyframes armoire-left {
+  from {
+    transform: rotateY(0);
+  }
+  to {
+    transform: rotateY(-118deg);
+  }
+}
+
+@keyframes armoire-right {
+  from {
+    transform: rotateY(0);
+  }
+  to {
+    transform: rotateY(118deg);
+  }
+}
+
+@keyframes armoire-light {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes garment-settle {
+  0% {
+    transform: rotate(5deg);
+  }
+  35% {
+    transform: rotate(-3deg);
+  }
+  65% {
+    transform: rotate(1.4deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+/* Quatre pas depuis le fond du podium. */
+@keyframes figure-walk {
+  0% {
+    opacity: 0;
+    transform: var(--spot) translate3d(0, -4%, -820px);
+  }
+  22% {
+    opacity: 1;
+    transform: var(--spot) translate3d(0, -7%, -600px);
+  }
+  46% {
+    transform: var(--spot) translate3d(0, -2.5%, -360px);
+  }
+  72% {
+    transform: var(--spot) translate3d(0, -4.5%, -140px);
+  }
+  100% {
+    transform: var(--spot);
+  }
+}
+
+@keyframes figure-out {
+  to {
+    opacity: 0;
+    transform: var(--spot) translate3d(0, -2%, -320px);
+  }
+}
+
+@keyframes figure-turn {
+  40% {
+    transform: var(--spot) translate3d(0, 0, 70px) rotateY(-40deg);
+  }
+  100% {
+    opacity: 0;
+    transform: var(--spot) translate3d(-130%, 0, 140px) rotateY(-85deg);
+  }
+}
+
+@keyframes pose {
+  from {
+    transform: rotateY(-6deg);
+  }
+  to {
+    transform: rotateY(6deg);
+  }
+}
+
+@keyframes light-on {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes runway-timer {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0.35;
+    transform: translateY(1.5rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .armoire[data-state="intro"] .armoire__door--left {
+    animation: none;
+    transform: rotateY(-118deg);
+  }
+
+  .armoire[data-state="intro"] .armoire__door--right {
+    animation: none;
+    transform: rotateY(118deg);
+  }
+
+  .armoire__door,
+  .armoire__inside::after,
+  .showcase {
+    transition: none;
+  }
+
+  .armoire[data-state="intro"] .armoire__inside::after,
+  .armoire:not([data-state="closed"]) .armoire__rack > li,
+  .showcase__name,
+  .showcase__garment,
+  .showcase__card,
+  .runway__figure,
+  .runway__figure.is-leaving,
+  .runway__figure--center.is-leaving,
+  .runway__pose,
+  .runway__light,
+  .universe-band__title,
+  .universe-band__garment,
+  .card-rise,
   .hangtag,
   a.hangtag:hover,
   a.hangtag:focus-visible {

@@ -22,6 +22,7 @@ export default async function FollowingPage() {
     status: row.status,
     shopName: row.shops.name,
     shopSlug: row.shops.slug,
+    shopLogoPath: row.shops.logo_path,
     imagePath: row.product_images[0]?.path ?? null,
   }));
 

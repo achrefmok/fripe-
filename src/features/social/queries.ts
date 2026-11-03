@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
 const ARRIVAL_COLUMNS =
-  "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, governorate_id), product_images (path, position)";
+  "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, logo_path, governorate_id), product_images (path, position)";
 
 export async function isFollowing(userId: string, shopId: string) {
   const supabase = await createClient();

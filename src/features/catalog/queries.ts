@@ -7,7 +7,7 @@ import type { CategoryOption } from "./csv-import";
 import type { CatalogFilters } from "./schemas";
 
 const CARD_COLUMNS =
-  "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, governorate_id), product_images (path, position)";
+  "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, logo_path, governorate_id), product_images (path, position)";
 
 type RawCard = {
   id: string;
@@ -17,7 +17,7 @@ type RawCard = {
   condition: string | null;
   price_millimes: number | null;
   status: "available" | "reserved" | "sold";
-  shops: { name: string; slug: string; governorate_id: number };
+  shops: { name: string; slug: string; logo_path: string | null; governorate_id: number };
   product_images: { path: string; position: number }[];
 };
 
@@ -34,6 +34,7 @@ function toCard(row: RawCard) {
     status: row.status,
     shopName: row.shops.name,
     shopSlug: row.shops.slug,
+    shopLogoPath: row.shops.logo_path,
     imagePath: [...row.product_images].sort((a, b) => a.position - b.position)[0]?.path ?? null,
   };
 }
@@ -195,13 +196,41 @@ export async function getHomeFeed() {
   if (shops.error) throw shops.error;
   if (collections.error) throw collections.error;
 
+  // Chaque boutique se présente par son logo et ses trois dernières pièces.
+  const shopIds = shops.data.map((shop) => shop.id);
+  const [logos, previews] = shopIds.length
+    ? await Promise.all([
+        supabase.from("shops").select("id, logo_path").in("id", shopIds),
+        supabase
+          .from("products")
+          .select("shop_id, product_images (path, position)")
+          .in("shop_id", shopIds)
+          .eq("publication_status", "published")
+          .in("status", ["available", "reserved"])
+          .order("position", { referencedTable: "product_images" })
+          .limit(1, { referencedTable: "product_images" })
+          .order("published_at", { ascending: false })
+          .limit(shopIds.length * 8),
+      ])
+    : [{ data: [], error: null }, { data: [], error: null }];
+
+  if (logos.error) throw logos.error;
+  if (previews.error) throw previews.error;
+
   return {
     arrivals,
     recent,
     popular,
     categories: categories.filter((category) => !category.parentId),
     // Classement factuel : les boutiques qui proposent le plus de pièces publiées.
-    shops: shops.data,
+    shops: shops.data.map((shop) => ({
+      ...shop,
+      logoPath: logos.data.find((entry) => entry.id === shop.id)?.logo_path ?? null,
+      previews: previews.data
+        .filter((product) => product.shop_id === shop.id)
+        .flatMap((product) => product.product_images.slice(0, 1).map((image) => image.path))
+        .slice(0, 3),
+    })),
     collections: collections.data,
   };
 }
@@ -448,4 +477,62 @@ export async function listOfferableProducts(shopId: string) {
   if (error) throw error;
 
   return withReferences(data);
+}
+
+// Accueil : les dernières pièces de chaque catégorie racine, sous-catégories comprises.
+export async function getUniverseShelves(perShelf = 4) {
+  const supabase = createPublicClient();
+  const categories = await getCategories();
+  const roots = categories.filter((category) => !category.parentId);
+
+  return Promise.all(
+    roots.map(async (root) => {
+      const children = categories.filter((category) => category.parentId === root.id);
+      const { data, count, error } = await supabase
+        .from("products")
+        .select(CARD_COLUMNS, { count: "exact" })
+        .eq("publication_status", "published")
+        .in("status", ["available", "reserved"])
+        .in("category_id", [root.id, ...children.map((child) => child.id)])
+        .order("position", { referencedTable: "product_images" })
+        .limit(1, { referencedTable: "product_images" })
+        .order("published_at", { ascending: false })
+        .order("id")
+        .limit(perShelf);
+
+      if (error) throw error;
+
+      return {
+        ...root,
+        children: children.map(({ nameFr, nameAr }) => ({ nameFr, nameAr })),
+        products: (data as unknown as RawCard[]).map(toCard),
+        total: count ?? 0,
+      };
+    }),
+  );
+}
+
+// Accueil : les collections publiées deviennent les looks du défilé.
+export async function getRunwayLooks(limit = 6) {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("collections")
+    .select(`id, name, shops!inner (name, slug, logo_path), collection_products (position, products (${CARD_COLUMNS}))`)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  return data.flatMap((collection) => {
+    const items = (collection.collection_products as unknown as { position: number; products: RawCard | null }[])
+      .filter((item) => item.products && item.products.status !== "sold")
+      .sort((a, b) => a.position - b.position)
+      .map((item) => toCard(item.products!));
+    const shop = collection.shops as unknown as { name: string; slug: string; logo_path: string | null };
+
+    return items.length
+      ? [{ id: collection.id, name: collection.name, shopName: shop.name, shopSlug: shop.slug, shopLogoPath: shop.logo_path, products: items }]
+      : [];
+  });
 }

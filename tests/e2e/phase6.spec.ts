@@ -68,7 +68,10 @@ test.describe("jeu de données fictif", () => {
       expect(again.status, again.stderr).toBe(0);
 
       const { count } = await admin.from("products").select("id", { count: "exact", head: true }).in("shop_id", [shopA.id, shopB.id]);
-      expect(count).toBe(8);
+      expect(count).toBe(16);
+
+      const looks = await admin.from("collections").select("id", { count: "exact", head: true }).in("shop_id", [shopA.id, shopB.id]);
+      expect(looks.count).toBe(2);
 
       const { data: demoAdmin } = await admin.auth.admin.listUsers({ perPage: 1000 });
       const adminId = demoAdmin.users.find((user) => user.email === "admin.demo@example.com")!.id;
