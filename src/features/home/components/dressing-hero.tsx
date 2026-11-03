@@ -3,7 +3,7 @@
 import { ArrowDown, DoorClosed, DoorOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { CSSProperties, MouseEvent } from "react";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Wordmark } from "@/components/layout/brand";
 import { Link } from "@/i18n/navigation";
 import { universeFor } from "../universes";
@@ -34,15 +34,9 @@ function rememberOpened() {
   }
 }
 
-function Door({ side, onOpened }: { side: "left" | "right"; onOpened: () => void }) {
+function Door({ side }: { side: "left" | "right" }) {
   return (
-    <div
-      className={`armoire__door armoire__door--${side}`}
-      onAnimationEnd={() => {
-        rememberOpened();
-        onOpened();
-      }}
-    >
+    <div className={`armoire__door armoire__door--${side}`}>
       <div className="armoire__face armoire__face--front">
         <span className="armoire__panel" />
         <span className="armoire__handle" />
@@ -93,6 +87,30 @@ export function DressingHero({
   const state = toggled ?? (opened ? "open" : "intro");
   const closed = state === "closed";
   const rods = [categories.slice(0, Math.ceil(categories.length / 2)), categories.slice(Math.ceil(categories.length / 2))];
+  const doors = useRef<HTMLDivElement>(null);
+
+  // L'ouverture peut finir avant que JavaScript arrive, sur un téléphone lent : on lit l'état réel
+  // de l'animation plutôt que d'attendre un événement déjà passé.
+  useEffect(() => {
+    if (state !== "intro" || !doors.current) return;
+
+    let cancelled = false;
+    const animations = doors.current.getAnimations({ subtree: true });
+
+    Promise.all(animations.map((animation) => animation.finished))
+      .then(() => {
+        if (cancelled) return;
+        rememberOpened();
+        setToggled((current) => current ?? "open");
+      })
+      .catch(() => {
+        // Animation annulée (bouton pressé pendant l'ouverture) : l'état choisi par le visiteur prime.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state]);
 
   return (
     <section className="dressing">
@@ -144,9 +162,9 @@ export function DressingHero({
                     </div>
                   ))}
                 </nav>
-                <div className="armoire__doors" aria-hidden="true" dir="ltr">
-                  <Door side="left" onOpened={() => setToggled((current) => current ?? "open")} />
-                  <Door side="right" onOpened={() => setToggled((current) => current ?? "open")} />
+                <div ref={doors} className="armoire__doors" aria-hidden="true" dir="ltr">
+                  <Door side="left" />
+                  <Door side="right" />
                 </div>
               </div>
               <div className="armoire__feet" aria-hidden="true" />

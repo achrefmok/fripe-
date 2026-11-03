@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: { bodySizeLimit: "4.4mb" },
+    // Le cache de build Turbopack, restauré par Vercel d'un déploiement à l'autre, a resservi une
+    // feuille de style périmée (règles CSS ajoutées absentes en ligne). Chaque build repart de zéro.
+    turbopackFileSystemCacheForBuild: false,
   },
   async headers() {
     return [
