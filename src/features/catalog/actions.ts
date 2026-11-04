@@ -336,7 +336,7 @@ export async function importProductsCsv(
   const viewer = await activeViewer();
   if ("ok" in viewer) return viewer;
 
-  const results = validateCsvRows(parsedRows.data, await getCategories());
+  const results = validateCsvRows(parsedRows.data, await getCategories("all"));
   const products = results.flatMap((result) =>
     result.ok ? [{ ...result.product, shop_id: shopId, reference: result.product.reference ?? "" }] : [],
   );

@@ -30,7 +30,7 @@ export default async function ShopProductsPage({
 
   const [{ products, total }, categories, shop, t, locale] = await Promise.all([
     listShopProducts(shopId, tab, search, currentPage),
-    getCategories(),
+    getCategories("all"),
     getShop(shopId),
     getTranslations("sellerShop"),
     getLocale(),

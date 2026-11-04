@@ -10,10 +10,11 @@ import { formatPrice } from "@/lib/utils/price";
 
 export default async function NotificationsPage() {
   const viewer = await requireViewer("/compte/notifications");
-  const [notifications, preferences, t, locale] = await Promise.all([
+  const [notifications, preferences, t, market, locale] = await Promise.all([
     listNotifications(viewer.id),
     getPreferences(viewer.id),
     getTranslations("social"),
+    getTranslations("market"),
     getLocale(),
   ]);
 
@@ -31,6 +32,19 @@ export default async function NotificationsPage() {
           <ul className="divide-y border-y">
             {notifications.map((notification) => (
               <li key={notification.id}>
+                {notification.kind === "listing_message" ? (
+                  <Link
+                    href={`/compte/echanges/${notification.listing_thread_id}`}
+                    className={cn("block py-3", notification.read_at ? "text-muted-foreground" : "font-semibold")}
+                  >
+                    <span className="block">
+                      {market("notifListingMessage", { title: notification.listing_threads?.listing_title ?? "" })}
+                    </span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {formatDateTime(notification.created_at, locale)}
+                    </span>
+                  </Link>
+                ) : (
                 <Link
                   href={`/produit/${notification.product_id}`}
                   className={cn("block py-3", notification.read_at ? "text-muted-foreground" : "font-semibold")}
@@ -48,6 +62,7 @@ export default async function NotificationsPage() {
                     {formatDateTime(notification.created_at, locale)}
                   </span>
                 </Link>
+                )}
               </li>
             ))}
           </ul>

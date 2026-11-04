@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { failure, rpcFailure, success, validationFailure, type ActionResult } from "@/lib/utils/action-result";
 
 const reportSchema = z.object({
-  targetType: z.enum(["product", "video", "conversation", "shop", "account", "review"]),
+  targetType: z.enum(["product", "video", "conversation", "shop", "account", "review", "listing", "listing_thread"]),
   targetId: z.uuid(),
   reason: z.enum(["counterfeit", "inappropriate", "scam", "harassment", "other"]),
   details: z.string().trim().max(500, "textTooLong"),

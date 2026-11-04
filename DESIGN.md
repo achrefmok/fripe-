@@ -51,6 +51,12 @@ Chaque catégorie racine a sa matière, définie dans `src/features/home/univers
 
 `Garment` dessine les vêtements en SVG : un seul cintre, à plat, sans ombre de matière. Les tuiles « Découvrir autrement » en composent de petites scènes : une tenue sous une étiquette de budget, un assemblage pièce par pièce, trois écrans verticaux pour Fripe Walk.
 
+## Rubriques
+
+Trois expériences partagent le même vocabulaire. La mode garde le harissa ; la Marketplace prend le denim (`oklch(0.38 0.075 255)`), le Vide-Dressing la garance (`oklch(0.47 0.135 5)`), tous deux avec un texte papier au-dessus de 6:1. La couleur vit dans le bandeau de la rubrique, ses puces de catégorie et les tuiles qui y mènent, jamais sur les cartes. Une carte d'annonce est une carte de pièce, avec l'identité du vendeur : monogramme pour une boutique, silhouette kraft et « Particulier » pour une personne.
+
+Dans l'en-tête, les trois rubriques forment un seul groupe d'étiquettes. Sur téléphone, la barre du bas les porte, la vente en relief au centre. Les filtres montent du bas dans un panneau.
+
 ## Boutiques
 
 Chaque pièce affichée porte l'identité de sa boutique : `ShopMark` (`src/features/shops/components/shop-mark.tsx`) montre son logo, ou à défaut un monogramme. Le monogramme écarte les mots courants (« Boutique Démo A » donne « DA ») et sa couleur, tirée des matières des univers, reste la même pour une boutique donnée. Sur l'accueil, une boutique se présente par une vitrine de ses trois dernières pièces, le monogramme posé à cheval sur la vitrine.

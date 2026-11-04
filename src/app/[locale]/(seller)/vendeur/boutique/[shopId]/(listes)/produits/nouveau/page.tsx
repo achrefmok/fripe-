@@ -10,7 +10,7 @@ export default async function NewProductPage({
   await requireShopAccess(shopId);
 
   const [categories, t, locale] = await Promise.all([
-    getCategories(),
+    getCategories("all"),
     getTranslations("sellerShop"),
     getLocale(),
   ]);

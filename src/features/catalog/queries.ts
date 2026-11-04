@@ -9,6 +9,9 @@ import type { CatalogFilters } from "./schemas";
 const CARD_COLUMNS =
   "id, title, brand, size, condition, price_millimes, status, shops!inner (name, slug, logo_path, governorate_id), product_images (path, position)";
 
+// Le catalogue mode ne montre que des vêtements, même si une boutique vend aussi en Marketplace.
+const MODE_CARD_COLUMNS = `${CARD_COLUMNS}, categories!inner (section)`;
+
 type RawCard = {
   id: string;
   title: string | null;
@@ -77,14 +80,23 @@ export async function getReservationTtlMinutes() {
   return data ?? 120;
 }
 
-export async function getCategories(): Promise<(CategoryOption & { parentId: string | null })[]> {
+export type CategorySection = "mode" | "marketplace";
+
+// La mode par défaut : le catalogue, les alertes et les demandes ne voient jamais la Marketplace.
+// Les formulaires des boutiques demandent « all », une boutique pouvant vendre dans les deux.
+export async function getCategories(
+  section: CategorySection | "all" = "mode",
+): Promise<(CategoryOption & { parentId: string | null; section: CategorySection })[]> {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("categories")
-    .select("id, slug, name_fr, name_ar, parent_id")
+    .select("id, slug, name_fr, name_ar, parent_id, section")
     .eq("is_active", true)
     .order("position");
 
+  if (section !== "all") query = query.eq("section", section);
+
+  const { data, error } = await query;
   if (error) throw error;
 
   return data.map((category) => ({
@@ -93,6 +105,7 @@ export async function getCategories(): Promise<(CategoryOption & { parentId: str
     nameFr: category.name_fr,
     nameAr: category.name_ar,
     parentId: category.parent_id,
+    section: category.section,
   }));
 }
 
@@ -102,7 +115,8 @@ export async function searchProducts(filters: CatalogFilters) {
 
   let query = supabase
     .from("products")
-    .select(CARD_COLUMNS, { count: "exact" })
+    .select(MODE_CARD_COLUMNS, { count: "exact" })
+    .eq("categories.section", "mode")
     .eq("publication_status", "published")
     .in("status", ["available", "reserved"])
     .order("position", { referencedTable: "product_images" })
@@ -159,7 +173,8 @@ async function feed(
 
   let query = supabase
     .from("products")
-    .select(CARD_COLUMNS)
+    .select(MODE_CARD_COLUMNS)
+    .eq("categories.section", "mode")
     .eq("publication_status", "published")
     .in("status", ["available", "reserved"])
     .order("position", { referencedTable: "product_images" })

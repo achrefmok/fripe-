@@ -4,15 +4,19 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { productImageUrl } from "@/lib/utils/storage";
+import { listingImageUrl, productImageUrl } from "@/lib/utils/storage";
 
+// Partagée avec les annonces de particuliers, dont les photos vivent dans leur propre bucket.
 export function ProductGallery({
   images,
   title,
+  bucket = "product",
 }: {
   images: { id: string; path: string }[];
   title: string;
+  bucket?: "product" | "listing";
 }) {
+  const imageUrl = bucket === "listing" ? listingImageUrl : productImageUrl;
   const t = useTranslations("product");
   const [active, setActive] = useState(0);
   const current = images[active];
@@ -22,7 +26,7 @@ export function ProductGallery({
       <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
         {current ? (
           <Image
-            src={productImageUrl(current.path)}
+            src={imageUrl(current.path)}
             alt={t("photoAlt", { number: active + 1, title })}
             fill
             unoptimized
@@ -50,7 +54,7 @@ export function ProductGallery({
                 index === active ? "border-foreground" : "border-transparent",
               )}
             >
-              <Image src={productImageUrl(image.path)} alt="" fill unoptimized sizes="64px" className="object-cover" />
+              <Image src={imageUrl(image.path)} alt="" fill unoptimized sizes="64px" className="object-cover" />
             </button>
           ))}
         </div>

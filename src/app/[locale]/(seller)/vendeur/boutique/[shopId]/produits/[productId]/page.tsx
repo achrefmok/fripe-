@@ -20,7 +20,7 @@ export default async function EditProductPage({
 
   const [product, categories, t, locale] = await Promise.all([
     getProductForEdit(shopId, productId),
-    getCategories(),
+    getCategories("all"),
     getTranslations("sellerShop"),
     getLocale(),
   ]);

@@ -41,6 +41,9 @@ Une personne suspendue doit passer par le support. **Cette exception au droit de
 | Nom, téléphone et adresse de commande | **Conservés** jusqu'à une durée fixée | Voir ci-dessous |
 | Journal d'audit | **Conservé**, identifiants compris | Il est en ajout seul et prouve les décisions prises |
 | Signalements et décisions | **Conservés**, auteur retiré | Historique de modération |
+| Annonces de particuliers et leurs photos | Supprimées, photos purgées | Contenu personnel |
+| Messages d'échanges entre particuliers | Texte remplacé par `[message supprimé]`, échanges fermés | Contenu personnel ; l'autre personne garde le fil |
+| Favoris d'annonces, blocages entre personnes | Supprimés | Sans utilité pour autrui |
 
 Le journal d'audit garde l'identifiant technique du compte, et la fiche de la personne n'existe plus. Un signalement peut contenir un extrait figé de messages : il reste tel quel.
 

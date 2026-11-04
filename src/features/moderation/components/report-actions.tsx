@@ -19,6 +19,9 @@ const DECISIONS: Record<string, Decision[]> = {
   conversation: ["remove_content", "dismiss"],
   shop: ["suspend", "dismiss"],
   account: ["suspend", "dismiss"],
+  // Entre particuliers, la suspension vise le compte de la personne signalée.
+  listing: ["remove_content", "suspend", "dismiss"],
+  listing_thread: ["remove_content", "suspend", "dismiss"],
 };
 
 export function ReportActions({ reportId, targetType }: { reportId: string; targetType: string }) {
@@ -31,7 +34,7 @@ export function ReportActions({ reportId, targetType }: { reportId: string; targ
       ? t("dismiss")
       : value === "remove_content"
         ? t("removeContent")
-        : targetType === "account"
+        : targetType === "account" || targetType === "listing" || targetType === "listing_thread"
           ? t("suspendAccount")
           : t("suspendShop");
 

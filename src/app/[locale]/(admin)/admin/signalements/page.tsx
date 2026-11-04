@@ -10,6 +10,7 @@ const STATUSES = ["open", "resolved", "dismissed"] as const;
 
 type Snapshot = {
   title?: string;
+  seller?: string;
   shop?: string;
   client?: string;
   rating?: number;
@@ -65,7 +66,7 @@ export default async function AdminReportsPage({
                   <p className="text-sm text-muted-foreground">{formatDateTime(report.created_at, locale)}</p>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {[snapshot.title, snapshot.shop, snapshot.client].filter(Boolean).join(" · ")}
+                  {[snapshot.title, snapshot.seller, snapshot.shop, snapshot.client].filter(Boolean).join(" · ")}
                 </p>
                 {snapshot.rating ? (
                   <p className="text-sm">{snapshot.rating}/5{snapshot.comment ? ` · ${snapshot.comment}` : ""}</p>

@@ -13,6 +13,9 @@ Pour le juriste et l'exploitant. Elle complète [suppression-de-compte.md](suppr
 | Téléphone du profil | Supprimé | Plus d'utilité | Immédiat | `delete_my_account` |
 | Favoris, panier, suivis, alertes, préférences, tenues, notifications | Supprimés | Plus d'utilité | Immédiat | `delete_my_account` |
 | Blocages | Supprimés | Sans objet | Immédiat | `delete_my_account` |
+| Annonces de particuliers, photos | Supprimées | Contenu personnel | Immédiat, photos via la file de purge | Déclencheur `profiles_clean_listings` |
+| Messages d'échanges entre particuliers | Texte remplacé, échange fermé | Contenu personnel | Immédiat | Déclencheur `profiles_clean_listings` |
+| Messages de l'autre personne dans ces échanges | **Conservés** | Ils appartiennent à leur auteur | **[À VALIDER]** | Aucun |
 | Commande : pièces, prix, statut, dates | **Conservée**, sans lien vers le compte | Preuve de vente, comptabilité, vendeur | **[À VALIDER]** | `client_id` passe à vide |
 | Commande : nom du destinataire, téléphone | **Conservés** | Litige, livraison, comptabilité | **[À VALIDER]** | Anonymisés par `order_personal_data_retention_days`, vide aujourd'hui |
 | Adresse de livraison | **Conservée** | Idem | **[À VALIDER]** | Idem |

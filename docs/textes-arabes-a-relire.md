@@ -40,6 +40,8 @@ Fichier : [src/messages/ar.json](../src/messages/ar.json)
 | Clés | Contenu |
 |---|---|
 | `nav`, `home`, `footer`, `common` | Navigation et accueil |
+| `market` | Marketplace, Vide-Dressing, annonces de particuliers, échanges |
+| Catégories Marketplace (`supabase/migrations/20261106000002_marketplace.sql`) | Noms des rubriques et des caractéristiques |
 | `auth` | Connexion et inscription |
 | `catalog`, `product`, `conditions`, `cart`, `favorites` | Catalogue |
 | `reservations`, `requests` | Réservation et demandes |

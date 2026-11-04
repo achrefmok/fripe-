@@ -205,12 +205,79 @@ async function ensureLook(shop, shopId) {
   if (linkError) throw linkError;
 }
 
+// Annonces de particuliers : des objets dans la Marketplace, des vêtements dans le Vide-Dressing.
+const LISTINGS = {
+  clientA: [
+    ["marketplace", "Vélo de ville démo", "velos", 180000, "good", "velo-orange", { type_velo: "ville" }],
+    ["marketplace", "Vélo de route démo", "velos", 650000, "very_good", "velo-route", { type_velo: "route", taille_cadre: "m" }],
+    ["marketplace", "Réfrigérateur vintage démo", "refrigerateurs", 420000, "good", "refrigerateur-vintage", {}],
+    ["marketplace", "Canapé velours démo", "canapes", 750000, "very_good", "canape-vert", { matiere: "tissu" }],
+    ["marketplace", "Lampadaire démo", "luminaires", 90000, "like_new", "lampadaire", {}],
+    ["marketplace", "Casque audio démo", "audio-photo", 120000, "like_new", "casque-audio", {}],
+    ["vide_dressing", "Sac à main rouge démo", "sacs", 60000, "very_good", "sac-rouge", {}],
+  ],
+  clientB: [
+    ["marketplace", "Chaise scandinave démo", "chaises", 45000, "good", "chaise-noire", { matiere: "plastique" }],
+    ["marketplace", "Tabouret en bois démo", "chaises", 30000, "good", "tabouret-bois", { matiere: "bois" }],
+    ["marketplace", "Fauteuil capitonné démo", "canapes", 280000, "very_good", "fauteuil-blanc", { matiere: "tissu" }],
+    ["marketplace", "Suspension démo", "luminaires", 40000, "like_new", "suspension", {}],
+    ["marketplace", "Plante en pot démo", "decoration", 15000, "good", "plante", {}],
+    ["vide_dressing", "Sac à dos démo", "sacs", 35000, "good", "sac-a-dos", {}],
+    ["vide_dressing", "Chaussures en cuir démo", "chaussures", 70000, "very_good", "chaussures-cuir", {}],
+  ],
+};
+
+async function ensureListings(key, sellerId, cityId, governorateId) {
+  const { count } = await supabase.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", sellerId);
+  if (count) return;
+
+  for (const [section, title, categorySlug, price, condition, photo, attributes] of LISTINGS[key]) {
+    const { data: category, error: categoryError } = await supabase.from("categories").select("id").eq("slug", categorySlug).single();
+    if (categoryError) throw categoryError;
+
+    const { data: listing, error } = await supabase
+      .from("listings")
+      .insert({
+        seller_id: sellerId,
+        section,
+        category_id: category.id,
+        title,
+        description: "Annonce fictive pour les tests. Aucune vente réelle.",
+        condition,
+        price_millimes: price,
+        governorate_id: governorateId,
+        city_id: cityId,
+        attributes,
+      })
+      .select("id")
+      .single();
+
+    if (error) throw error;
+
+    const path = `${sellerId}/${listing.id}/${photo}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from("listing-images")
+      .upload(path, readFileSync(new URL(`./seed-photos/${photo}.jpg`, import.meta.url)), { contentType: "image/jpeg" });
+
+    if (uploadError) throw uploadError;
+
+    const { error: imageError } = await supabase.from("listing_images").insert({ listing_id: listing.id, path });
+    if (imageError) throw imageError;
+  }
+}
+
 const accounts = await ensureAccounts();
 
 for (const shop of SHOPS) {
   const shopId = await ensureShop(shop, accounts[shop.key]);
   await ensurePieces(shop, shopId);
   await ensureLook(shop, shopId);
+}
+
+for (const [key, citySlug] of [["clientA", "la-marsa"], ["clientB", "sfax-ville"]]) {
+  const { data: city, error } = await supabase.from("cities").select("id, governorate_id").eq("slug", citySlug).single();
+  if (error) throw error;
+  await ensureListings(key, accounts[key], city.id, city.governorate_id);
 }
 
 console.log(`Données fictives prêtes sur ${host}. Identifiants : ${output}. Le rôle administrateur reste à attribuer après enrôlement.`);

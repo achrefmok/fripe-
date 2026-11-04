@@ -11,7 +11,7 @@ export async function generateMetadata() {
 
 export default async function AccountPage() {
   const viewer = await requireViewer("/compte");
-  const [t, orders, reservations, favorites, requests, messaging, social, outfits] = await Promise.all([
+  const [t, orders, reservations, favorites, requests, messaging, social, outfits, market] = await Promise.all([
     getTranslations("account"),
     getTranslations("orders"),
     getTranslations("reservations"),
@@ -20,9 +20,12 @@ export default async function AccountPage() {
     getTranslations("messaging"),
     getTranslations("social"),
     getTranslations("outfits"),
+    getTranslations("market"),
   ]);
 
   const links = [
+    { href: "/compte/annonces", label: market("myListingsLink"), hint: market("myListingsHint") },
+    { href: "/compte/echanges", label: market("threadsLink"), hint: market("threadsHint") },
     { href: "/compte/commandes", label: orders("title"), hint: orders("emptyBody") },
     { href: "/compte/reservations", label: reservations("title"), hint: reservations("emptyBody") },
     { href: "/compte/favoris", label: favorites("title"), hint: favorites("emptyBody") },

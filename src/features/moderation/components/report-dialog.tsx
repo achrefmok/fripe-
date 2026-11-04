@@ -25,7 +25,7 @@ export function ReportDialog({
   variant = "button",
   label,
 }: {
-  targetType: "product" | "video" | "conversation" | "shop" | "account" | "review";
+  targetType: "product" | "video" | "conversation" | "shop" | "account" | "review" | "listing" | "listing_thread";
   targetId: string;
   variant?: "button" | "overlay";
   label?: string;

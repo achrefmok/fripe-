@@ -66,6 +66,12 @@ const KNOWN_RPC_ERRORS = new Set([
   "already_reviewed",
   "already_replied",
   "account_has_active_orders",
+  "invalid_category",
+  "invalid_attributes",
+  "invalid_city",
+  "own_listing",
+  "listing_limit",
+  "closed",
 ]);
 
 // Les RPC lèvent des codes métier stables ; tout le reste reste côté serveur.

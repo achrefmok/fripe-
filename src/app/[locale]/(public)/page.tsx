@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { HangTag } from "@/components/layout/hang-tag";
 import { ProductGrid, ProductRail } from "@/features/catalog/components/product-card";
 import { getHomeFeed, getRunwayLooks, getUniverseShelves } from "@/features/catalog/queries";
+import { getLatestListings } from "@/features/marketplace/queries";
 import { DressingHero } from "@/features/home/components/dressing-hero";
 import { Runway, type Look } from "@/features/home/components/runway";
 import { UniverseProvider } from "@/features/home/components/universe-context";
@@ -83,7 +84,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const currentLocale = await getLocale();
 
   // L'accueil reste affichable si la base est momentanément injoignable.
-  const [feed, shelfRows, lookRows] = await Promise.all([
+  const [feed, shelfRows, lookRows, marketLatest, dressingLatest, market] = await Promise.all([
     getHomeFeed().catch((error) => {
       console.error("Accueil : flux indisponible", error);
       return EMPTY_FEED;
@@ -96,7 +97,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       console.error("Accueil : looks indisponibles", error);
       return [];
     }),
+    getLatestListings("marketplace", 3).catch(() => []),
+    getLatestListings("vide_dressing", 3).catch(() => []),
+    getTranslations("market"),
   ]);
+
+  // Les deux autres rubriques, présentées par leurs vraies dernières annonces.
+  const sections = [
+    { href: "/marketplace", title: market("marketplaceTitle"), body: market("marketplaceBody"), items: marketLatest, tone: "sell-tile--marketplace" },
+    { href: "/vide-dressing", title: market("videDressingTitle"), body: market("videDressingBody"), items: dressingLatest, tone: "sell-tile--dressing" },
+  ];
 
   const ar = currentLocale === "ar";
   const shelves: Shelf[] = shelfRows.map((row) => ({
@@ -214,6 +224,29 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </ul>
         </Section>
       ) : null}
+
+      <Section title={t("sectionsTitle")} divided>
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+          {sections.map((section) => (
+            <li key={section.href}>
+              <Link href={section.href} className={`sell-tile ${section.tone} gap-4`}>
+                <span className="font-display text-3xl font-extrabold">{section.title}</span>
+                <span className="max-w-md leading-snug">{section.body}</span>
+                {section.items.length ? (
+                  <span className="mt-auto grid grid-cols-3 gap-1.5" aria-hidden="true">
+                    {section.items.map((item) => (
+                      <span key={item.id} className="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-black/15">
+                        {item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 12rem, 30vw" className="object-cover" /> : null}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
+                <ArrowRight className="size-5 rtl:-scale-x-100" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Section>
 
       <Section title={t("discoverTitle")} divided>
         <ul className="discover">

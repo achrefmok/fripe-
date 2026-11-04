@@ -1248,6 +1248,259 @@
   }
 }
 
+/* Marketplace et Vide-Dressing : chaque rubrique porte sa matière, comme les univers de la mode. */
+@layer components {
+  .section-band {
+    color: var(--s-ink);
+    background: var(--s-surface);
+  }
+
+  .section-band__title {
+    min-width: 0;
+    font-family: var(--font-title);
+    font-size: clamp(2.5rem, 10vw, 5.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: break-word;
+    animation: rise-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .section-band__cta {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding-inline: 1.1rem;
+    border-radius: 2px;
+    color: var(--s-surface);
+    background: var(--s-ink);
+    font-weight: 700;
+    white-space: nowrap;
+    touch-action: manipulation;
+  }
+
+  .section-chip {
+    display: inline-flex;
+    flex: none;
+    min-height: 2.5rem;
+    align-items: center;
+    padding-inline: 0.95rem;
+    border: 1.5px solid currentcolor;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .section-chip:hover {
+    background: color-mix(in oklch, currentcolor 14%, transparent);
+  }
+
+  .section-chip[aria-current="page"] {
+    color: var(--s-surface);
+    background: var(--s-ink);
+  }
+
+  .market-count {
+    display: inline-grid;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    padding-inline: 0.3rem;
+    border-radius: 999px;
+    color: var(--harissa-ink);
+    background: var(--harissa);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  /* Le panneau de filtres monte du bas et ne dépasse jamais l'écran. */
+  .market-sheet {
+    display: flex;
+    max-height: 88dvh;
+    flex-direction: column;
+    gap: 0;
+    border-radius: 2px 2px 0 0;
+  }
+
+  @media (min-width: 48rem) {
+    .market-sheet {
+      max-width: 48rem;
+      margin-inline: auto;
+    }
+  }
+
+  .market-chip {
+    display: inline-flex;
+    min-height: 2.75rem;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 0.6rem;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .market-chip:has(:checked) {
+    border-color: var(--foreground);
+    color: var(--background);
+    background: var(--foreground);
+  }
+
+  .market-chip:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Le particulier : une silhouette, là où la boutique a son monogramme. */
+  .seller-person {
+    display: inline-grid;
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    place-items: center;
+    border-radius: 2px;
+    color: oklch(0.2 0.014 55);
+    background: oklch(0.74 0.085 72);
+  }
+
+  .seller-person--lg {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .seller-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--foreground);
+    border-radius: 2px;
+  }
+
+  .listing-bubble {
+    max-width: min(85%, 32rem);
+    justify-self: start;
+    padding: 0.6rem 0.85rem;
+    border-radius: 2px;
+    background: var(--secondary);
+    animation: rise-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .listing-bubble--mine {
+    justify-self: end;
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+
+  .listing-composer {
+    position: sticky;
+    bottom: calc(4.25rem + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-block: 0.6rem;
+    background: var(--background);
+  }
+
+  @media (min-width: 48rem) {
+    .listing-composer {
+      bottom: 0;
+    }
+  }
+
+  /* En-tête : les trois rubriques forment un seul groupe, comme trois étiquettes côte à côte. */
+  .header-sections {
+    display: inline-flex;
+    margin-inline-end: 0.5rem;
+    border: 1.5px solid var(--foreground);
+    border-radius: 2px;
+  }
+
+  .header-section {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .header-section + .header-section {
+    border-inline-start: 1.5px solid var(--foreground);
+  }
+
+  .header-section:hover {
+    color: var(--background);
+    background: var(--foreground);
+  }
+
+  /* Barre du bas : vendre est au centre, en relief. */
+  .tabbar-sell {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    place-items: center;
+    margin-block-start: -1.1rem;
+    border-radius: 2px;
+    color: var(--harissa-ink);
+    background: var(--harissa);
+    box-shadow: 0 0 0 4px var(--background);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tabbar-link:active .tabbar-sell {
+    transform: scale(0.94);
+  }
+
+  .sell-tile {
+    display: flex;
+    height: 100%;
+    min-height: 13rem;
+    flex-direction: column;
+    padding: 1.5rem;
+    border-radius: 2px;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sell-tile--marketplace {
+    color: oklch(0.97 0.012 85);
+    background: oklch(0.38 0.075 255);
+  }
+
+  .sell-tile--dressing {
+    color: oklch(0.97 0.012 85);
+    background: oklch(0.47 0.135 5);
+  }
+
+  .sell-tile--pro {
+    color: oklch(0.955 0.016 88);
+    background: oklch(0.2 0.014 55);
+  }
+
+  @media (hover: hover) {
+    .sell-tile:hover {
+      transform: translateY(-0.25rem);
+    }
+  }
+}
+
 @keyframes armoire-left {
   from {
     transform: rotateY(0);
@@ -1388,6 +1641,8 @@
   .showcase__name,
   .showcase__garment,
   .showcase__card,
+  .section-band__title,
+  .listing-bubble,
   .runway__figure,
   .runway__figure.is-leaving,
   .runway__figure--center.is-leaving,

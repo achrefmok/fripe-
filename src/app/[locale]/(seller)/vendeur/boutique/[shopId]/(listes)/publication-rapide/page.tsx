@@ -11,7 +11,7 @@ export default async function QuickPublishPage({
   const { shopId } = await params;
   await requireShopAccess(shopId);
 
-  const [categories, t] = await Promise.all([getCategories(), getTranslations("sellerShop")]);
+  const [categories, t] = await Promise.all([getCategories("all"), getTranslations("sellerShop")]);
 
   return (
     <div className="grid max-w-2xl gap-8">
