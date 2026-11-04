@@ -127,7 +127,28 @@
     "linkInvalidBody": "انتهت صلاحيته أو استُعمل من قبل. اطلب رابطا جديدا.",
     "suspendedTitle": "الحساب موقوف",
     "suspendedBody": "أوقف فريق FRIPE حسابك. لا يمكنك القيام بأي عملية في الوقت الحالي.",
-    "signUpTerms": "بإنشاء حساب، أنت توافق على <terms>شروط الاستخدام</terms> و<privacy>سياسة الخصوصية</privacy>."
+    "signUpTerms": "بإنشاء حساب، أنت توافق على <terms>شروط الاستخدام</terms> و<privacy>سياسة الخصوصية</privacy>.",
+    "phone": "الهاتف",
+    "phoneHint": "يتصل بك الموزع على هذا الرقم، وتدفع عند الاستلام.",
+    "addressTitle": "عنوان التوصيل",
+    "addressOptional": "اختياري، يُستعمل عند الطلب",
+    "governorate": "الولاية",
+    "city": "المدينة",
+    "addressLine": "النهج، الرقم، العمارة",
+    "choose": "اختر",
+    "methodLabel": "طريقة الدخول",
+    "methodPassword": "كلمة السر",
+    "methodCode": "رمز عبر البريد",
+    "codeLead": "دون كلمة سر ولا تسجيل: نرسل إليك رمزًا من 6 أرقام. إن لم يكن لهذا العنوان حساب، يُنشأ عند أول دخول.",
+    "codeSend": "استلام الرمز",
+    "codeSentTo": "أُرسل الرمز إلى {email}. يبقى صالحًا ساعة واحدة؛ تفقّد أيضًا الرسائل غير المرغوب فيها.",
+    "code": "الرمز المكوّن من 6 أرقام",
+    "codeSubmit": "الدخول",
+    "codeResend": "إعادة إرسال الرمز",
+    "codeResent": "أُرسل رمز جديد.",
+    "codeChangeEmail": "تغيير العنوان",
+    "noAccountCode": "لا تريد إنشاء حساب؟",
+    "noAccountCodeLink": "ادخل برمز يصلك عبر البريد"
   },
   "validation": {
     "emailInvalid": "هذا البريد الإلكتروني غير صالح.",
@@ -162,7 +183,9 @@
     "closed": "هذه المحادثة مغلقة.",
     "conditionRequired": "اختر الحالة.",
     "governorateRequired": "اختر الولاية.",
-    "messageEmpty": "اكتب رسالة."
+    "messageEmpty": "اكتب رسالة.",
+    "phoneRequired": "أدخل رقم هاتفك.",
+    "codeInvalid": "يتكوّن الرمز من 6 أرقام."
   },
   "errors": {
     "invalidInput": "تحقق من الحقول المشار إليها.",
@@ -236,7 +259,10 @@
     "categoryRequired": "اختر فئة.",
     "conditionRequired": "اختر الحالة.",
     "governorateRequired": "اختر الولاية.",
-    "messageEmpty": "اكتب رسالة."
+    "messageEmpty": "اكتب رسالة.",
+    "invalid_rates": "إحدى التعريفات غير صالحة (من 0 إلى 100 د.ت).",
+    "emailCodeWrong": "الرمز غير صحيح أو منتهي الصلاحية. تحقّق منه أو اطلب رمزًا جديدًا.",
+    "codeTooSoon": "أُرسل رمز للتو. انتظر دقيقة قبل طلب رمز آخر."
   },
   "account": {
     "title": "حسابي",
@@ -484,7 +510,12 @@
     "confirmedBody": "المرجع {reference}. سيؤكد كل محل الجزء الخاص به.",
     "viewOrders": "عرض طلباتي",
     "back": "العودة إلى السلة",
-    "salesTerms": "بتقديم الطلبية، أنت توافق على <sales>شروط البيع</sales> و<returns>سياسة الإرجاع</returns>."
+    "salesTerms": "بتقديم الطلبية، أنت توافق على <sales>شروط البيع</sales> و<returns>سياسة الإرجاع</returns>.",
+    "deliveryToggle": "التوصيل إلى المنزل",
+    "deliveryPrice": "{price}، تُدفع عند الاستلام",
+    "deliveryPriceByArea": "السعر حسب ولايتك، تحدده FRIPE.",
+    "trackingNote": "يحصل كل توصيل على رقم تتبّع يظهر في طلباتك.",
+    "pickupFree": "الاستلام من المحل دون مصاريف: يُعلمك المحل عندما يكون الطلب جاهزًا."
   },
   "orderStatus": {
     "pending": "قيد الانتظار",
@@ -1224,5 +1255,55 @@
     "threadsHint": "محادثاتك حول إعلانات الأفراد.",
     "latestTitle": "أحدث الإعلانات",
     "you": "أنت"
+  },
+  "delivery": {
+    "adminTitle": "التوصيل",
+    "adminLead": "تُحدَّد مصاريف التوصيل هنا لكل المحلات. يدفع الحريف عند الاستلام، دون دفع إلكتروني.",
+    "defaultFee": "التعريفة الافتراضية (د.ت)",
+    "defaultFeeHint": "تُطبَّق على كل ولاية ليس لها تعريفة خاصة.",
+    "byGovernorate": "التعريفة حسب الولاية (د.ت)",
+    "byGovernorateHint": "اتركها فارغة لتطبيق التعريفة الافتراضية.",
+    "save": "حفظ التعريفات",
+    "saved": "تم حفظ التعريفات",
+    "shipmentsTitle": "الطرود الأخيرة",
+    "shipmentsEmpty": "لا طرود حاليًا.",
+    "shopTitle": "مصاريف التوصيل",
+    "shopLead": "تحددها FRIPE حسب ولاية الحريف، وتُدفع عند الاستلام."
+  },
+  "tracking": {
+    "title": "التتبّع",
+    "stepsLabel": "مراحل الطلب",
+    "copied": "تم نسخ رقم التتبّع",
+    "copyCode": "نسخ رقم التتبّع {code}",
+    "cancelledNotice": "أُلغي هذا الطلب.",
+    "notice": {
+      "failed": "تعذّر التوصيل. سيتصل بك المحل أو الموزع.",
+      "returned": "الطرد في طريق العودة إلى المحل."
+    },
+    "courier": "الموزع",
+    "eta": "الوصول المتوقع",
+    "position": "آخر موقع معروف",
+    "openMap": "عرض على الخريطة",
+    "history": "السجل",
+    "status": {
+      "ordered": "تم استلام الطلب",
+      "confirmed": "أكّده المحل",
+      "preparing": "قيد التحضير",
+      "handed_over": "سُلّم إلى الموزع",
+      "in_transit": "في الطريق",
+      "out_for_delivery": "قيد التوصيل",
+      "delivered": "تم التسليم",
+      "collected": "تم الاستلام من المحل",
+      "failed": "تعذّر التوصيل",
+      "returned": "عائد إلى المحل",
+      "cancelled": "ملغى"
+    },
+    "source": {
+      "system": "FRIPE",
+      "shop": "المحل",
+      "client": "أنت",
+      "courier": "الموزع",
+      "admin": "الإدارة"
+    }
   }
 }

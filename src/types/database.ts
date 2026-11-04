@@ -255,6 +255,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"delivery_zone_rates": {
+                  Row: {
+                    "fee_millimes": number,"governorate_id": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "fee_millimes": number,"governorate_id": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "fee_millimes"?: number,"governorate_id"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "delivery_zone_rates_governorate_id_fkey"
+      columns: ["governorate_id"]
+isOneToOne: true
+      referencedRelation: "governorates"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"drop_alerts": {
                   Row: {
                     "brands": (string)[],"category_ids": (string)[],"created_at": string,"followed_only": boolean,"id": string,"is_active": boolean,"max_price_millimes": number | null,"name": string,"shop_ids": (string)[],"sizes": (string)[],"updated_at": string,"user_id": string
@@ -899,17 +919,29 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_path": string | null,"created_at": string,"display_name": string,"id": string,"locale": Database["public"]['Enums']["app_locale"],"phone": string | null,"status": Database["public"]['Enums']["account_status"],"updated_at": string
+                    "address_line": string | null,"avatar_path": string | null,"city_id": number | null,"created_at": string,"display_name": string,"governorate_id": number | null,"id": string,"locale": Database["public"]['Enums']["app_locale"],"phone": string | null,"status": Database["public"]['Enums']["account_status"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_path"?: string | null,"created_at"?: string,"display_name": string,"id": string,"locale"?: Database["public"]['Enums']["app_locale"],"phone"?: string | null,"status"?: Database["public"]['Enums']["account_status"],"updated_at"?: string
+                    "address_line"?: string | null,"avatar_path"?: string | null,"city_id"?: number | null,"created_at"?: string,"display_name": string,"governorate_id"?: number | null,"id": string,"locale"?: Database["public"]['Enums']["app_locale"],"phone"?: string | null,"status"?: Database["public"]['Enums']["account_status"],"updated_at"?: string
                   }
                   Update: {
-                    "avatar_path"?: string | null,"created_at"?: string,"display_name"?: string,"id"?: string,"locale"?: Database["public"]['Enums']["app_locale"],"phone"?: string | null,"status"?: Database["public"]['Enums']["account_status"],"updated_at"?: string
+                    "address_line"?: string | null,"avatar_path"?: string | null,"city_id"?: number | null,"created_at"?: string,"display_name"?: string,"governorate_id"?: number | null,"id"?: string,"locale"?: Database["public"]['Enums']["app_locale"],"phone"?: string | null,"status"?: Database["public"]['Enums']["account_status"],"updated_at"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "profiles_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_governorate_id_fkey"
+      columns: ["governorate_id"]
+isOneToOne: false
+      referencedRelation: "governorates"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"rate_limits": {
                   Row: {
@@ -1032,6 +1064,46 @@ isOneToOne: true
       columns: ["shop_id"]
 isOneToOne: false
       referencedRelation: "shops"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shipment_events": {
+                  Row: {
+                    "created_at": string,"id": number,"latitude": number | null,"longitude": number | null,"note": string | null,"order_id": string,"source": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"latitude"?: number | null,"longitude"?: number | null,"note"?: string | null,"order_id": string,"source": string,"status": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"latitude"?: number | null,"longitude"?: number | null,"note"?: string | null,"order_id"?: string,"source"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shipment_events_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shipments": {
+                  Row: {
+                    "carrier": string | null,"courier_name": string | null,"courier_phone": string | null,"created_at": string,"eta": string | null,"latitude": number | null,"longitude": number | null,"order_id": string,"position_at": string | null,"status": string,"tracking_code": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "carrier"?: string | null,"courier_name"?: string | null,"courier_phone"?: string | null,"created_at"?: string,"eta"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"order_id": string,"position_at"?: string | null,"status"?: string,"tracking_code": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "carrier"?: string | null,"courier_name"?: string | null,"courier_phone"?: string | null,"created_at"?: string,"eta"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"order_id"?: string,"position_at"?: string | null,"status"?: string,"tracking_code"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shipments_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: true
+      referencedRelation: "orders"
       referencedColumns: ["id"]
     }
                   ]
@@ -1436,6 +1508,12 @@ isOneToOne: false
 "contact_request_client":
 { Args: { "p_body": string,"p_request_id": string }; Returns: string
                            },
+"courier_shipment":
+{ Args: { "p_tracking_code": string }; Returns: Json
+                           },
+"courier_update":
+{ Args: { "p_carrier"?: string,"p_courier_name"?: string,"p_courier_phone"?: string,"p_eta"?: string,"p_latitude"?: number,"p_longitude"?: number,"p_note"?: string,"p_status"?: string,"p_tracking_code": string }; Returns: Json
+                           },
 "create_report":
 { Args: { "p_details": string,"p_reason": string,"p_target_id": string,"p_target_type": Database["public"]['Enums']["report_target"] }; Returns: string
                            },
@@ -1453,6 +1531,11 @@ isOneToOne: false
                            },
 "delete_my_account":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"delivery_price_list":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "fee_millimes": number,"governorate_id": number
+            }[]
                            },
 "delivery_quote":
 { Args: { "p_governorate_id": number,"p_shop_ids": (string)[] }; Returns: {
@@ -1531,6 +1614,9 @@ isOneToOne: false
                            },
 "save_outfit":
 { Args: { "p_budget_millimes": number,"p_is_public": boolean,"p_items": Json,"p_name": string,"p_outfit_id": string }; Returns: string
+                           },
+"save_platform_delivery_rates":
+{ Args: { "p_default_millimes": number,"p_rates": Json }; Returns: undefined
                            },
 "send_listing_message":
 { Args: { "p_body": string,"p_thread_id": string }; Returns: undefined

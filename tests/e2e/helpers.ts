@@ -32,13 +32,31 @@ export async function latestMailLink(email: string, path: string) {
   return link as string;
 }
 
+// Le dernier code de connexion reçu, attendu jusqu'à ce qu'un e-mail de plus arrive.
+export async function latestMailCode(email: string, previous = 0) {
+  await expect.poll(async () => (await searchMail(email)).length, { timeout: 10_000 }).toBeGreaterThan(previous);
+
+  const [latest] = await searchMail(email);
+  const message = await (await fetch(`${MAILPIT}/api/v1/message/${latest.ID}`)).json();
+  const code = String(message.Text ?? message.HTML).match(/\b([0-9]{6})\b/)?.[1];
+
+  expect(code).toMatch(/^[0-9]{6}$/);
+  return code as string;
+}
+
+export async function mailCount(email: string) {
+  return (await searchMail(email)).length;
+}
+
 export async function signUpInUi(page: Page, email: string, name = "Lina Test") {
   await page.goto("/inscription");
   await page.getByLabel("Ton nom").fill(name);
   await page.getByLabel("Adresse e-mail").fill(email);
   await page.getByLabel("Mot de passe").fill(PASSWORD);
+  await page.getByLabel("Téléphone").fill("22 123 456");
   await page.getByRole("button", { name: "Créer mon compte" }).click();
-  await expect(page).toHaveURL(/verification-email/);
+  // Plus de confirmation obligatoire : le compte est ouvert tout de suite.
+  await expect(page).toHaveURL(/\/compte$/);
 }
 
 export async function createConfirmedUser(prefix: string, name = "Compte Test") {

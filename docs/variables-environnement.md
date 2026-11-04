@@ -9,6 +9,7 @@ Chaque environnement a ses propres valeurs. **Une valeur ne passe jamais d'un en
 | `NEXT_PUBLIC_SUPABASE_URL` | `http://127.0.0.1:54321` | Projet staging | Projet de production | Navigateur | Non |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Générée par `pnpm env:local` | Projet staging | Projet de production | Navigateur | Non, protégée par RLS |
 | `SUPABASE_SECRET_KEY` | Générée par `pnpm env:local` | Vercel, Sensitive | Vercel, Sensitive | **Serveur uniquement** | **Oui** |
+| `COURIER_API_TOKEN` | Absente, route `/api/livraison` désactivée | Vercel, Sensitive, et application des livreurs | Autre valeur | **Serveur uniquement** | **Oui** |
 | `MAINTENANCE_TOKEN` | Absente, route désactivée | Vercel, Sensitive, et planificateur | Autre valeur | **Serveur uniquement** | **Oui** |
 
 **Outils, jamais sur Vercel :**

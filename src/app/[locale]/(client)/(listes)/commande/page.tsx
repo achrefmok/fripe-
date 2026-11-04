@@ -30,6 +30,9 @@ export default async function CheckoutPage() {
           defaults={{
             recipientName: viewer.displayName,
             phone: viewer.phone?.replace(/^\+216/, "") ?? "",
+            governorateId: viewer.governorateId ? String(viewer.governorateId) : "",
+            cityId: viewer.cityId ? String(viewer.cityId) : "",
+            addressLine: viewer.addressLine ?? "",
           }}
         />
       </div>

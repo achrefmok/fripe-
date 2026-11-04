@@ -1,11 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { DeleteAccount } from "@/features/auth/components/delete-account";
 import { ProfileForm } from "@/features/auth/components/profile-form";
+import { getLocations } from "@/features/shops/queries";
 import { requireViewer } from "@/lib/permissions/viewer";
 
 export default async function ProfilePage() {
   const viewer = await requireViewer("/compte/profil");
-  const t = await getTranslations("account");
+  const [t, locations] = await Promise.all([getTranslations("account"), getLocations()]);
 
   return (
     <>
@@ -16,7 +17,11 @@ export default async function ProfilePage() {
             displayName: viewer.displayName,
             phone: viewer.phone?.replace(/^\+216/, "") ?? "",
             locale: viewer.locale,
+            governorateId: viewer.governorateId ? String(viewer.governorateId) : "",
+            cityId: viewer.cityId ? String(viewer.cityId) : "",
+            addressLine: viewer.addressLine ?? "",
           }}
+          locations={locations}
         />
       </div>
       <DeleteAccount />

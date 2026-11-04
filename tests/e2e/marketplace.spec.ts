@@ -302,7 +302,8 @@ test("commande : panier, livraison, traitement vendeur jusqu'à la livraison", a
   await page.context().clearCookies();
 
   await signIn(page, client.email, `/compte/commandes/${order!.id}`);
-  await expect(page.getByText("Livrée", { exact: true })).toBeVisible();
+  await expect(page.locator(".status-tag", { hasText: "Livrée" })).toBeVisible();
+  await expect(page.locator(".tracking__step.is-current")).toContainText("Livrée");
 });
 
 test("commande multi-boutiques : une commande par boutique, retrait gratuit", async ({ page }) => {

@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { CancelOrderButton } from "@/features/orders/components/order-actions";
 import { OrderDetail } from "@/features/orders/components/order-detail";
-import { getOrder } from "@/features/orders/queries";
+import { ShipmentTracking } from "@/features/orders/components/shipment-tracking";
+import { getOrder, getShipment } from "@/features/orders/queries";
 import { RatingStars } from "@/features/reviews/components/rating-stars";
 import { ReviewForm } from "@/features/reviews/components/review-form";
 import { getMyReviews } from "@/features/reviews/queries";
@@ -26,14 +27,16 @@ export default async function MyOrderPage({
 
   const delivered = order.status === "delivered";
 
-  const [reviews, t] = await Promise.all([
+  const [reviews, t, tracking] = await Promise.all([
     delivered ? getMyReviews(order.order_items.map((item) => item.id)) : new Map(),
     getTranslations("reviews"),
+    getShipment(order.id),
   ]);
 
   return (
     <>
       <OrderDetail order={order} />
+      <ShipmentTracking orderId={order.id} fulfillment={order.fulfillment} tracking={tracking} />
       {order.status === "pending" ? (
         <div className="mt-6">
           <CancelOrderButton orderId={order.id} />

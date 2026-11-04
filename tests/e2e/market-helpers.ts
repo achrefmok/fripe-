@@ -101,3 +101,15 @@ export async function productStatus(productId: string) {
   const { data } = await admin.from("products").select("status").eq("id", productId).single();
   return data!.status;
 }
+
+export async function setDeliveryGrid(defaultMillimes: number, zones: Record<string, number> = {}) {
+  await admin.from("platform_settings").update({ value: defaultMillimes }).eq("key", "default_delivery_fee_millimes");
+  await admin.from("delivery_zone_rates").delete().gte("governorate_id", 0);
+
+  for (const [slug, fee] of Object.entries(zones)) {
+    const { data } = await admin.from("governorates").select("id").eq("slug", slug).single();
+    await admin.from("delivery_zone_rates").insert({ governorate_id: data!.id, fee_millimes: fee });
+  }
+}
+
+export const resetDeliveryGrid = () => setDeliveryGrid(8000);

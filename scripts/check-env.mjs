@@ -40,6 +40,10 @@ if (env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY && !env.NEXT_PUBLIC_SUPABASE_PUBLIS
   problems.push("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY n'a pas la forme d'une clé publique");
 }
 
+if (env.COURIER_API_TOKEN && env.COURIER_API_TOKEN.length < 32) {
+  problems.push("COURIER_API_TOKEN : 32 caractères au moins");
+}
+
 if (env.MAINTENANCE_TOKEN && env.MAINTENANCE_TOKEN.length < 32) {
   problems.push("MAINTENANCE_TOKEN : 32 caractères au moins");
 }

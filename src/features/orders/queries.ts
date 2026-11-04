@@ -195,3 +195,73 @@ export async function listAllProducts(search: string, page: number, moderatedOnl
 
   return { products: data, total: count ?? 0 };
 }
+
+export type ShipmentStatus =
+  | "ordered"
+  | "confirmed"
+  | "preparing"
+  | "handed_over"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "failed"
+  | "returned"
+  | "cancelled";
+
+// Suivi d'une commande : le colis (livraison seulement) et l'historique des étapes.
+export async function getShipment(orderId: string) {
+  const supabase = await createClient();
+  const [{ data: shipment }, { data: events }] = await Promise.all([
+    supabase
+      .from("shipments")
+      .select("order_id, tracking_code, status, carrier, courier_name, courier_phone, latitude, longitude, position_at, eta")
+      .eq("order_id", orderId)
+      .maybeSingle(),
+    supabase
+      .from("shipment_events")
+      .select("id, status, source, note, created_at")
+      .eq("order_id", orderId)
+      .order("id"),
+  ]);
+
+  return {
+    shipment: shipment ? { ...shipment, status: shipment.status as ShipmentStatus } : null,
+    events: (events ?? []).map((event) => ({ ...event, status: event.status as ShipmentStatus })),
+  };
+}
+
+// La grille effective, gouvernorat par gouvernorat : ce que voient boutiques et clients.
+export async function getDeliveryPriceList() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delivery_price_list");
+  if (error) throw error;
+  return data;
+}
+
+// Réservé à l'administration : la grille enregistrée et le tarif par défaut.
+export async function getPlatformDeliverySettings() {
+  const supabase = await createClient();
+  const [{ data: rates, error }, { data: setting }] = await Promise.all([
+    supabase.from("delivery_zone_rates").select("governorate_id, fee_millimes"),
+    supabase.from("platform_settings").select("value").eq("key", "default_delivery_fee_millimes").maybeSingle(),
+  ]);
+
+  if (error) throw error;
+
+  return {
+    defaultMillimes: Number(setting?.value ?? 8000),
+    rates: new Map(rates.map((rate) => [rate.governorate_id, rate.fee_millimes])),
+  };
+}
+
+export async function listRecentShipments(limit = 50) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("shipments")
+    .select("order_id, tracking_code, status, courier_name, updated_at, orders (total_millimes, shops (name), order_groups (reference, recipient_name))")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data;
+}

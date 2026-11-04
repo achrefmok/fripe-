@@ -72,6 +72,7 @@ const KNOWN_RPC_ERRORS = new Set([
   "own_listing",
   "listing_limit",
   "closed",
+  "invalid_rates",
 ]);
 
 // Les RPC lèvent des codes métier stables ; tout le reste reste côté serveur.

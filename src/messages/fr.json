@@ -127,7 +127,28 @@
     "linkInvalidBody": "Il a expiré ou a déjà été utilisé. Demande-en un nouveau.",
     "suspendedTitle": "Compte suspendu",
     "suspendedBody": "Ton compte a été suspendu par l'équipe FRIPE. Tu ne peux plus effectuer d'action pour le moment.",
-    "signUpTerms": "En créant un compte, tu acceptes les <terms>conditions d'utilisation</terms> et la <privacy>politique de confidentialité</privacy>."
+    "signUpTerms": "En créant un compte, tu acceptes les <terms>conditions d'utilisation</terms> et la <privacy>politique de confidentialité</privacy>.",
+    "phone": "Téléphone",
+    "phoneHint": "Le livreur t'appelle à ce numéro ; tu paies à la livraison.",
+    "addressTitle": "Adresse de livraison",
+    "addressOptional": "facultative, reprise à la commande",
+    "governorate": "Gouvernorat",
+    "city": "Ville",
+    "addressLine": "Rue, numéro, immeuble",
+    "choose": "Choisir",
+    "methodLabel": "Façon de se connecter",
+    "methodPassword": "Mot de passe",
+    "methodCode": "Code par e-mail",
+    "codeLead": "Ni mot de passe ni inscription : nous t'envoyons un code à 6 chiffres. Sans compte pour cette adresse, il est créé à ta première connexion.",
+    "codeSend": "Recevoir mon code",
+    "codeSentTo": "Code envoyé à {email}. Il reste valable une heure ; pense à regarder les indésirables.",
+    "code": "Code à 6 chiffres",
+    "codeSubmit": "Me connecter",
+    "codeResend": "Renvoyer un code",
+    "codeResent": "Nouveau code envoyé.",
+    "codeChangeEmail": "Changer d'adresse",
+    "noAccountCode": "Pas envie de créer un compte ?",
+    "noAccountCodeLink": "Connecte-toi avec un code reçu par e-mail"
   },
   "validation": {
     "emailInvalid": "Cette adresse e-mail n'est pas valide.",
@@ -162,7 +183,9 @@
     "closed": "Cet échange est fermé.",
     "conditionRequired": "Choisis l'état.",
     "governorateRequired": "Choisis le gouvernorat.",
-    "messageEmpty": "Écris un message."
+    "messageEmpty": "Écris un message.",
+    "phoneRequired": "Indique ton numéro de téléphone.",
+    "codeInvalid": "Le code contient 6 chiffres."
   },
   "errors": {
     "invalidInput": "Vérifie les champs signalés.",
@@ -236,7 +259,10 @@
     "categoryRequired": "Choisis une catégorie.",
     "conditionRequired": "Choisis l'état.",
     "governorateRequired": "Choisis le gouvernorat.",
-    "messageEmpty": "Écris un message."
+    "messageEmpty": "Écris un message.",
+    "invalid_rates": "Un des tarifs n'est pas valable (0 à 100 DT).",
+    "emailCodeWrong": "Code incorrect ou expiré. Vérifie-le ou demande-en un nouveau.",
+    "codeTooSoon": "Un code vient de partir. Attends une minute avant d'en demander un autre."
   },
   "account": {
     "title": "Mon compte",
@@ -484,7 +510,12 @@
     "confirmedBody": "Référence {reference}. Chaque boutique va confirmer sa partie.",
     "viewOrders": "Voir mes commandes",
     "back": "Retour au panier",
-    "salesTerms": "En commandant, tu acceptes les <sales>conditions de vente</sales> et la <returns>politique de retour</returns>."
+    "salesTerms": "En commandant, tu acceptes les <sales>conditions de vente</sales> et la <returns>politique de retour</returns>.",
+    "deliveryToggle": "Livraison à domicile",
+    "deliveryPrice": "{price}, payés à la livraison",
+    "deliveryPriceByArea": "Le prix dépend de ton gouvernorat, fixé par FRIPE.",
+    "trackingNote": "Chaque livraison reçoit un numéro de suivi, visible dans tes commandes.",
+    "pickupFree": "Retrait en boutique, sans frais : la boutique te prévient quand c'est prêt."
   },
   "orderStatus": {
     "pending": "En attente",
@@ -1224,5 +1255,55 @@
     "threadsHint": "Tes conversations sur les annonces de particuliers.",
     "latestTitle": "Dernières annonces",
     "you": "Toi"
+  },
+  "delivery": {
+    "adminTitle": "Livraison",
+    "adminLead": "Les frais de livraison sont fixés ici, pour toutes les boutiques. Le client paie à la livraison ; aucun paiement en ligne.",
+    "defaultFee": "Tarif par défaut (DT)",
+    "defaultFeeHint": "Appliqué à tout gouvernorat sans tarif propre.",
+    "byGovernorate": "Tarif par gouvernorat (DT)",
+    "byGovernorateHint": "Laisse vide pour appliquer le tarif par défaut.",
+    "save": "Enregistrer les tarifs",
+    "saved": "Tarifs enregistrés",
+    "shipmentsTitle": "Colis récents",
+    "shipmentsEmpty": "Aucun colis pour l'instant.",
+    "shopTitle": "Frais de livraison",
+    "shopLead": "Fixés par FRIPE selon le gouvernorat du client, payés à la livraison."
+  },
+  "tracking": {
+    "title": "Suivi",
+    "stepsLabel": "Étapes de la commande",
+    "copied": "Numéro de suivi copié",
+    "copyCode": "Copier le numéro de suivi {code}",
+    "cancelledNotice": "Cette commande a été annulée.",
+    "notice": {
+      "failed": "La livraison n'a pas pu avoir lieu. La boutique ou le livreur te recontacte.",
+      "returned": "Le colis repart vers la boutique."
+    },
+    "courier": "Livreur",
+    "eta": "Arrivée prévue",
+    "position": "Dernière position connue",
+    "openMap": "Voir sur la carte",
+    "history": "Historique",
+    "status": {
+      "ordered": "Commande reçue",
+      "confirmed": "Confirmée par la boutique",
+      "preparing": "En préparation",
+      "handed_over": "Remise au livreur",
+      "in_transit": "En transit",
+      "out_for_delivery": "En cours de livraison",
+      "delivered": "Livrée",
+      "collected": "Retirée en boutique",
+      "failed": "Livraison échouée",
+      "returned": "Retour à la boutique",
+      "cancelled": "Annulée"
+    },
+    "source": {
+      "system": "FRIPE",
+      "shop": "boutique",
+      "client": "toi",
+      "courier": "livreur",
+      "admin": "administration"
+    }
   }
 }

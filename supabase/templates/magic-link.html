@@ -1,0 +1,13 @@
+<h2>Ton code FRIPE</h2>
+<p>Saisis ce code pour te connecter. Il reste valable une heure.</p>
+<p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+<p>Ou ouvre ce lien : <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .RedirectTo }}">Me connecter</a></p>
+<p>Si tu n'as rien demandé, ignore ce message.</p>
+<hr>
+<div dir="rtl">
+<h2>رمز الدخول إلى FRIPE</h2>
+<p>أدخل هذا الرمز للدخول. يبقى صالحًا ساعة واحدة.</p>
+<p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+<p>أو افتح هذا الرابط: <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .RedirectTo }}">الدخول</a></p>
+<p>إذا لم تطلب ذلك، تجاهل هذه الرسالة.</p>
+</div>

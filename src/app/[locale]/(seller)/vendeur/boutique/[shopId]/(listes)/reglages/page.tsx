@@ -1,11 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { DeliveryRatesForm } from "@/features/orders/components/delivery-fee-form";
+import { getDeliveryPriceList } from "@/features/orders/queries";
 import { LogoUploader } from "@/features/shops/components/shop-actions";
 import { EditShopForm } from "@/features/shops/components/shop-forms";
-import { getDeliveryRates, getLocations, getShop, getShopLogoUrl } from "@/features/shops/queries";
+import { getLocations, getShop, getShopLogoUrl } from "@/features/shops/queries";
 import { requireShopAccess } from "@/lib/permissions/viewer";
-import { millimesToInput } from "@/lib/utils/price";
+import { getLocale } from "next-intl/server";
+import { formatPrice } from "@/lib/utils/price";
 
 export default async function ShopSettingsPage({
   params,
@@ -13,11 +14,13 @@ export default async function ShopSettingsPage({
   const { shopId } = await params;
   const { role } = await requireShopAccess(shopId);
 
-  const [shop, locations, rates, t] = await Promise.all([
+  const [shop, locations, prices, t, delivery, locale] = await Promise.all([
     getShop(shopId),
     getLocations(),
-    getDeliveryRates(shopId),
+    getDeliveryPriceList(),
     getTranslations("seller"),
+    getTranslations("delivery"),
+    getLocale(),
   ]);
 
   if (!shop) {
@@ -50,20 +53,22 @@ export default async function ShopSettingsPage({
           }}
         />
       </div>
-      <div className="mt-10 border-t pt-6">
-        <DeliveryRatesForm
-          shopId={shop.id}
-          governorates={locations}
-          defaultFee={millimesToInput(rates.find((rate) => rate.governorate_id === null)?.fee_millimes)}
-          overrides={Object.fromEntries(
-            rates.flatMap((rate) =>
-              rate.governorate_id === null
-                ? []
-                : [[String(rate.governorate_id), millimesToInput(rate.fee_millimes)]],
-            ),
-          )}
-        />
-      </div>
+      {/* Les frais de livraison sont fixés par FRIPE : la boutique les voit, ne les règle plus. */}
+      <section className="mt-10 border-t pt-6">
+        <h3 className="font-display text-lg font-bold">{delivery("shopTitle")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{delivery("shopLead")}</p>
+        <dl className="mt-3 grid grid-cols-2 gap-x-6 text-sm sm:grid-cols-3">
+          {prices.map((price) => {
+            const governorate = locations.find((location) => location.id === price.governorate_id);
+            return governorate ? (
+              <div key={price.governorate_id} className="flex justify-between gap-2 border-b py-1.5">
+                <dt className="truncate text-muted-foreground">{locale === "ar" ? governorate.nameAr : governorate.nameFr}</dt>
+                <dd className="shrink-0 font-medium">{formatPrice(price.fee_millimes, locale)}</dd>
+              </div>
+            ) : null;
+          })}
+        </dl>
+      </section>
     </div>
   );
 }

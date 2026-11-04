@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { admin, createAdminUser, createConfirmedUser, signIn } from "./helpers";
-import { createApprovedShop, PNG, productStatus, seedProduct, unique } from "./market-helpers";
+import { createApprovedShop, PNG, productStatus, seedProduct, unique, resetDeliveryGrid, setDeliveryGrid } from "./market-helpers";
 
 test("favoris : ajout, liste, compteur de popularité, retrait", async ({ page }) => {
   const shop = await createApprovedShop();
@@ -60,15 +60,16 @@ test("panier : retrait d'une pièce et pièce devenue indisponible", async ({ pa
   await expect(page.getByRole("link", { name: "Passer la commande" })).toHaveCount(0);
 });
 
-test("frais de livraison : le tarif de la boutique s'applique à la commande", async ({ page }) => {
+test("frais de livraison : le tarif fixé par FRIPE s'applique à la commande", async ({ page }) => {
   const shop = await createApprovedShop();
   const product = await seedProduct(shop.id, { price: 30000 });
   const client = await createConfirmedUser("frais");
+  await setDeliveryGrid(8000, { tunis: 5500 });
 
+  // La boutique voit la grille de FRIPE et ne peut plus la changer.
   await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/reglages`);
-  await page.getByLabel("Frais de livraison (DT)").fill("5,500");
-  await page.getByRole("button", { name: "Enregistrer" }).last().click();
-  await expect(page.getByText("Frais enregistrés")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Frais de livraison" })).toBeVisible();
+  await expect(page.getByLabel("Frais de livraison (DT)")).toHaveCount(0);
   await page.context().clearCookies();
 
   await admin.from("cart_items").insert({ user_id: client.id, product_id: product.id });
@@ -83,6 +84,7 @@ test("frais de livraison : le tarif de la boutique s'applique à la commande", a
 
   const { data } = await admin.from("orders").select("delivery_fee_millimes, total_millimes").eq("client_id", client.id).single();
   expect(data).toEqual({ delivery_fee_millimes: 5500, total_millimes: 35500 });
+  await resetDeliveryGrid();
 });
 
 test("annulation par le vendeur, et retrait en boutique sans expédition", async ({ page }) => {

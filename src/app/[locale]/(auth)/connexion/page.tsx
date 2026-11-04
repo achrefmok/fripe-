@@ -11,7 +11,7 @@ export async function generateMetadata() {
 }
 
 export default async function SignInPage({ searchParams }: PageProps<"/[locale]/connexion">) {
-  const { next } = await searchParams;
+  const { next, methode } = await searchParams;
   const destination = safeInternalPath(next);
 
   if (await getViewer()) {
@@ -22,7 +22,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/[locale]/
 
   return (
     <AuthCard title={t("signInTitle")} lead={t("signInLead")}>
-      <SignInForm next={destination} />
+      <SignInForm next={destination} initialMethod={methode === "code" ? "code" : "password"} />
     </AuthCard>
   );
 }

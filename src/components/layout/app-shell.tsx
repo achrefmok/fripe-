@@ -13,6 +13,7 @@ import {
   Star,
   Store,
   Tags,
+  Truck,
   UserRound,
   Users,
 } from "lucide-react";
@@ -34,6 +35,7 @@ const ICONS = {
   plus: Plus,
   products: Package,
   listings: Sofa,
+  delivery: Truck,
   reports: Flag,
   store: Store,
   users: Users,

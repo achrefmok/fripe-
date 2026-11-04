@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ export function CheckoutForm({
 }: {
   items: Item[];
   locations: LocationOption[];
-  defaults: { recipientName: string; phone: string };
+  defaults: { recipientName: string; phone: string; governorateId: string; cityId: string; addressLine: string };
 }) {
   const t = useTranslations("checkout");
   const locale = useLocale();
@@ -30,9 +30,9 @@ export function CheckoutForm({
 
   const [recipientName, setRecipientName] = useState(defaults.recipientName);
   const [phone, setPhone] = useState(defaults.phone);
-  const [governorateId, setGovernorateId] = useState("");
-  const [cityId, setCityId] = useState("");
-  const [addressLine, setAddressLine] = useState("");
+  const [governorateId, setGovernorateId] = useState(defaults.governorateId);
+  const [cityId, setCityId] = useState(defaults.cityId);
+  const [addressLine, setAddressLine] = useState(defaults.addressLine);
   const [pickup, setPickup] = useState<Set<string>>(new Set());
   const [fees, setFees] = useState<Record<string, number>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -49,17 +49,26 @@ export function CheckoutForm({
   const feesKnown = !deliveryShops.length || deliveryShops.every(([shopId]) => shopId in fees);
   const deliveryTotal = deliveryShops.reduce((sum, [shopId]) => sum + (fees[shopId] ?? 0), 0);
 
+  function quote(value: string) {
+    if (!value) return;
+    startTransition(async () => {
+      const result = await quoteDelivery(shops.map(([shopId]) => shopId), Number(value));
+      if (result.ok) setFees(result.data);
+    });
+  }
+
+  // L'adresse du profil est déjà là : le prix de livraison s'affiche sans attendre.
+  useEffect(() => {
+    quote(defaults.governorateId);
+    // Une seule fois, à l'arrivée sur la page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function changeGovernorate(value: string) {
     setGovernorateId(value);
     setCityId("");
     setFees({});
-
-    if (value) {
-      startTransition(async () => {
-        const result = await quoteDelivery(shops.map(([shopId]) => shopId), Number(value));
-        if (result.ok) setFees(result.data);
-      });
-    }
+    quote(value);
   }
 
   function setMethod(shopId: string, isPickup: boolean) {
@@ -127,33 +136,47 @@ export function CheckoutForm({
 
       <section className="grid gap-3">
         <h2 className="font-display text-xl font-bold">{t("fulfillment")}</h2>
-        {shops.map(([shopId, shopName]) => (
-          <fieldset key={shopId} className="border-b pb-3">
-            <legend className="font-semibold">{shopName}</legend>
-            <div className="mt-1 flex flex-wrap gap-4 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`method-${shopId}`}
-                  className="size-4 accent-[var(--harissa)]"
-                  checked={!pickup.has(shopId)}
-                  onChange={() => setMethod(shopId, false)}
-                />
-                {t("delivery")}
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`method-${shopId}`}
-                  className="size-4 accent-[var(--harissa)]"
-                  checked={pickup.has(shopId)}
-                  onChange={() => setMethod(shopId, true)}
-                />
-                {t("pickup")}
-              </label>
-            </div>
-          </fieldset>
-        ))}
+        {shops.map(([shopId, shopName]) => {
+          const delivered = !pickup.has(shopId);
+          const price = shopId in fees ? t("deliveryPrice", { price: formatPrice(fees[shopId], locale) }) : t("deliveryPriceByArea");
+
+          return (
+            <fieldset key={shopId} className="border-b pb-3">
+              <legend className="font-semibold">{shopName}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <label className="delivery-toggle">
+                  <input
+                    type="radio"
+                    name={`method-${shopId}`}
+                    className="size-5 accent-[var(--harissa)]"
+                    checked={delivered}
+                    aria-describedby={`price-${shopId}`}
+                    onChange={() => setMethod(shopId, false)}
+                  />
+                  <span className="font-semibold">{t("deliveryToggle")}</span>
+                </label>
+                <label className="delivery-toggle">
+                  <input
+                    type="radio"
+                    name={`method-${shopId}`}
+                    className="size-5 accent-[var(--harissa)]"
+                    checked={!delivered}
+                    aria-describedby={`pickup-${shopId}`}
+                    onChange={() => setMethod(shopId, true)}
+                  />
+                  <span className="font-semibold">{t("pickup")}</span>
+                </label>
+              </div>
+              <p id={`price-${shopId}`} className={delivered ? "mt-2 text-sm text-muted-foreground" : "sr-only"}>
+                {price}
+              </p>
+              <p id={`pickup-${shopId}`} className={delivered ? "sr-only" : "mt-2 text-sm text-muted-foreground"}>
+                {t("pickupFree")}
+              </p>
+            </fieldset>
+          );
+        })}
+        <p className="text-sm text-muted-foreground">{t("trackingNote")}</p>
       </section>
 
       {needsAddress ? (

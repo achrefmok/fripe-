@@ -13,6 +13,9 @@ export type Viewer = {
   email: string | null;
   displayName: string;
   phone: string | null;
+  governorateId: number | null;
+  cityId: number | null;
+  addressLine: string | null;
   locale: "fr" | "ar";
   status: "active" | "suspended";
   isAdmin: boolean;
@@ -49,6 +52,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     email: claims.email ?? null,
     displayName: profile.data.display_name,
     phone: profile.data.phone,
+    governorateId: profile.data.governorate_id,
+    cityId: profile.data.city_id,
+    addressLine: profile.data.address_line,
     locale: profile.data.locale,
     status: profile.data.status,
     isAdmin: Boolean(admin.data),

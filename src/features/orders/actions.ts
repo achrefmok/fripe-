@@ -146,37 +146,31 @@ function feeToMillimes(fee: string) {
   return fee.trim() === "0" ? 0 : parsePriceToMillimes(fee);
 }
 
-// Tarif par défaut de la boutique, plus un tarif optionnel par gouvernorat. Vide = tarif par défaut.
-export async function saveDeliveryRates(
-  shopId: string,
+
+// Grille de la plateforme : un tarif par défaut et, au besoin, un tarif par gouvernorat.
+export async function savePlatformDeliveryRates(
   defaultFee: string,
-  overrides: Record<string, string>,
+  rates: Record<string, string>,
 ): Promise<ActionResult> {
-  if (!idSchema.safeParse(shopId).success) return failure("not_found");
-
   const fallback = feeToMillimes(defaultFee);
-  if (fallback === null) return failure("priceInvalid", { fee: "priceInvalid" });
+  if (fallback === null) return failure("invalidInput", { default: "priceInvalid" });
 
-  const rates: [string, number][] = [];
-
-  for (const [governorateId, value] of Object.entries(overrides)) {
+  const entries: { governorate_id: number; fee_millimes: number }[] = [];
+  for (const [governorateId, value] of Object.entries(rates)) {
     if (!value.trim()) continue;
-
     const fee = feeToMillimes(value);
-    if (fee === null) return failure("priceInvalid", { [governorateId]: "priceInvalid" });
-
-    rates.push([governorateId, fee]);
+    if (fee === null) return failure("invalidInput", { [governorateId]: "priceInvalid" });
+    entries.push({ governorate_id: Number(governorateId), fee_millimes: fee });
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("save_delivery_rates", {
-    p_shop_id: shopId,
-    p_default_fee: fallback,
-    p_overrides: Object.fromEntries(rates),
+  const { error } = await supabase.rpc("save_platform_delivery_rates", {
+    p_default_millimes: fallback,
+    p_rates: entries,
   });
 
   if (error) return rpcFailure(error);
 
-  revalidatePath(`/[locale]/vendeur/boutique/${shopId}`, "layout");
+  revalidatePath("/[locale]/admin/livraison", "page");
   return success();
 }

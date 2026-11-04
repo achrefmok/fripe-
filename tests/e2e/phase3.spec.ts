@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { admin, createAdminUser, createConfirmedUser, signIn } from "./helpers";
-import { clientFor, createApprovedShop, seedProduct, unique } from "./market-helpers";
+import { clientFor, createApprovedShop, resetDeliveryGrid, seedProduct, unique } from "./market-helpers";
 
 // Fabrique une vraie vidéo WebM dans le navigateur : aucun fichier binaire dans le dépôt.
 async function makeWebm(page: Page, width: number, height: number, seconds: number) {
@@ -169,17 +169,17 @@ test.describe("corrections de la phase 2", () => {
     await expect(page.getByText("Cette pièce a trouvé preneur")).toBeVisible();
   });
 
-  test("tarif de livraison propre à un gouvernorat", async ({ page }) => {
+  test("tarif de livraison propre à un gouvernorat, fixé par l'administration", async ({ page }) => {
     const shop = await createApprovedShop();
     const product = await seedProduct(shop.id, { price: 30000 });
     const client = await createConfirmedUser("tarif");
+    const manager = await createAdminUser();
 
-    await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/reglages`);
-    await page.getByLabel("Frais de livraison (DT)").fill("9");
-    await page.getByText("Tarifs par gouvernorat").click();
+    await signIn(page, manager.email, "/admin/livraison");
+    await page.getByLabel("Tarif par défaut (DT)").fill("9");
     await page.getByLabel("Tunis", { exact: true }).fill("4,500");
-    await page.getByRole("button", { name: "Enregistrer" }).last().click();
-    await expect(page.getByText("Frais enregistrés")).toBeVisible();
+    await page.getByRole("button", { name: "Enregistrer les tarifs" }).click();
+    await expect(page.getByText("Tarifs enregistrés")).toBeVisible();
     await page.context().clearCookies();
 
     await admin.from("cart_items").insert({ user_id: client.id, product_id: product.id });
@@ -191,6 +191,7 @@ test.describe("corrections de la phase 2", () => {
     await page.getByLabel("Gouvernorat").selectOption({ label: "Tunis" });
     await expect(page.getByText("4,500 DT", { exact: true })).toBeVisible();
     await expect(page.getByText("34,500 DT", { exact: true })).toBeVisible();
+    await resetDeliveryGrid();
   });
 });
 

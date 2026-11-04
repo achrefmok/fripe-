@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
@@ -15,12 +15,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { updateProfile } from "@/features/auth/actions";
+import { AddressFields } from "@/features/auth/components/address-fields";
+import type { LocationOption } from "@/features/shops/queries";
 import { profileSchema } from "@/features/auth/schemas";
 import { useFormAction } from "@/hooks/use-form-action";
 
-type ProfileDefaults = { displayName: string; phone: string; locale: "fr" | "ar" };
+type ProfileDefaults = {
+  displayName: string;
+  phone: string;
+  locale: "fr" | "ar";
+  governorateId: string;
+  cityId: string;
+  addressLine: string;
+};
 
-export function ProfileForm({ defaults }: { defaults: ProfileDefaults }) {
+export function ProfileForm({ defaults, locations }: { defaults: ProfileDefaults; locations: LocationOption[] }) {
   const t = useTranslations("account");
   const auth = useTranslations("auth");
   const common = useTranslations("common");
@@ -30,6 +39,7 @@ export function ProfileForm({ defaults }: { defaults: ProfileDefaults }) {
     toast.success(common("saved")),
   );
   const { errors } = form.formState;
+  const governorateId = String(useWatch({ control: form.control, name: "governorateId" }) ?? "");
 
   return (
     <form onSubmit={submit} noValidate className="grid gap-6">
@@ -59,6 +69,13 @@ export function ProfileForm({ defaults }: { defaults: ProfileDefaults }) {
           {...form.register("phone")}
         />
       </Field>
+      <AddressFields
+        locations={locations}
+        governorateId={governorateId}
+        register={form.register}
+        setValue={form.setValue}
+        errors={errors}
+      />
       <Field id="locale" label={t("locale")}>
         <Controller
           control={form.control}

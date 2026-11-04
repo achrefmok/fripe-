@@ -63,6 +63,7 @@ writeFileSync(
     SUPABASE_SECRET_KEY: status.SECRET_KEY,
     MAILPIT_URL: status.MAILPIT_URL,
     MAINTENANCE_TOKEN: randomBytes(24).toString("hex"),
+    COURIER_API_TOKEN: randomBytes(24).toString("hex"),
   }),
 );
 

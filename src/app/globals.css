@@ -1501,6 +1501,133 @@
   }
 }
 
+/* Livraison et suivi : une case franche, un chemin d'étapes lisible d'un coup d'œil. */
+@layer components {
+  .delivery-toggle {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .delivery-toggle:has(:checked) {
+    border-color: var(--foreground);
+  }
+
+  .delivery-toggle:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .tracking__code {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 0.9rem;
+    border: 1.5px solid var(--foreground);
+    border-radius: 2px;
+    font-family: var(--font-title);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .tracking__steps {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+    margin-top: 1.25rem;
+  }
+
+  .tracking__step {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.4rem;
+    text-align: center;
+  }
+
+  /* Le trait qui relie une étape à la suivante. */
+  .tracking__step + .tracking__step::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0.7rem;
+    inset-inline-end: calc(50% + 0.85rem);
+    width: calc(100% - 1.45rem);
+    height: 2px;
+    background: var(--border);
+  }
+
+  .tracking__step.is-done + .tracking__step.is-done::before {
+    background: var(--harissa);
+  }
+
+  .tracking__dot {
+    display: grid;
+    width: 1.4rem;
+    height: 1.4rem;
+    place-items: center;
+    border: 2px solid var(--border);
+    border-radius: 999px;
+    background: var(--background);
+    color: var(--harissa-ink);
+  }
+
+  .tracking__step.is-done .tracking__dot {
+    border-color: var(--harissa);
+    background: var(--harissa);
+  }
+
+  .tracking__step.is-current .tracking__dot {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--harissa) 25%, transparent);
+  }
+
+  .tracking__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--muted-foreground);
+  }
+
+  .tracking__step.is-done .tracking__label {
+    color: var(--foreground);
+  }
+
+  @media (max-width: 30rem) {
+    /* Sur petit écran, le chemin se lit de haut en bas. */
+    .tracking__steps {
+      grid-auto-flow: row;
+      gap: 0.6rem;
+    }
+
+    .tracking__step {
+      grid-template-columns: auto 1fr;
+      justify-items: start;
+      align-items: center;
+      gap: 0.75rem;
+      text-align: start;
+    }
+
+    .tracking__step + .tracking__step::before {
+      inset-block-start: -0.6rem;
+      inset-inline-start: 0.6rem;
+      inset-inline-end: auto;
+      width: 2px;
+      height: 0.6rem;
+    }
+
+    .tracking__label {
+      font-size: 0.875rem;
+    }
+  }
+}
+
 @keyframes armoire-left {
   from {
     transform: rotateY(0);

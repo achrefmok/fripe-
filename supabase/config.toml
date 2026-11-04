@@ -224,7 +224,8 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = true
+# FRIPE : désactivé, un e-mail non confirmé ne bloque rien ; le téléphone sert à la livraison.
+enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -418,6 +419,10 @@ enabled = true
 [auth.email.template.confirmation]
 subject = "Confirme ton compte FRIPE | أكّد حسابك في FRIPE"
 content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.magic_link]
+subject = "Ton code FRIPE | رمز الدخول إلى FRIPE"
+content_path = "./supabase/templates/magic-link.html"
 
 [auth.email.template.recovery]
 subject = "Nouveau mot de passe FRIPE | كلمة سر جديدة في FRIPE"

@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { getReferences } from "@/features/catalog/queries";
 import { OrderActions } from "@/features/orders/components/order-actions";
 import { OrderDetail } from "@/features/orders/components/order-detail";
-import { getOrder } from "@/features/orders/queries";
+import { ShipmentTracking } from "@/features/orders/components/shipment-tracking";
+import { getOrder, getShipment } from "@/features/orders/queries";
 import { nextOrderStatus } from "@/features/orders/schemas";
 import { requireShopAccess } from "@/lib/permissions/viewer";
 
@@ -22,7 +23,10 @@ export default async function ShopOrderPage({
     notFound();
   }
 
-  const references = await getReferences(order.order_items.map((item) => item.product_id));
+  const [references, tracking] = await Promise.all([
+    getReferences(order.order_items.map((item) => item.product_id)),
+    getShipment(order.id),
+  ]);
   const open = !["delivered", "cancelled"].includes(order.status);
 
   return (
@@ -37,6 +41,7 @@ export default async function ShopOrderPage({
           />
         </div>
       ) : null}
+      {tracking.shipment ? <ShipmentTracking orderId={order.id} fulfillment={order.fulfillment} tracking={tracking} compact /> : null}
     </div>
   );
 }

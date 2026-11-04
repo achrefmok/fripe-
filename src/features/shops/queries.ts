@@ -68,15 +68,6 @@ export async function getShopStats(shopId: string) {
   return data;
 }
 
-export async function getDeliveryRates(shopId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("delivery_rates")
-    .select("governorate_id, fee_millimes")
-    .eq("shop_id", shopId);
-
-  return data ?? [];
-}
 
 export async function getShopLogoUrl(path: string | null) {
   if (!path) return null;
