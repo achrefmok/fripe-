@@ -943,6 +943,111 @@
     box-shadow: 0 0 0 3px var(--background);
   }
 
+  .shop-tile__window {
+    position: relative;
+  }
+
+  .shop-tile__photo--cover {
+    grid-column: 1 / -1;
+    aspect-ratio: 9 / 4;
+  }
+
+  /* Sans pièce ni couverture : un portant vide, pas un trou. */
+  .shop-tile__window[data-empty] .shop-tile__photo {
+    background:
+      linear-gradient(var(--foreground), var(--foreground)) center 18% / 70% 2px no-repeat,
+      var(--secondary);
+  }
+
+  .shop-tile__empty {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.75rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .shop-tile__description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-block-start: -0.35rem;
+    padding: 0 1rem 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+
+  .shop-tile:focus-visible {
+    outline: 3px solid var(--harissa);
+    outline-offset: 3px;
+  }
+
+  .shop-tile__arrow {
+    transition: translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .shop-tile:hover .shop-tile__arrow,
+  .shop-tile:focus-visible .shop-tile__arrow {
+    translate: 0.25rem 0;
+  }
+
+  [dir="rtl"] .shop-tile:hover .shop-tile__arrow,
+  [dir="rtl"] .shop-tile:focus-visible .shop-tile__arrow {
+    translate: -0.25rem 0;
+  }
+
+  /* Annuaire des boutiques */
+  .shops-head {
+    display: grid;
+    gap: 1.75rem;
+    margin-block-end: 2.5rem;
+  }
+
+  /* Téléphone : la recherche sur toute la largeur, le gouvernorat et le bouton sur une ligne. */
+  .shops-filter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.85rem 0.75rem;
+    padding: 0.85rem 1rem 1rem;
+    border: 2px solid var(--foreground);
+    border-radius: 2px;
+  }
+
+  .shops-filter__search {
+    grid-column: 1 / -1;
+  }
+
+  .shops-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.25rem 1.25rem;
+  }
+
+  @media (min-width: 40rem) {
+    .shops-filter {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .shops-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .shops-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   /* Découvrir autrement */
   .discover {
     display: grid;

@@ -612,7 +612,19 @@
     "pieces": "القطع المنشورة",
     "noPieces": "لا توجد قطع منشورة لهذا المحل بعد.",
     "emptyCollection": "هذه المجموعة فارغة حاليا.",
-    "backToShop": "العودة إلى {shop}"
+    "backToShop": "العودة إلى {shop}",
+    "lead": "محلات فريب من كامل تونس، يراجع فريق FRIPE كلّ واحد منها قبل فتحه. ادخل واجهة وتصفّح آخر قطعها.",
+    "searchLabel": "اسم المحل",
+    "searchPlaceholder": "ابحث عن محل",
+    "governorateLabel": "الولاية",
+    "allGovernorates": "كل الولايات",
+    "filter": "عرض",
+    "reset": "عرض كل المحلات",
+    "resultCount": "{count, plural, =0 {لا يوجد أي محل} one {محل واحد} two {محلان} few {# محلات} many {# محلًا} other {# محل}}",
+    "piecesOnline": "{count, plural, =0 {لا توجد قطع معروضة بعد} one {قطعة واحدة معروضة} two {قطعتان معروضتان} few {# قطع معروضة} many {# قطعة معروضة} other {# قطعة معروضة}}",
+    "windowEmpty": "الواجهة قيد التحضير",
+    "noMatchTitle": "لا يوجد محل مطابق",
+    "noMatchBody": "جرّب اسمًا آخر أو ولاية أخرى."
   },
   "sellerShop": {
     "overview": "نظرة عامة",

@@ -11,7 +11,7 @@ import { UniverseProvider } from "@/features/home/components/universe-context";
 import { UniverseShowcase, type Shelf } from "@/features/home/components/universe-showcase";
 import { Garment } from "@/features/home/components/garment";
 import { universeFor } from "@/features/home/universes";
-import { ShopMark } from "@/features/shops/components/shop-mark";
+import { ShopTile } from "@/features/shops/components/shop-tile";
 import { Link } from "@/i18n/navigation";
 import { productImageUrl } from "@/lib/utils/storage";
 import Image from "next/image";
@@ -178,28 +178,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <ul className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 lg:grid-cols-3">
             {feed.shops.map((shop) => (
               <li key={shop.id}>
-                <Link href={`/boutique/${shop.slug}`} className="shop-tile">
-                  <span className="shop-tile__window" aria-hidden="true">
-                    {[0, 1, 2].map((slot) => (
-                      <span key={slot} className="shop-tile__photo">
-                        {shop.previews[slot] ? (
-                          <Image src={productImageUrl(shop.previews[slot])} alt="" fill unoptimized sizes="(min-width: 1024px) 9rem, 30vw" className="object-cover" />
-                        ) : null}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="shop-tile__label">
-                    <ShopMark name={shop.name} logoPath={shop.logoPath} size="lg" className="shop-tile__mark" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-display text-xl font-bold">{shop.name}</span>
-                      <span className="block truncate text-sm text-muted-foreground">
-                        {localizedName({ name_fr: shop.city_fr, name_ar: shop.city_ar }, currentLocale)} ·{" "}
-                        {t("shopPieces", { count: shop.product_count })}
-                      </span>
-                    </span>
-                    <ArrowRight className="size-5 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
-                  </span>
-                </Link>
+                <ShopTile
+                  name={shop.name}
+                  slug={shop.slug}
+                  logoPath={shop.logoPath}
+                  previews={shop.previews}
+                  place={localizedName({ name_fr: shop.city_fr, name_ar: shop.city_ar }, currentLocale)}
+                  pieces={t("shopPieces", { count: shop.product_count })}
+                />
               </li>
             ))}
           </ul>

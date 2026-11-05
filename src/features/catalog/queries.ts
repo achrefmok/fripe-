@@ -374,20 +374,93 @@ export async function getPublicShop(slug: string) {
   return data;
 }
 
-export async function listPublicShops(page: number) {
+export type PublicShopFilters = { q?: string; governorateId?: number };
+
+// L'annuaire : chaque boutique se présente comme sur l'accueil, par ses trois dernières pièces.
+export async function listPublicShops(page: number, filters: PublicShopFilters = {}) {
   const supabase = createPublicClient();
   const from = (page - 1) * CATALOG_PAGE_SIZE;
 
-  const { data, count, error } = await supabase
+  let query = supabase
     .from("shops")
-    .select("id, name, slug, logo_path, description, cities (name_fr, name_ar)", { count: "exact" })
-    .eq("status", "approved")
-    .order("name")
-    .range(from, from + CATALOG_PAGE_SIZE - 1);
+    .select(
+      "id, name, slug, logo_path, cover_path, description, governorate_id, cities (name_fr, name_ar), governorates (name_fr, name_ar)",
+      { count: "exact" },
+    )
+    .eq("status", "approved");
 
+  const search = filters.q?.replace(/[%_,()\\]/g, " ").trim();
+  if (search) query = query.ilike("name", `%${search}%`);
+  if (filters.governorateId) query = query.eq("governorate_id", filters.governorateId);
+
+  const { data, count, error } = await query.order("name").range(from, from + CATALOG_PAGE_SIZE - 1);
   if (error) throw error;
 
-  return { shops: data, total: count ?? 0 };
+  const shopIds = data.map((shop) => shop.id);
+  const online = (shopId: string) =>
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("shop_id", shopId)
+      .eq("publication_status", "published")
+      .in("status", ["available", "reserved"]);
+
+  // Un comptage par boutique : les droits par colonne de products ne permettent pas un comptage imbriqué.
+  const [counts, previews] = await Promise.all([
+    Promise.all(shopIds.map(online)),
+    shopIds.length
+      ? supabase
+          .from("products")
+          .select("shop_id, product_images (path, position)")
+          .in("shop_id", shopIds)
+          .eq("publication_status", "published")
+          .in("status", ["available", "reserved"])
+          .order("position", { referencedTable: "product_images" })
+          .limit(1, { referencedTable: "product_images" })
+          .order("published_at", { ascending: false })
+          .limit(shopIds.length * 6)
+      : { data: [], error: null },
+  ]);
+  if (previews.error) throw previews.error;
+  const failed = counts.find((result) => result.error);
+  if (failed?.error) throw failed.error;
+
+  return {
+    shops: data.map((shop, index) => ({
+      id: shop.id,
+      name: shop.name,
+      slug: shop.slug,
+      logoPath: shop.logo_path,
+      coverPath: shop.cover_path,
+      description: shop.description,
+      city: shop.cities,
+      governorate: shop.governorates,
+      productCount: counts[index].count ?? 0,
+      previews: previews.data
+        .filter((product) => product.shop_id === shop.id)
+        .flatMap((product) => product.product_images.slice(0, 1).map((image) => image.path))
+        .slice(0, 3),
+    })),
+    total: count ?? 0,
+  };
+}
+
+// Les gouvernorats où au moins une boutique est ouverte : le filtre ne propose rien de vide.
+export async function listShopGovernorates() {
+  const { data, error } = await createPublicClient()
+    .from("shops")
+    .select("governorate_id, governorates (name_fr, name_ar)")
+    .eq("status", "approved");
+  if (error) throw error;
+
+  const seen = new Map<number, { id: number; name_fr: string; name_ar: string; count: number }>();
+  for (const shop of data) {
+    if (!shop.governorates) continue;
+    const entry = seen.get(shop.governorate_id) ?? { id: shop.governorate_id, ...shop.governorates, count: 0 };
+    entry.count += 1;
+    seen.set(shop.governorate_id, entry);
+  }
+  return [...seen.values()].sort((a, b) => a.name_fr.localeCompare(b.name_fr, "fr"));
 }
 
 export async function getPublicCollection(collectionId: string) {

@@ -612,7 +612,19 @@
     "pieces": "Pièces en ligne",
     "noPieces": "Cette boutique n'a pas encore de pièce en ligne.",
     "emptyCollection": "Cette collection est vide pour le moment.",
-    "backToShop": "Retour à {shop}"
+    "backToShop": "Retour à {shop}",
+    "lead": "Des friperies de toute la Tunisie, chacune validée par l'équipe FRIPE avant d'ouvrir. Entre dans une vitrine, chine ses dernières pièces.",
+    "searchLabel": "Nom de la boutique",
+    "searchPlaceholder": "Rechercher une boutique",
+    "governorateLabel": "Gouvernorat",
+    "allGovernorates": "Tous les gouvernorats",
+    "filter": "Afficher",
+    "reset": "Voir toutes les boutiques",
+    "resultCount": "{count, plural, =0 {Aucune boutique} one {# boutique} other {# boutiques}}",
+    "piecesOnline": "{count, plural, =0 {pas encore de pièce en ligne} one {# pièce en ligne} other {# pièces en ligne}}",
+    "windowEmpty": "Vitrine en préparation",
+    "noMatchTitle": "Aucune boutique ne correspond",
+    "noMatchBody": "Essaie un autre nom ou un autre gouvernorat."
   },
   "sellerShop": {
     "overview": "Vue d'ensemble",
