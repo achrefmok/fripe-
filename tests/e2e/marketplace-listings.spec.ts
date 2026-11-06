@@ -181,12 +181,19 @@ test("une boutique vend aussi dans la Marketplace, sans toucher au catalogue mod
   await expect(page.getByText(product.title!)).toHaveCount(0);
 });
 
-test("mobile : trois rubriques et la vente dans la barre du bas", async ({ page }) => {
+test("mobile : trois rubriques, la vente et les vidéos dans la barre du bas, le compte en haut", async ({ page }) => {
   await page.goto("/");
   const tabbar = page.getByRole("navigation", { name: "Navigation principale" }).last();
-  for (const name of ["Mode", "Marketplace", "Vendre", "Vide-Dressing", "Compte"]) {
+  for (const name of ["Mode", "Marketplace", "Vendre", "Vide-Dressing", "Vidéos"]) {
     await expect(tabbar.getByRole("link", { name })).toBeVisible();
   }
+  await expect(tabbar.getByRole("link", { name: "Compte" })).toHaveCount(0);
+  await expect(page.getByRole("banner").getByRole("link", { name: "Compte" })).toBeVisible();
+
+  await tabbar.getByRole("link", { name: "Vidéos" }).click();
+  await expect(page).toHaveURL(/\/walk/);
+  await expect(page.getByRole("navigation", { name: "Navigation principale" }).last().getByRole("link", { name: "Vidéos" })).toHaveAttribute("aria-current", "page");
+  await page.goto("/");
 
   await tabbar.getByRole("link", { name: "Marketplace" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Marketplace" })).toBeVisible();
@@ -194,4 +201,12 @@ test("mobile : trois rubriques et la vente dans la barre du bas", async ({ page 
 
   await tabbar.getByRole("link", { name: "Vendre" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Que veux-tu vendre ?" })).toBeVisible();
+});
+
+test("arabe : la rubrique Marketplace s'appelle « سلع متنوعة »", async ({ page }) => {
+  await page.goto("/ar");
+  const tabbar = page.getByRole("navigation", { name: "التنقل الرئيسي" }).last();
+  await expect(tabbar.getByRole("link", { name: "سلع متنوعة" })).toBeVisible();
+  await expect(tabbar.getByRole("link", { name: "فيديو" })).toBeVisible();
+  await expect(page.getByText("السوق", { exact: true })).toHaveCount(0);
 });

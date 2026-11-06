@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { processStoragePurge } from "@/lib/maintenance";
 import { getViewer } from "@/lib/permissions/viewer";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import {
   failure,
@@ -69,6 +70,31 @@ function productFailure(error: { code?: string; message: string }) {
   if (error.code === "23514") return failure("product_incomplete");
   if (error.code === "42501") return failure("forbidden");
   return rpcFailure(error);
+}
+
+// Prix habituel d'une catégorie : la médiane des pièces en ligne, si au moins trois existent.
+// Une indication tirée des vraies annonces, jamais un prix imposé.
+export async function getPriceHint(categoryId: unknown): Promise<ActionResult<{ median: number; count: number } | null>> {
+  if (!idSchema.safeParse(categoryId).success) return success(null);
+
+  const { data, error } = await createPublicClient()
+    .from("products")
+    .select("price_millimes")
+    .eq("category_id", categoryId as string)
+    .eq("publication_status", "published")
+    .not("price_millimes", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(200);
+
+  if (error) return success(null);
+
+  const prices = data.map((row) => row.price_millimes!).sort((a, b) => a - b);
+  if (prices.length < 3) return success(null);
+
+  const middle = Math.floor(prices.length / 2);
+  const median = prices.length % 2 ? prices[middle] : Math.round((prices[middle - 1] + prices[middle]) / 2);
+  // Arrondi au demi-dinar : un prix lisible.
+  return success({ median: Math.max(500, Math.round(median / 500) * 500), count: prices.length });
 }
 
 export async function updateProduct(

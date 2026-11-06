@@ -84,7 +84,7 @@ export function needsCompression(file: Blob, info: VideoInfo) {
   return file.size > COMPRESS_ABOVE_BYTES || exceedsResolution(info);
 }
 
-function recorderType() {
+export function recorderType() {
   const types = ["video/mp4;codecs=avc1", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   return typeof MediaRecorder === "undefined"
     ? null

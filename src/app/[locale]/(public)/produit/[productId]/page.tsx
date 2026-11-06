@@ -15,6 +15,7 @@ import { Link } from "@/i18n/navigation";
 import { getViewer } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
 import { formatPrice } from "@/lib/utils/price";
+import { colorLabel } from "@/features/catalog/product-options";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/produit/[productId]">) {
   const { productId } = await params;
@@ -52,7 +53,7 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
   const details = [
     { label: t("size"), value: product.size },
     { label: t("brand"), value: product.brand },
-    { label: t("color"), value: product.color },
+    { label: t("color"), value: colorLabel(product.color, locale) },
     { label: t("condition"), value: product.condition && conditions(product.condition) },
   ].filter((detail) => detail.value);
 

@@ -24,14 +24,26 @@ test("vendeur : création, photos, modification et publication d'un produit", as
   await page.getByRole("button", { name: "Publier" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "manquant" })).toBeVisible();
 
-  await page.getByLabel("Catégorie").selectOption({ label: "Jeans" });
-  await page.getByLabel("État").selectOption({ label: "Très bon état" });
+  // Le formulaire se remplit surtout au doigt : rayon, catégorie, état, taille, couleur.
+  await page.getByRole("radiogroup", { name: "Catégorie · Mode" }).getByText("Bas", { exact: true }).click();
+  await page.getByRole("radiogroup", { name: "Précise" }).getByText("Jeans", { exact: true }).click();
+  await page.getByRole("radiogroup", { name: "État" }).getByText("Très bon état").click();
   await page.getByLabel("Prix (DT)").fill("35,500");
-  await page.getByLabel("Taille").fill("M");
-  await page.getByLabel("Marque").fill("Levis");
+  await page.getByRole("radiogroup", { name: "Tailles" }).getByText("M", { exact: true }).click();
+  await expect(page.locator("#size")).toHaveValue("M");
+  await page.getByRole("radiogroup", { name: "Couleurs" }).getByText("Bleu", { exact: true }).click();
+  await page.getByRole("radiogroup", { name: "Coupe" }).getByText("Droite", { exact: true }).click();
+  await page.locator("#brand").fill("Levis");
+  await page.getByRole("button", { name: "Rédiger la description à partir de mes choix" }).click();
+  await expect(page.getByLabel("Description")).toHaveValue(/Jeans de marque Levis. Taille M. Couleur : Bleu. Coupe : Droite./);
   await page.getByLabel("Défauts à signaler").fill("Petit accroc à la manche");
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Modifications enregistrées").first()).toBeVisible();
+
+  const productId = page.url().split("/").at(-1)!;
+  await expect
+    .poll(async () => (await admin.from("products").select("size, color, brand, attributes").eq("id", productId).single()).data)
+    .toMatchObject({ size: "M", color: "Bleu", brand: "Levis", attributes: { coupe: "droite" } });
 
   await page.getByRole("button", { name: "Publier" }).click();
   await expect(page.getByText("Photo manquante")).toBeVisible();
@@ -58,7 +70,7 @@ test("vendeur : création, photos, modification et publication d'un produit", as
 
   await expect(page.getByRole("heading", { name: title })).toBeVisible();
   await expect(page.getByText("35,500 DT").first()).toBeVisible();
-  await expect(page.getByText("Très bon état")).toBeVisible();
+  await expect(page.getByText("Très bon état", { exact: true })).toBeVisible();
   await expect(page.getByText("Petit accroc à la manche")).toBeVisible();
   await expect(page.getByText("Disponible")).toBeVisible();
 });

@@ -1,4 +1,7 @@
+import { Video } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { listOfferableProducts } from "@/features/catalog/queries";
 import { VideoRow } from "@/features/walk/components/video-row";
 import { VideoUploader } from "@/features/walk/components/video-uploader";
@@ -13,11 +16,12 @@ export default async function ShopVideosPage({
   const { shopId } = await params;
   await requireShopAccess(shopId);
 
-  const [videos, products, shop, t, locale] = await Promise.all([
+  const [videos, products, shop, t, studio, locale] = await Promise.all([
     listShopVideos(shopId),
     listOfferableProducts(shopId),
     getShop(shopId),
     getTranslations("walk"),
+    getTranslations("studio"),
     getLocale(),
   ]);
 
@@ -34,7 +38,20 @@ export default async function ShopVideosPage({
       </div>
 
       {shop?.status === "approved" ? (
-        <VideoUploader shopId={shopId} />
+        <div className="grid gap-5">
+          <Button asChild size="lg" className="h-16 justify-start text-lg">
+            <Link href={`/vendeur/boutique/${shopId}/videos/nouvelle`}>
+              <Video className="size-6" aria-hidden="true" />
+              {studio("create")}
+            </Link>
+          </Button>
+          <details className="border-t pt-4">
+            <summary className="cursor-pointer text-sm font-semibold">{studio("importInstead")}</summary>
+            <div className="mt-3">
+              <VideoUploader shopId={shopId} />
+            </div>
+          </details>
+        </div>
       ) : (
         <p className="text-sm text-muted-foreground">{t("shopNotApproved")}</p>
       )}

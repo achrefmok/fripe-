@@ -46,6 +46,11 @@ export const productSchema = z.object({
   reference: optionalText(40),
   description: optionalText(2000),
   defects: optionalText(500),
+  attributes: z
+    .record(z.string().regex(/^[a-z][a-z0-9_]{1,30}$/), z.string().trim().max(60, "textTooLong"))
+    .optional()
+    .transform((value) => Object.fromEntries(Object.entries(value ?? {}).filter(([, entry]) => entry !== "")))
+    .refine((value) => Object.keys(value).length <= 12, "invalid_attributes"),
 });
 
 export const productIdsSchema = z.array(z.uuid()).min(1).max(500);

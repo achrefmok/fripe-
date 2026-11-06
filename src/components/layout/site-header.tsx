@@ -1,6 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { AccountLink } from "./account-link";
 import { BrandLink } from "./brand";
 import { LocaleSwitch, ThemeToggle } from "./header-controls";
 
@@ -22,7 +23,7 @@ export function SiteHeader() {
             {t("shops")}
           </Link>
           <Link href="/walk" className="hidden px-3 py-2 text-sm font-semibold hover:text-harissa lg:inline-flex">
-            {t("walk")}
+            {t("videos")}
           </Link>
           <Link href="/stylist" className="hidden px-3 py-2 text-sm font-semibold hover:text-harissa xl:inline-flex">
             {t("stylist")}
@@ -38,6 +39,7 @@ export function SiteHeader() {
         <Link href="/panier" aria-label={t("cart")} className="inline-flex size-11 items-center justify-center hover:text-harissa">
           <ShoppingBag className="size-5" />
         </Link>
+        <AccountLink />
         <LocaleSwitch />
         <ThemeToggle />
       </div>

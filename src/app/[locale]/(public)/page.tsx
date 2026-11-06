@@ -5,6 +5,8 @@ import { HangTag } from "@/components/layout/hang-tag";
 import { ProductGrid, ProductRail } from "@/features/catalog/components/product-card";
 import { getHomeFeed, getRunwayLooks, getUniverseShelves } from "@/features/catalog/queries";
 import { getLatestListings } from "@/features/marketplace/queries";
+import { VideoRail } from "@/features/walk/components/video-rail";
+import { getWalkPage } from "@/features/walk/queries";
 import { DressingHero } from "@/features/home/components/dressing-hero";
 import { Runway, type Look } from "@/features/home/components/runway";
 import { UniverseProvider } from "@/features/home/components/universe-context";
@@ -84,7 +86,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const currentLocale = await getLocale();
 
   // L'accueil reste affichable si la base est momentanément injoignable.
-  const [feed, shelfRows, lookRows, marketLatest, dressingLatest, market] = await Promise.all([
+  const [feed, shelfRows, lookRows, marketLatest, dressingLatest, market, walk, walkT] = await Promise.all([
     getHomeFeed().catch((error) => {
       console.error("Accueil : flux indisponible", error);
       return EMPTY_FEED;
@@ -100,6 +102,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     getLatestListings("marketplace", 3).catch(() => []),
     getLatestListings("vide_dressing", 3).catch(() => []),
     getTranslations("market"),
+    getWalkPage(null).catch(() => ({ items: [], nextCursor: null })),
+    getTranslations("walk"),
   ]);
 
   // Les deux autres rubriques, présentées par leurs vraies dernières annonces.
@@ -152,6 +156,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <div className="rail text-ink dark:text-paper" aria-hidden="true" />
         <UniverseShowcase shelves={shelves} />
       </UniverseProvider>
+
+      {walk.items.length ? (
+        <Section title={t("videosTitle")} href="/walk" linkLabel={t("videosAll")}>
+          <VideoRail items={walk.items} locale={currentLocale} playLabel={walkT("play")} />
+        </Section>
+      ) : null}
 
       {looks.length ? (
         <Runway

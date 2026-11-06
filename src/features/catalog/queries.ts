@@ -534,11 +534,32 @@ export async function listShopProducts(
   return { products: await withReferences(data), total: count ?? 0 };
 }
 
+// Les marques déjà saisies par la boutique, les plus fréquentes d'abord : proposées en premier.
+export async function getShopBrands(shopId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("brand")
+    .eq("shop_id", shopId)
+    .not("brand", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(300);
+
+  if (error) return [];
+
+  const counts = new Map<string, number>();
+  for (const { brand } of data) {
+    const value = brand?.trim();
+    if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([brand]) => brand);
+}
+
 export async function getProductForEdit(shopId: string, productId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("id, shop_id, category_id, title, description, brand, size, color, condition, defects, price_millimes, status, publication_status, published_at, moderated_at, favorite_count, product_images (id, path, position)")
+    .select("id, shop_id, category_id, title, description, brand, size, color, condition, defects, attributes, price_millimes, status, publication_status, published_at, moderated_at, favorite_count, product_images (id, path, position)")
     .eq("id", productId)
     .eq("shop_id", shopId)
     .order("position", { referencedTable: "product_images" })

@@ -204,6 +204,8 @@ test.describe("Fripe Walk", () => {
     const video = await makeWebm(page, 1920, 1080, 2);
 
     await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/videos`);
+    // L'import d'un fichier filmé ailleurs est replié sous le studio.
+    await page.getByText("Ou importer une vidéo déjà filmée").click();
     await page.getByLabel("Description").fill("Nouveaux arrivages de vestes");
     await page.getByLabel("Choisir une vidéo").setInputFiles({ name: "a.webm", mimeType: "video/webm", buffer: video });
 
@@ -290,6 +292,8 @@ test.describe("Fripe Walk", () => {
   test("un fichier déguisé en vidéo est refusé", async ({ page }) => {
     const shop = await createApprovedShop();
     await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/videos`);
+    // L'import d'un fichier filmé ailleurs est replié sous le studio.
+    await page.getByText("Ou importer une vidéo déjà filmée").click();
 
     await page.getByLabel("Choisir une vidéo").setInputFiles({
       name: "faux.mp4",
@@ -320,6 +324,8 @@ test.describe("Fripe Walk", () => {
     });
 
     await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/videos`);
+    // L'import d'un fichier filmé ailleurs est replié sous le studio.
+    await page.getByText("Ou importer une vidéo déjà filmée").click();
     await page.getByLabel("Choisir une vidéo").setInputFiles({ name: "a.webm", mimeType: "video/webm", buffer: video });
 
     await expect(page.getByText("Tu n'as pas les droits pour cette action.")).toBeVisible({ timeout: 60_000 });
