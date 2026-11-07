@@ -2,7 +2,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public;
 
-select plan(34);
+select plan(37);
 
 -- Comptes de test (le trigger crée les profils).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -83,18 +83,10 @@ select lives_ok(
 
 select throws_ok(
   format(
-    $$select public.create_shop('Autre', 'boutique-a', null, null, %s::smallint, %s)$$,
+    $$select public.create_shop('Seconde', 'seconde-a', null, null, %s::smallint, %s)$$,
     pg_temp.gov('tunis'), pg_temp.city('la-marsa')
   ),
-  'P0001', 'slug_taken', 'un slug déjà pris est refusé'
-);
-
-select throws_ok(
-  format(
-    $$select public.create_shop('Mauvais lieu', 'mauvais-lieu', null, null, %s::smallint, %s)$$,
-    pg_temp.gov('sfax'), pg_temp.city('la-marsa')
-  ),
-  'P0001', 'invalid_location', 'une ville hors gouvernorat est refusée'
+  'P0001', 'shop_limit_reached', 'un vendeur n''a qu''une boutique'
 );
 
 select throws_ok(
@@ -114,6 +106,22 @@ select throws_ok(
 
 select pg_temp.logout();
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
+
+select throws_ok(
+  format(
+    $$select public.create_shop('Autre', 'boutique-a', null, null, %s::smallint, %s)$$,
+    pg_temp.gov('tunis'), pg_temp.city('la-marsa')
+  ),
+  'P0001', 'slug_taken', 'un slug déjà pris est refusé'
+);
+
+select throws_ok(
+  format(
+    $$select public.create_shop('Mauvais lieu', 'mauvais-lieu', null, null, %s::smallint, %s)$$,
+    pg_temp.gov('sfax'), pg_temp.city('la-marsa')
+  ),
+  'P0001', 'invalid_location', 'une ville hors gouvernorat est refusée'
+);
 
 select lives_ok(
   format(
@@ -247,6 +255,19 @@ select throws_ok(
   'P0001', 'forbidden', 'un compte suspendu ne crée pas de boutique'
 );
 select pg_temp.logout();
+
+-- Un seul propriétaire par compte, quel que soit le chemin.
+select throws_ok(
+  $$insert into public.shop_members (shop_id, user_id, role)
+    values ((select id from public.shops where slug = 'boutique-b'), (select user_id from public.shop_members where role = 'owner' and shop_id = (select id from public.shops where slug = 'boutique-a')), 'owner')$$,
+  '23505', null, 'un compte ne peut pas posséder deux boutiques'
+);
+
+select is(
+  (select value #>> '{}' from public.platform_settings where key = 'max_shops_per_user'),
+  '1',
+  'le réglage annonce une boutique par compte'
+);
 
 select * from finish();
 rollback;

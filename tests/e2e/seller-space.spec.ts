@@ -6,7 +6,7 @@ test("espace vendeur : trois actions, voir ma boutique, retour à l'application"
   const shop = await createApprovedShop();
   await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}`);
 
-  const sections = page.getByRole("navigation", { name: "Espace vendeur" });
+  const sections = page.getByRole("navigation", { name: "Sections de la boutique" });
   for (const name of ["Ma boutique", "Mes produits", "Mes vidéos"]) {
     await expect(sections.getByRole("link", { name })).toBeVisible();
   }

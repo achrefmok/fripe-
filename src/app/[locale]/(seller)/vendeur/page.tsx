@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { StatusTag } from "@/components/layout/status-tag";
 import { Button } from "@/components/ui/button";
 import { getMyShops } from "@/features/shops/queries";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { requireViewer } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
 
@@ -17,6 +17,11 @@ export default async function SellerHomePage() {
   const shops = await getMyShops(viewer.id);
   const t = await getTranslations("seller");
   const locale = await getLocale();
+
+  // Un vendeur, une boutique : pas de liste à parcourir.
+  if (shops.length === 1) {
+    return redirect({ href: `/vendeur/boutique/${shops[0].id}`, locale });
+  }
 
   if (!shops.length) {
     return (

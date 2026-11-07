@@ -245,7 +245,8 @@ select pg_temp.logout();
 
 select is(
   (select metadata ->> 'to' from public.audit_logs
-   where action = 'platform_settings.update' and entity_id = 'max_shops_per_user'),
+   where action = 'platform_settings.update' and entity_id = 'max_shops_per_user'
+   order by created_at desc limit 1),
   '6', 'changer un réglage journalise la nouvelle valeur'
 );
 

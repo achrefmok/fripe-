@@ -199,7 +199,7 @@
     "sessionExpired": "Ta session a expiré. Reconnecte-toi.",
     "forbidden": "Tu n'as pas les droits pour cette action.",
     "rate_limited": "Trop de demandes aujourd'hui. Réessaie plus tard.",
-    "shop_limit_reached": "Tu as atteint le nombre maximal de boutiques pour ce compte.",
+    "shop_limit_reached": "Tu as déjà ta boutique : un compte n'en a qu'une.",
     "invalid_location": "Cette ville n'appartient pas au gouvernorat choisi.",
     "slug_taken": "Cette adresse est déjà prise. Essaie une variante.",
     "invalid_transition": "Cette action n'est plus possible : le statut a changé.",
@@ -337,7 +337,9 @@
     "logoChoose": "Choisir une image",
     "logoSaved": "Logo mis à jour",
     "logoAlt": "Logo de {name}",
-    "statusClosedHelp": "Cette boutique est fermée."
+    "statusClosedHelp": "Cette boutique est fermée.",
+    "navMyShop": "Ma boutique",
+    "oneShopNote": "Une seule boutique par compte : choisis bien son nom, tu pourras le modifier ensuite."
   },
   "status": {
     "pending": "En attente",
@@ -776,7 +778,7 @@
     "deliveryByGovernorateHint": "Laisse vide pour appliquer le tarif ci-dessus.",
     "reviews": "Avis",
     "blocks": "Blocages",
-    "sections": "Espace vendeur",
+    "sections": "Sections de la boutique",
     "myShop": "Ma boutique",
     "myProducts": "Mes produits",
     "myVideos": "Mes vidéos",

@@ -38,7 +38,7 @@ cross join (select id, governorate_id from public.cities where slug = 'la-marsa'
 insert into public.shop_members (shop_id, user_id, role) values
   ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', 'owner'),
   ('20000000-0000-0000-0000-00000000000b', '10000000-0000-0000-0000-00000000000b', 'owner'),
-  ('20000000-0000-0000-0000-00000000000f', '10000000-0000-0000-0000-00000000000a', 'owner');
+  ('20000000-0000-0000-0000-00000000000f', '10000000-0000-0000-0000-00000000000a', 'manager');
 
 create function pg_temp.seed_product(p_id text, p_shop text, p_title text, p_price integer)
 returns void language sql as $$

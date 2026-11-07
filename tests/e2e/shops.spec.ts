@@ -69,13 +69,39 @@ test("refus avec motif, puis nouvelle demande", async ({ page }) => {
 });
 
 test("un slug déjà pris est signalé sur le champ", async ({ page }) => {
-  const seller = await createConfirmedUser("slug");
+  const first = await createConfirmedUser("slug");
   const name = `Double ${Date.now()}`;
-  await signIn(page, seller.email);
+  await signIn(page, first.email);
   await createShopInUi(page, name);
+  await page.context().clearCookies();
 
+  const second = await createConfirmedUser("slug2");
+  await signIn(page, second.email);
   await fillShopForm(page, name);
   await expect(page.getByText("Cette adresse est déjà prise.")).toBeVisible();
+});
+
+test("un vendeur, une boutique : l'espace vendeur mène droit à elle", async ({ page }) => {
+  const seller = await createConfirmedUser("unique");
+  await signIn(page, seller.email, "/vendeur");
+
+  // Sans boutique : seule la création est proposée.
+  const shell = page.getByRole("navigation", { name: "Espace vendeur" }).first();
+  await expect(shell.getByRole("link", { name: "Créer ma boutique" })).toBeVisible();
+  await expect(page.getByText("Une seule boutique par compte")).toHaveCount(0);
+
+  const shopId = await createShopInUi(page, `Unique ${Date.now()}`);
+
+  // Avec sa boutique : plus de liste ni de « Nouvelle boutique ».
+  await page.goto("/vendeur");
+  await expect(page).toHaveURL(new RegExp(`/vendeur/boutique/${shopId}$`));
+  await expect(page.getByRole("link", { name: "Nouvelle boutique" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Créer ma boutique" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Espace vendeur" }).first().getByRole("link", { name: "Ma boutique" }).first()).toBeVisible();
+
+  // La page de création renvoie à la boutique existante.
+  await page.goto("/vendeur/creer-boutique");
+  await expect(page).toHaveURL(new RegExp(`/vendeur/boutique/${shopId}$`));
 });
 
 test("modification de la boutique et envoi d'un logo", async ({ page }) => {
