@@ -101,7 +101,14 @@
     "discoverStylistTag": "Ton budget",
     "sectionsTitle": "Aussi sur FRIPE",
     "videosTitle": "En vidéo",
-    "videosAll": "Tout voir en vidéo"
+    "videosAll": "Tout voir en vidéo",
+    "pathsLabel": "Que veux-tu faire ?",
+    "chineBody": "Mode, objets et vide-dressing.",
+    "vendsBody": "Une pièce, un objet ou ta boutique.",
+    "heroHintClosed": "Touche la porte pour ouvrir le dressing.",
+    "heroHintOpen": "Touche un vêtement pour entrer dans son univers.",
+    "atelierTitle": "L'atelier",
+    "atelierLead": "Trois façons de chiner autrement : laisser composer, assembler soi-même, regarder les arrivages."
   },
   "auth": {
     "signInTitle": "Content de te revoir",

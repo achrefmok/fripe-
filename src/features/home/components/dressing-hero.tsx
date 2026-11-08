@@ -1,16 +1,16 @@
 "use client";
 
-import { ArrowDown, DoorClosed, DoorOpen } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { CSSProperties, MouseEvent } from "react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Wordmark } from "@/components/layout/brand";
 import { Link } from "@/i18n/navigation";
 import { universeFor } from "../universes";
 import { Garment } from "./garment";
 import { useUniverse } from "./universe-context";
 
 type Category = { id: string; slug: string; nameFr: string; nameAr: string };
+type DoorState = "intro" | "open" | "closed";
 
 const OPENED_KEY = "fripe-dressing-ouvert";
 
@@ -34,15 +34,41 @@ function rememberOpened() {
   }
 }
 
-function Door({ side }: { side: "left" | "right" }) {
+// La porte est le seul bouton du dressing : on la touche pour ouvrir, on la touche pour refermer.
+// La porte gauche porte le nom et l'état pour les lecteurs d'écran ; la droite fait le même geste
+// à la souris et au doigt sans doubler l'annonce.
+function Door({
+  side,
+  label,
+  expanded,
+  onToggle,
+}: {
+  side: "left" | "right";
+  label: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const primary = side === "left";
+
   return (
-    <div className={`armoire__door armoire__door--${side}`}>
-      <div className="armoire__face armoire__face--front">
+    <button
+      type="button"
+      className={`armoire__door armoire__door--${side}`}
+      onClick={onToggle}
+      aria-label={primary ? label : undefined}
+      aria-expanded={primary ? expanded : undefined}
+      aria-controls={primary ? "armoire-interieur" : undefined}
+      aria-hidden={primary ? undefined : true}
+      tabIndex={primary ? undefined : -1}
+    >
+      <span className="armoire__face armoire__face--front" aria-hidden="true">
         <span className="armoire__panel" />
         <span className="armoire__handle" />
-      </div>
-      <div className="armoire__face armoire__face--back">{side === "left" ? <span className="armoire__mirror" /> : null}</div>
-    </div>
+      </span>
+      <span className="armoire__face armoire__face--back" aria-hidden="true">
+        {primary ? <span className="armoire__mirror" /> : null}
+      </span>
+    </button>
   );
 }
 
@@ -70,8 +96,8 @@ function Hanging({ category, locale, closed }: { category: Category; locale: str
   );
 }
 
-// L'armoire s'ouvre à l'arrivée, une fois par visite, en CSS : rien n'attend JavaScript et les
-// portes ne bloquent jamais un clic. Le bouton la referme et la rouvre à la demande.
+// L'accueil s'ouvre sur deux chemins, chiner ou vendre, et sur le dressing. L'armoire s'ouvre à
+// l'arrivée, une fois par visite, en CSS : rien n'attend JavaScript.
 export function DressingHero({
   categories,
   locale,
@@ -83,11 +109,12 @@ export function DressingHero({
 }) {
   const t = useTranslations("home");
   const opened = useSyncExternalStore(subscribe, wasOpened, () => false);
-  const [toggled, setToggled] = useState<"open" | "closed" | null>(null);
-  const state = toggled ?? (opened ? "open" : "intro");
+  const [toggled, setToggled] = useState<Exclude<DoorState, "intro"> | null>(null);
+  const state: DoorState = toggled ?? (opened ? "open" : "intro");
   const closed = state === "closed";
   const rods = [categories.slice(0, Math.ceil(categories.length / 2)), categories.slice(Math.ceil(categories.length / 2))];
   const doors = useRef<HTMLDivElement>(null);
+  const toggle = () => setToggled(closed ? "open" : "closed");
 
   // L'ouverture peut finir avant que JavaScript arrive, sur un téléphone lent : on lit l'état réel
   // de l'animation plutôt que d'attendre un événement déjà passé.
@@ -104,7 +131,7 @@ export function DressingHero({
         setToggled((current) => current ?? "open");
       })
       .catch(() => {
-        // Animation annulée (bouton pressé pendant l'ouverture) : l'état choisi par le visiteur prime.
+        // Animation annulée (porte touchée pendant l'ouverture) : le geste du visiteur prime.
       });
 
     return () => {
@@ -113,39 +140,31 @@ export function DressingHero({
   }, [state]);
 
   return (
-    <section className="dressing">
-      <div className="mx-auto grid max-w-7xl items-center gap-x-12 gap-y-10 px-4 pt-8 pb-12 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:pt-12 lg:pb-16">
-        <div>
-          <h1 aria-label="FRIPE" className="dressing__title">
-            <Wordmark className="inline-block" />
+    <section className="dressing" aria-labelledby="accueil-titre">
+      <div className="dressing__grid mx-auto max-w-7xl px-4 md:px-6">
+        <div className="dressing__intro">
+          <h1 id="accueil-titre" className="dressing__title">
+            {t("tagline")}
           </h1>
-          <p className="mt-5 max-w-md font-display text-2xl leading-tight font-bold md:text-3xl">{t("tagline")}</p>
-          <p className="mt-3 max-w-sm text-base leading-relaxed opacity-90">{t("heroLead")}</p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            {hasRunway ? (
-              <a href="#defile" className="dressing__button dressing__button--solid">
-                {t("heroRunway")}
-                <ArrowDown className="size-4" aria-hidden="true" />
-              </a>
-            ) : null}
-            {categories.length ? (
-              <button
-                type="button"
-                className="dressing__button"
-                aria-controls="armoire-interieur"
-                aria-expanded={!closed}
-                onClick={() => setToggled(closed ? "open" : "closed")}
-              >
-                {closed ? <DoorOpen className="size-4" aria-hidden="true" /> : <DoorClosed className="size-4" aria-hidden="true" />}
-                {closed ? t("heroOpen") : t("heroClose")}
-              </button>
-            ) : null}
-          </div>
+          <nav aria-label={t("pathsLabel")} className="paths">
+            <Link href="/catalogue" className="path path--chine">
+              <span className="path__eyelet" aria-hidden="true" />
+              <span className="path__name">{t("tagBuyTitle")}</span>
+              <span className="path__body">{t("chineBody")}</span>
+              <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
+            </Link>
+            <Link href="/vendre" className="path path--vends">
+              <span className="path__eyelet" aria-hidden="true" />
+              <span className="path__name">{t("tagSellTitle")}</span>
+              <span className="path__body">{t("vendsBody")}</span>
+              <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
+            </Link>
+          </nav>
         </div>
 
         {categories.length ? (
-          <div>
+          <div className="dressing__stage">
             <div className="armoire" data-state={state}>
               <div className="armoire__body">
                 <nav id="armoire-interieur" aria-label={t("categoriesTitle")} className="armoire__inside" inert={closed}>
@@ -162,14 +181,22 @@ export function DressingHero({
                     </div>
                   ))}
                 </nav>
-                <div ref={doors} className="armoire__doors" aria-hidden="true" dir="ltr">
-                  <Door side="left" />
-                  <Door side="right" />
+                <div ref={doors} className="armoire__doors" dir="ltr">
+                  <Door side="left" label={closed ? t("heroOpen") : t("heroClose")} expanded={!closed} onToggle={toggle} />
+                  <Door side="right" label={closed ? t("heroOpen") : t("heroClose")} expanded={!closed} onToggle={toggle} />
                 </div>
               </div>
               <div className="armoire__feet" aria-hidden="true" />
             </div>
-            <p className="mt-6 text-center text-sm font-medium opacity-90">{t("heroHint")}</p>
+            <p className="dressing__hint">
+              {closed ? t("heroHintClosed") : t("heroHintOpen")}
+              {hasRunway ? (
+                <a href="#defile" className="dressing__runway">
+                  {t("heroRunway")}
+                  <ArrowDown className="size-3.5" aria-hidden="true" />
+                </a>
+              ) : null}
+            </p>
           </div>
         ) : null}
       </div>

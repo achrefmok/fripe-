@@ -14,10 +14,16 @@ test.describe("Le dressing", () => {
     await expect(page.getByRole("heading", { level: 3, name: "Bas" })).toBeVisible();
   });
 
-  test("le bouton ferme et rouvre l'armoire, fermée elle ne se parcourt pas", async ({ page }) => {
+  test("la porte elle-même ferme et rouvre l'armoire, fermée elle ne se parcourt pas", async ({ page }) => {
     await page.goto("/");
+    await expect(page.locator(".armoire")).toHaveAttribute("data-state", "open");
+
+    // Aucun bouton à côté du dressing : le geste se fait sur la porte.
+    await expect(page.locator(".dressing__intro button, .dressing__hint button")).toHaveCount(0);
+    await expect(page.locator(".armoire__door--left")).toHaveJSProperty("tagName", "BUTTON");
 
     await page.getByRole("button", { name: "Fermer le dressing" }).click();
+    await expect(page.getByText("Touche la porte pour ouvrir le dressing.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Ouvrir le dressing" })).toHaveAttribute("aria-expanded", "false");
     await expect(page.locator("#armoire-interieur")).toHaveAttribute("inert", "");
 
@@ -79,12 +85,27 @@ test.describe("Le dressing", () => {
     await expect(page.locator(".universe-band")).toHaveCount(0);
   });
 
-  test("le mot FRIPE s'aligne sur le début de ligne en arabe", async ({ page }) => {
+  test("en arabe, le titre et les deux chemins partent de la droite", async ({ page }) => {
     await page.goto("/ar");
 
-    const title = await page.locator(".dressing__title span").boundingBox();
+    const title = await page.locator(".dressing__title").boundingBox();
+    const first = await page.locator(".path").first().boundingBox();
     const width = page.viewportSize()!.width;
 
     expect(title!.x + title!.width).toBeGreaterThan(width * 0.75);
+    // « نحوّس » (Je chine) vient en premier, donc à droite.
+    expect(first!.x).toBeGreaterThan(width * 0.4);
+  });
+
+  test("les deux chemins ouvrent le catalogue et la vente", async ({ page }) => {
+    await page.goto("/");
+    const paths = page.getByRole("navigation", { name: "Que veux-tu faire ?" });
+
+    await paths.getByRole("link", { name: /Je chine/ }).click();
+    await expect(page).toHaveURL(/\/catalogue$/);
+
+    await page.goto("/");
+    await paths.getByRole("link", { name: /Je vends/ }).click();
+    await expect(page).toHaveURL(/\/vendre$/);
   });
 });

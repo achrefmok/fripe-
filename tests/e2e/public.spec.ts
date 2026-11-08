@@ -3,9 +3,13 @@ import { expect, test } from "@playwright/test";
 test("l'accueil affiche le message et les actions en français", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-  await expect(page.getByRole("link", { name: /Le catalogue/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Je chine/ })).toBeAttached();
-  await expect(page.getByRole("link", { name: /Je vends/ })).toBeAttached();
+  await expect(page.getByRole("heading", { level: 1, name: "Chaque pièce a déjà une histoire. Trouve la suivante." })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Je chine/ })).toHaveAttribute("href", "/catalogue");
+  await expect(page.getByRole("link", { name: /Je vends/ })).toHaveAttribute("href", "/vendre");
+  // Les outils restent présents, réunis dans l'atelier.
+  for (const name of [/AI Stylist/, /Outfit Builder/, /Fripe Walk/]) {
+    await expect(page.getByRole("region", { name: "L'atelier" }).getByRole("link", { name })).toBeAttached();
+  }
 });
 
 test("l'arabe s'affiche en RTL, et la langue se change depuis l'en-tête", async ({ page }) => {

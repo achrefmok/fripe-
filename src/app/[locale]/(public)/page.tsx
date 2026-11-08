@@ -1,7 +1,6 @@
 import { ArrowRight, Play } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
-import { HangTag } from "@/components/layout/hang-tag";
 import { ProductGrid, ProductRail } from "@/features/catalog/components/product-card";
 import { getHomeFeed, getRunwayLooks, getUniverseShelves } from "@/features/catalog/queries";
 import { getLatestListings } from "@/features/marketplace/queries";
@@ -20,18 +19,6 @@ import Image from "next/image";
 import { localizedName } from "@/lib/utils/format";
 
 export const revalidate = 60;
-
-function TagContent({ title, body }: { title: string; body: string }) {
-  return (
-    <span className="flex min-h-[15.5rem] flex-1 flex-col px-6 pb-6 pt-14 md:min-h-[17rem]">
-      <span className="font-display text-[2.6rem] leading-[0.95] font-extrabold">{title}</span>
-      <span className="mt-auto flex items-end justify-between gap-3 border-t border-current/25 pt-3 text-base leading-snug font-medium">
-        {body}
-        <ArrowRight className="size-5 shrink-0 rtl:-scale-x-100" />
-      </span>
-    </span>
-  );
-}
 
 // Les sections d'un même chapitre partagent un filet : on voit ce qui va ensemble.
 function Section({
@@ -183,6 +170,29 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Section>
       )}
 
+      <Section title={t("sectionsTitle")} divided>
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+          {sections.map((section) => (
+            <li key={section.href}>
+              <Link href={section.href} className={`sell-tile ${section.tone} gap-4`}>
+                <span className="font-display text-3xl font-extrabold">{section.title}</span>
+                <span className="max-w-md leading-snug">{section.body}</span>
+                {section.items.length ? (
+                  <span className="mt-auto grid grid-cols-3 gap-1.5" aria-hidden="true">
+                    {section.items.map((item) => (
+                      <span key={item.id} className="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-black/15">
+                        {item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 12rem, 30vw" className="object-cover" /> : null}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
+                <ArrowRight className="size-5 rtl:-scale-x-100" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
       {feed.shops.length ? (
         <Section title={t("shopsTitle")} href="/boutiques" linkLabel={t("seeAll")} divided>
           <ul className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -221,129 +231,80 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Section>
       ) : null}
 
-      <Section title={t("sectionsTitle")} divided>
-        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
-          {sections.map((section) => (
-            <li key={section.href}>
-              <Link href={section.href} className={`sell-tile ${section.tone} gap-4`}>
-                <span className="font-display text-3xl font-extrabold">{section.title}</span>
-                <span className="max-w-md leading-snug">{section.body}</span>
-                {section.items.length ? (
-                  <span className="mt-auto grid grid-cols-3 gap-1.5" aria-hidden="true">
-                    {section.items.map((item) => (
-                      <span key={item.id} className="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-black/15">
-                        {item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 12rem, 30vw" className="object-cover" /> : null}
-                      </span>
-                    ))}
-                  </span>
-                ) : null}
-                <ArrowRight className="size-5 rtl:-scale-x-100" aria-hidden="true" />
+
+      {/* L'atelier : les outils pour chiner autrement, présentés comme des étiquettes de collection. */}
+      <section className="atelier" aria-labelledby="atelier-titre">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="atelier__head">
+            <h2 id="atelier-titre" className="atelier__title">{t("atelierTitle")}</h2>
+            <p className="atelier__lead">{t("atelierLead")}</p>
+          </div>
+          <ul className="atelier__list">
+            <li>
+              <Link href="/stylist" className="atelier__row">
+                <span className="atelier__text">
+                  <span className="atelier__name">{t("discoverStylist")}</span>
+                  <span className="atelier__body">{t("discoverStylistBody")}</span>
+                </span>
+                {/* Une tenue complète sous une étiquette de budget. */}
+                <span className="atelier__visual atelier-stylist" aria-hidden="true">
+                  <span className="atelier-stylist__tag">{t("discoverStylistTag")}</span>
+                  <Garment universe={universeFor("hauts")} className="atelier-stylist__piece" />
+                  <Garment universe={universeFor("bas")} className="atelier-stylist__piece" />
+                  <Garment universe={universeFor("chaussures")} className="atelier-stylist__piece" />
+                </span>
+                <span className="atelier__go">
+                  {t("discoverTry")}
+                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+                </span>
               </Link>
             </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section title={t("discoverTitle")} divided>
-        <ul className="discover">
-          <li className="discover__stylist">
-            <Link href="/stylist" className="discover-tile discover-tile--ink">
-              <span className="discover-tile__name">{t("discoverStylist")}</span>
-              <span className="discover-tile__body">{t("discoverStylistBody")}</span>
-              <span className="discover-tile__go">
-                {t("discoverTry")}
-                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-              </span>
-              {/* Une tenue complète qui se compose sous une étiquette de budget. */}
-              <span className="discover-stylist" aria-hidden="true">
-                <span className="discover-stylist__tag">{t("discoverStylistTag")}</span>
-                <Garment universe={universeFor("hauts")} className="discover-stylist__piece" />
-                <Garment universe={universeFor("bas")} className="discover-stylist__piece" />
-                <Garment universe={universeFor("chaussures")} className="discover-stylist__piece" />
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/tenues/nouvelle" className="discover-tile discover-tile--kraft">
-              <span className="discover-tile__name">{t("discoverOutfit")}</span>
-              <span className="discover-tile__body">{t("discoverOutfitBody")}</span>
-              <span className="discover-tile__go">
-                {t("discoverTry")}
-                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-              </span>
-              <span className="discover-outfit" aria-hidden="true">
-                <Garment universe={universeFor("vestes-manteaux")} className="discover-outfit__piece" />
-                <span className="discover-outfit__plus">+</span>
-                <Garment universe={universeFor("robes")} className="discover-outfit__piece" />
-                <span className="discover-outfit__plus">+</span>
-                <Garment universe={universeFor("accessoires")} className="discover-outfit__piece" />
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/walk" className="discover-tile discover-tile--harissa">
-              <span className="discover-tile__name">{t("discoverWalk")}</span>
-              <span className="discover-tile__body">{t("discoverWalkBody")}</span>
-              <span className="discover-tile__go">
-                {t("discoverWatch")}
-                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-              </span>
-              {/* Trois écrans de vidéo verticale, avec les vraies dernières pièces. */}
-              <span className="discover-walk" aria-hidden="true">
-                {[0, 1, 2].map((slot) => (
-                  <span key={slot} className="discover-walk__frame">
-                    {feed.arrivals[slot]?.imagePath ? (
-                      <Image src={productImageUrl(feed.arrivals[slot].imagePath!)} alt="" fill unoptimized sizes="6rem" className="object-cover" />
-                    ) : null}
-                    {slot === 1 ? (
-                      <span className="discover-walk__play">
-                        <Play className="size-4 fill-current" />
-                      </span>
-                    ) : null}
-                  </span>
-                ))}
-              </span>
-            </Link>
-          </li>
-        </ul>
-      </Section>
-
-      <section className="mt-6 overflow-hidden bg-harissa text-harissa-ink" aria-labelledby="fin-titre">
-        <div className="rail text-ink dark:text-paper" aria-hidden="true" />
-        <div className="mx-auto max-w-7xl px-4 pt-12 pb-8 md:px-6 md:pt-16 md:pb-10">
-          <h2 id="fin-titre" className="max-w-2xl font-display text-4xl leading-[1.02] font-extrabold md:text-6xl">
-            {t("closeTitle")}
-          </h2>
-          <p className="mt-4 max-w-lg text-lg leading-relaxed">{t("closeBody")}</p>
-        </div>
-
-        <div className="rail-scroll mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 pb-10 text-ink md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-6 md:pb-14 dark:text-paper">
-          <HangTag
-            href="/catalogue"
-            className="w-[76vw] max-w-72 shrink-0 snap-center md:w-auto md:max-w-none"
-            bodyClassName="bg-kraft text-[oklch(0.2_0.014_55)]"
-            string="3rem"
-          >
-            <TagContent title={t("tagSoonTitle")} body={t("tagSoonBody")} />
-          </HangTag>
-          <HangTag
-            href="/inscription"
-            className="w-[76vw] max-w-72 shrink-0 snap-center md:w-auto md:max-w-none"
-            bodyClassName="bg-paper text-[oklch(0.2_0.014_55)]"
-            string="5.5rem"
-            delay={120}
-          >
-            <TagContent title={t("tagBuyTitle")} body={t("tagBuyBody")} />
-          </HangTag>
-          <HangTag
-            href="/vendeur/creer-boutique"
-            className="w-[76vw] max-w-72 shrink-0 snap-center md:w-auto md:max-w-none"
-            bodyClassName="bg-[oklch(0.2_0.014_55)] text-[oklch(0.955_0.016_88)]"
-            string="2.25rem"
-            delay={240}
-          >
-            <TagContent title={t("tagSellTitle")} body={t("tagSellBody")} />
-          </HangTag>
+            <li>
+              <Link href="/tenues/nouvelle" className="atelier__row">
+                <span className="atelier__text">
+                  <span className="atelier__name">{t("discoverOutfit")}</span>
+                  <span className="atelier__body">{t("discoverOutfitBody")}</span>
+                </span>
+                {/* Trois pièces qui s'assemblent. */}
+                <span className="atelier__visual atelier-outfit" aria-hidden="true">
+                  <Garment universe={universeFor("vestes-manteaux")} className="atelier-outfit__piece" />
+                  <Garment universe={universeFor("robes")} className="atelier-outfit__piece" />
+                  <Garment universe={universeFor("accessoires")} className="atelier-outfit__piece" />
+                </span>
+                <span className="atelier__go">
+                  {t("discoverTry")}
+                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/walk" className="atelier__row">
+                <span className="atelier__text">
+                  <span className="atelier__name">{t("discoverWalk")}</span>
+                  <span className="atelier__body">{t("discoverWalkBody")}</span>
+                </span>
+                {/* Trois écrans verticaux, avec les vraies dernières pièces. */}
+                <span className="atelier__visual atelier-walk" aria-hidden="true">
+                  {[0, 1, 2].map((slot) => (
+                    <span key={slot} className="atelier-walk__frame">
+                      {feed.arrivals[slot]?.imagePath ? (
+                        <Image src={productImageUrl(feed.arrivals[slot].imagePath!)} alt="" fill unoptimized sizes="5rem" className="object-cover" />
+                      ) : null}
+                      {slot === 1 ? (
+                        <span className="atelier-walk__play">
+                          <Play className="size-3.5 fill-current" />
+                        </span>
+                      ) : null}
+                    </span>
+                  ))}
+                </span>
+                <span className="atelier__go">
+                  {t("discoverWatch")}
+                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+                </span>
+              </Link>
+            </li>
+          </ul>
         </div>
       </section>
 

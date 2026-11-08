@@ -101,7 +101,14 @@
     "discoverStylistTag": "ميزانيتك",
     "sectionsTitle": "أيضًا على FRIPE",
     "videosTitle": "بالفيديو",
-    "videosAll": "شاهد كل الفيديوهات"
+    "videosAll": "شاهد كل الفيديوهات",
+    "pathsLabel": "ماذا تريد أن تفعل؟",
+    "chineBody": "موضة، سلع متنوعة وخزانة للبيع.",
+    "vendsBody": "قطعة، غرض أو محلك.",
+    "heroHintClosed": "المس الباب لتفتح الخزانة.",
+    "heroHintOpen": "المس قطعة لتدخل إلى عالمها.",
+    "atelierTitle": "الورشة",
+    "atelierLead": "ثلاث طرق أخرى للتحويس: نركّب لك، تركّب بنفسك، أو تشاهد الجديد."
   },
   "auth": {
     "signInTitle": "سعداء بعودتك",

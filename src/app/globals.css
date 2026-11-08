@@ -312,37 +312,166 @@
     background: var(--harissa);
   }
 
+  .dressing__grid {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: 2rem 2.75rem;
+  }
+
   .dressing__title {
-    margin-inline-start: -0.03em;
-    font-size: min(33.5vw, 9.5rem);
-    line-height: 0.8;
+    max-width: 15ch;
+    font-family: var(--font-title);
+    font-size: clamp(2.1rem, 9.5vw, 4.4rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
   }
 
-  .dressing__button {
-    display: inline-flex;
-    min-height: 2.75rem;
-    align-items: center;
-    gap: 0.5rem;
-    padding-inline: 1.25rem;
-    border: 2px solid currentcolor;
-    border-radius: 2px;
-    font-size: 0.95rem;
-    font-weight: 700;
+  /* Les deux chemins : deux étiquettes volantes, l'une écrue, l'autre à l'encre. */
+  .paths {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-block-start: 1.75rem;
+  }
+
+  .path {
+    --cut: 0.9rem;
+    position: relative;
+    display: flex;
+    min-height: 10.5rem;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2.5rem 1rem 1rem;
+    clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%, 0 var(--cut));
+    transform-origin: 50% 0;
     touch-action: manipulation;
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
+    transition: transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
-  .dressing__button:hover {
-    background: color-mix(in oklch, currentcolor 14%, transparent);
+  .path--chine {
+    color: oklch(0.2 0.014 55);
+    background: oklch(0.97 0.012 85);
   }
 
-  .dressing__button--solid,
-  .dressing__button--solid:hover {
-    border-color: var(--harissa-ink);
-    color: var(--harissa);
-    background: var(--harissa-ink);
+  .path--vends {
+    color: oklch(0.97 0.012 85);
+    background: oklch(0.2 0.014 55);
+  }
+
+  /* L'oeillet laisse voir le rouge du fond, comme une vraie étiquette percée. */
+  .path__eyelet {
+    position: absolute;
+    inset-block-start: 0.85rem;
+    inset-inline-start: 50%;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: var(--harissa);
+    box-shadow: 0 0 0 3px color-mix(in oklch, currentcolor 18%, transparent);
+    translate: -50% 0;
+  }
+
+  [dir="rtl"] .path__eyelet {
+    translate: 50% 0;
+  }
+
+  .path__name {
+    font-family: var(--font-title);
+    font-size: clamp(1.85rem, 8.5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+  }
+
+  .path__body {
+    margin-block-start: 0.55rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+    opacity: 0.78;
+  }
+
+  .path__arrow {
+    position: absolute;
+    inset-block-start: 0.8rem;
+    inset-inline-end: 0.85rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .path:focus-visible {
+    outline: 3px solid var(--harissa-ink);
+    outline-offset: 4px;
+  }
+
+  .dressing__stage {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .dressing__hint {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .dressing__runway {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  @media (min-width: 40rem) {
+    .path {
+      min-height: 13rem;
+      padding: 2.75rem 1.4rem 1.3rem;
+    }
+
+    .path__body {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .dressing__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 4rem;
+      padding-block: 3.5rem 4rem;
+    }
+
+    /* Portes ouvertes, l'armoire déborde d'une demi-largeur de chaque côté : elle reste dans sa colonne. */
+    .dressing__stage .armoire {
+      width: min(54%, 21rem);
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .path--chine:hover {
+      transform: rotate(-1.6deg);
+    }
+
+    .path--vends:hover {
+      transform: rotate(1.6deg);
+    }
+
+    .path:hover .path__arrow {
+      translate: 0.2rem 0;
+    }
+
+    [dir="rtl"] .path:hover .path__arrow {
+      translate: -0.2rem 0;
+    }
   }
 
   /* L'armoire */
@@ -485,6 +614,31 @@
   .armoire__door--right {
     right: 0;
     transform-origin: 100% 50%;
+  }
+
+  /* La porte est le bouton : seul son panneau capte le geste, l'intérieur reste libre. */
+  button.armoire__door {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  button.armoire__door:focus-visible {
+    outline: 3px solid var(--harissa-ink);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .armoire[data-state="closed"] .armoire__door--left:hover {
+      transform: rotateY(-10deg);
+    }
+
+    .armoire[data-state="closed"] .armoire__door--right:hover {
+      transform: rotateY(10deg);
+    }
   }
 
   .armoire[data-state="open"] .armoire__door--left {
@@ -1507,190 +1661,222 @@
     }
   }
 
-  /* Découvrir autrement */
-  .discover {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
-  }
-
-  .discover-tile {
-    position: relative;
-    display: flex;
-    height: 100%;
-    min-height: 17rem;
-    flex-direction: column;
-    padding: 1.5rem;
-    overflow: hidden;
-    border-radius: 2px;
-    isolation: isolate;
-  }
-
-  .discover__stylist .discover-tile {
-    min-height: 21rem;
-  }
-
-  .discover-tile--ink {
+  /* L'atelier : Stylist, Outfit Builder, Fripe Walk, en rangées d'étiquettes sur encre. */
+  .atelier {
+    margin-block-start: 1.5rem;
+    padding-block: 3.5rem 4rem;
     color: oklch(0.955 0.016 88);
     background: oklch(0.2 0.014 55);
-    --hanger: oklch(0.8 0.03 80);
   }
 
-  .discover-tile--kraft {
-    color: oklch(0.2 0.014 55);
-    background: oklch(0.74 0.085 72);
-    --hanger: oklch(0.35 0.04 60);
+  .dark .atelier {
+    background: oklch(0.255 0.018 55);
   }
 
-  .discover-tile--harissa {
-    color: var(--harissa-ink);
-    background: var(--harissa);
+  .atelier__head {
+    display: grid;
+    gap: 0.75rem;
+    margin-block-end: 2rem;
   }
 
-  .discover-tile__name {
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-
-  .discover-tile__body {
-    position: relative;
-    z-index: 1;
-    max-width: 12ch;
-    margin-block-start: 0.5rem;
+  .atelier__title {
     font-family: var(--font-title);
-    font-size: clamp(1.9rem, 4.2vw, 2.6rem);
+    font-size: clamp(2.8rem, 11vw, 5.75rem);
     font-weight: 800;
-    line-height: 1.02;
+    line-height: 0.88;
+    letter-spacing: -0.03em;
   }
 
-  .discover__stylist .discover-tile__body {
-    font-size: clamp(2.2rem, 5vw, 3.75rem);
+  .atelier__lead {
+    max-width: 38ch;
+    font-size: 1rem;
+    line-height: 1.5;
+    opacity: 0.78;
   }
 
-  .discover-tile__go {
+  .atelier__list {
+    border-block-start: 1px solid oklch(0.955 0.016 88 / 0.22);
+  }
+
+  .atelier__row {
     position: relative;
-    z-index: 1;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "text visual"
+      "go visual";
+    align-items: center;
+    gap: 0.6rem 1rem;
+    padding: 1.4rem 0.25rem;
+    border-block-end: 1px solid oklch(0.955 0.016 88 / 0.22);
+  }
+
+  /* Au survol, le rouge glisse sous la rangée depuis le début de ligne. */
+  .atelier__row::before {
+    content: "";
+    position: absolute;
+    inset: 0 -1rem;
+    z-index: -1;
+    background: var(--harissa);
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [dir="rtl"] .atelier__row::before {
+    clip-path: inset(0 0 0 100%);
+  }
+
+  .atelier__text {
+    grid-area: text;
+    min-width: 0;
+  }
+
+  .atelier__name {
+    display: block;
+    font-family: var(--font-title);
+    font-size: clamp(1.7rem, 6.5vw, 2.9rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .atelier__body {
+    display: block;
+    margin-block-start: 0.4rem;
+    opacity: 0.78;
+  }
+
+  .atelier__go {
+    grid-area: go;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    margin-block-start: auto;
-    padding-block-start: 1.25rem;
+    gap: 0.35rem;
+    font-size: 0.9rem;
     font-weight: 700;
+    color: oklch(0.8 0.08 75);
   }
 
-  .discover-tile:hover .discover-tile__go {
-    text-decoration: underline;
-    text-underline-offset: 0.25em;
-  }
-
-  .discover-stylist {
-    position: absolute;
-    inset-inline-end: 1.25rem;
-    inset-block-end: -0.5rem;
+  .atelier__visual {
+    grid-area: visual;
+    position: relative;
     display: flex;
-    width: clamp(6.5rem, 30%, 11rem);
-    flex-direction: column;
-    align-items: center;
+    width: 6.5rem;
+    height: 5.5rem;
+    align-items: flex-end;
+    justify-content: center;
   }
 
-  .discover-stylist__tag {
-    margin-block-end: 0.4rem;
-    padding: 0.25rem 0.75rem;
+  .atelier__row:focus-visible {
+    outline: 3px solid var(--harissa);
+    outline-offset: 2px;
+  }
+
+  .atelier-stylist__tag {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 1;
+    padding: 0.15rem 0.45rem;
+    border-radius: 2px;
     color: oklch(0.2 0.014 55);
     background: oklch(0.74 0.085 72);
-    font-family: var(--font-title);
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     font-weight: 800;
-    white-space: nowrap;
     rotate: -6deg;
-    transition: rotate 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: rotate 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
-  .discover-stylist__piece {
-    width: 100%;
+  .atelier-stylist__piece,
+  .atelier-outfit__piece {
+    width: 2.6rem;
     height: auto;
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .discover-stylist__piece + .discover-stylist__piece {
-    margin-block-start: -38%;
+  .atelier-stylist__piece + .atelier-stylist__piece {
+    margin-inline-start: -0.7rem;
   }
 
-  .discover-outfit {
-    position: absolute;
-    inset-inline-end: 0.75rem;
-    inset-block-end: 0.75rem;
-    display: flex;
-    width: min(62%, 16rem);
-    align-items: center;
+  .atelier-outfit {
+    gap: 0.15rem;
   }
 
-  .discover-outfit__piece {
-    width: 30%;
-    height: auto;
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  .atelier-outfit__piece:nth-of-type(2) {
+    transform: translateY(-0.5rem);
   }
 
-  .discover-outfit__plus {
-    flex: none;
-    font-family: var(--font-title);
-    font-size: 1.4rem;
-    font-weight: 800;
-  }
-
-  .discover-walk {
-    position: absolute;
-    inset-inline-end: 1.25rem;
-    inset-block-end: 1.25rem;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.45rem;
-  }
-
-  .discover-walk__frame {
+  .atelier-walk__frame {
     position: relative;
-    display: grid;
-    width: 3.5rem;
+    width: 2.2rem;
     aspect-ratio: 9 / 16;
-    place-items: center;
     overflow: hidden;
-    border: 2px solid currentcolor;
-    border-radius: 3px;
-    background: oklch(0.2 0.014 55);
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 2px;
+    background: oklch(0.955 0.016 88 / 0.12);
+    box-shadow: 0 0 0 1.5px oklch(0.955 0.016 88 / 0.5);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .discover-walk__frame:nth-child(1) {
-    transform: translateY(0.4rem) rotate(-7deg);
+  .atelier-walk__frame:nth-child(1) {
+    transform: translateX(0.5rem) rotate(-9deg);
   }
 
-  .discover-walk__frame:nth-child(2) {
-    width: 4.5rem;
-  }
-
-  .discover-walk__frame:nth-child(3) {
-    transform: translateY(0.4rem) rotate(7deg);
-  }
-
-  .discover-walk__play {
-    position: relative;
+  .atelier-walk__frame:nth-child(2) {
     z-index: 1;
+    width: 2.5rem;
+  }
+
+  .atelier-walk__frame:nth-child(3) {
+    transform: translateX(-0.5rem) rotate(9deg);
+  }
+
+  .atelier-walk__play {
+    position: absolute;
+    inset: 0;
     display: grid;
-    width: 2rem;
-    height: 2rem;
     place-items: center;
-    border-radius: 999px;
-    color: var(--harissa);
-    background: var(--harissa-ink);
+    color: oklch(0.955 0.016 88);
+    background: oklch(0.2 0.014 55 / 0.35);
   }
 
   @media (min-width: 48rem) {
-    .discover {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    .atelier {
+      padding-block: 5rem 5.5rem;
     }
 
-    .discover__stylist {
-      grid-row: span 2;
+    .atelier__head {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: end;
+      gap: 3rem;
+      margin-block-end: 2.5rem;
+    }
+
+    .atelier__row {
+      grid-template-columns: minmax(0, 1fr) 10rem 8rem;
+      grid-template-areas: "text visual go";
+      padding-block: 1.9rem;
+    }
+
+    .atelier__go {
+      justify-content: flex-end;
+    }
+
+    .atelier__visual {
+      width: 9rem;
+      height: 6rem;
+    }
+
+    .atelier-stylist__piece,
+    .atelier-outfit__piece {
+      width: 3.2rem;
+    }
+
+    .atelier-walk__frame {
+      width: 2.7rem;
+    }
+
+    .atelier-walk__frame:nth-child(2) {
+      width: 3.1rem;
     }
   }
 
@@ -1699,36 +1885,42 @@
       transform: scale(1.06);
     }
 
-    .discover-tile:hover .discover-stylist__tag {
-      rotate: 4deg;
+    .atelier__row:hover::before,
+    .atelier__row:focus-visible::before {
+      clip-path: inset(0 0 0 0);
     }
 
-    .discover-tile:hover .discover-stylist__piece:nth-of-type(1) {
-      transform: translateX(-0.4rem) rotate(-3deg);
+    .atelier__row:hover .atelier__go,
+    .atelier__row:focus-visible .atelier__go {
+      color: oklch(0.97 0.012 85);
     }
 
-    .discover-tile:hover .discover-stylist__piece:nth-of-type(3) {
-      transform: translateX(0.4rem) rotate(3deg);
+    .atelier__row:hover .atelier-stylist__tag {
+      rotate: 5deg;
     }
 
-    .discover-tile:hover .discover-outfit__piece {
-      transform: translateY(-0.5rem);
+    .atelier__row:hover .atelier-stylist__piece:nth-of-type(1) {
+      transform: translateX(-0.35rem) rotate(-4deg);
     }
 
-    .discover-tile:hover .discover-outfit__piece:nth-of-type(2) {
-      transform: translateY(-0.9rem);
+    .atelier__row:hover .atelier-stylist__piece:nth-of-type(3) {
+      transform: translateX(0.35rem) rotate(4deg);
     }
 
-    .discover-tile:hover .discover-walk__frame:nth-child(1) {
-      transform: translate(-0.4rem, 0.2rem) rotate(-12deg);
+    .atelier__row:hover .atelier-outfit__piece {
+      transform: translateY(-0.35rem);
     }
 
-    .discover-tile:hover .discover-walk__frame:nth-child(2) {
-      transform: translateY(-0.4rem);
+    .atelier__row:hover .atelier-outfit__piece:nth-of-type(2) {
+      transform: translateY(-0.85rem);
     }
 
-    .discover-tile:hover .discover-walk__frame:nth-child(3) {
-      transform: translate(0.4rem, 0.2rem) rotate(12deg);
+    .atelier__row:hover .atelier-walk__frame:nth-child(1) {
+      transform: translateX(0.1rem) rotate(-14deg);
+    }
+
+    .atelier__row:hover .atelier-walk__frame:nth-child(3) {
+      transform: translateX(-0.1rem) rotate(14deg);
     }
   }
 
@@ -2323,7 +2515,13 @@
 
   .armoire__door,
   .armoire__inside::after,
-  .showcase {
+  .showcase,
+  .path,
+  .atelier__row::before,
+  .atelier-stylist__tag,
+  .atelier-stylist__piece,
+  .atelier-outfit__piece,
+  .atelier-walk__frame {
     transition: none;
   }
 
