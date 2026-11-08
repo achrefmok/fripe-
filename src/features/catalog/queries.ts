@@ -645,3 +645,107 @@ export async function getRunwayLooks(limit = 6) {
       : [];
   });
 }
+
+// Arrivages -----------------------------------------------------------------------------------
+
+type RawArrival = {
+  id: string;
+  title: string;
+  note: string | null;
+  reviewed_at: string | null;
+  shops: { name: string; slug: string; logo_path: string | null };
+  arrival_products: { position: number; products: RawCard | null }[];
+};
+
+const ARRIVAL_COLUMNS = `id, title, note, reviewed_at, shops!inner (name, slug, logo_path, status), arrival_products (position, products (${CARD_COLUMNS}))`;
+
+function toArrival(row: RawArrival) {
+  return {
+    id: row.id,
+    title: row.title,
+    note: row.note,
+    reviewedAt: row.reviewed_at,
+    shop: row.shops,
+    // Une pièce vendue ou retirée depuis quitte l'arrivage affiché.
+    products: [...row.arrival_products]
+      .sort((a, b) => a.position - b.position)
+      .flatMap((item) => (item.products && item.products.status !== "sold" ? [toCard(item.products)] : [])),
+  };
+}
+
+export type ArrivalData = ReturnType<typeof toArrival>;
+
+// Les arrivages validés par l'administration, les plus récents d'abord : la tête de l'accueil.
+export async function listHomeArrivals(limit = 6) {
+  const { data, error } = await createPublicClient()
+    .from("arrivals")
+    .select(ARRIVAL_COLUMNS)
+    .eq("status", "approved")
+    .eq("shops.status", "approved")
+    .order("reviewed_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data as unknown as RawArrival[]).map(toArrival).filter((arrival) => arrival.products.length);
+}
+
+export async function getPublicArrival(arrivalId: string) {
+  const { data, error } = await createPublicClient()
+    .from("arrivals")
+    .select(ARRIVAL_COLUMNS)
+    .eq("id", arrivalId)
+    .eq("status", "approved")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? toArrival(data as unknown as RawArrival) : null;
+}
+
+// Espace vendeur : les arrivages de la boutique, quel que soit leur état.
+export async function listShopArrivals(shopId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("arrivals")
+    .select("id, title, note, status, review_note, created_at, reviewed_at, arrival_products (product_id)")
+    .eq("shop_id", shopId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+  return data;
+}
+
+// Les pièces en ligne qu'une boutique peut mettre dans un arrivage, avec leur première photo.
+export async function listArrivalCandidates(shopId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, title, price_millimes, product_images (path, position)")
+    .eq("shop_id", shopId)
+    .eq("publication_status", "published")
+    .in("status", ["available", "reserved"])
+    .order("published_at", { ascending: false })
+    .limit(60);
+
+  if (error) throw error;
+  return data.map((product) => ({
+    id: product.id,
+    title: product.title ?? "",
+    priceMillimes: product.price_millimes ?? 0,
+    imagePath: [...product.product_images].sort((a, b) => a.position - b.position)[0]?.path ?? null,
+  }));
+}
+
+// Administration : les arrivages en attente, les plus anciens d'abord.
+export async function listPendingArrivals() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("arrivals")
+    .select(`id, title, note, reviewed_at, created_at, shops!inner (name, slug, logo_path, status), arrival_products (position, products (${CARD_COLUMNS}))`)
+    .eq("status", "pending")
+    .order("created_at", { ascending: true })
+    .limit(50);
+
+  if (error) throw error;
+  return (data as unknown as (RawArrival & { created_at: string })[]).map((row) => ({ ...toArrival(row), createdAt: row.created_at }));
+}

@@ -4,12 +4,8 @@ test("l'accueil affiche le message et les actions en français", async ({ page }
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
   await expect(page.getByRole("heading", { level: 1, name: "Chaque pièce a déjà une histoire. Trouve la suivante." })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Je chine/ })).toHaveAttribute("href", "/catalogue");
-  await expect(page.getByRole("link", { name: /Je vends/ })).toHaveAttribute("href", "/vendre");
-  // Les outils restent présents, réunis dans l'atelier.
-  for (const name of [/AI Stylist/, /Outfit Builder/, /Fripe Walk/]) {
-    await expect(page.getByRole("region", { name: "L'atelier" }).getByRole("link", { name })).toBeAttached();
-  }
+  await expect(page.getByRole("link", { name: /AI Stylist/ }).first()).toHaveAttribute("href", "/stylist");
+  await expect(page.getByRole("link", { name: /Outfit Builder/ }).first()).toHaveAttribute("href", "/tenues/nouvelle");
 });
 
 test("l'arabe s'affiche en RTL, et la langue se change depuis l'en-tête", async ({ page }) => {
@@ -18,7 +14,7 @@ test("l'arabe s'affiche en RTL, et la langue se change depuis l'en-tête", async
   await expect(page).toHaveURL(/\/ar$/);
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
-  await expect(page.getByRole("link", { name: /نبيع/ })).toBeAttached();
+  await expect(page.getByRole("navigation", { name: "ركّب إطلالة" })).toBeVisible();
 });
 
 test("le thème sombre se choisit et persiste au rechargement", async ({ page }) => {

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   MapPin,
   Package,
+  PackageOpen,
   Plus,
   ReceiptText,
   ScrollText,
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 const ICONS = {
   account: UserRound,
+  arrivals: PackageOpen,
   audit: ScrollText,
   categories: Tags,
   locations: MapPin,

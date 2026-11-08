@@ -85,7 +85,7 @@ test.describe("Le dressing", () => {
     await expect(page.locator(".universe-band")).toHaveCount(0);
   });
 
-  test("en arabe, le titre et les deux chemins partent de la droite", async ({ page }) => {
+  test("en arabe, le titre et les deux outils partent de la droite", async ({ page }) => {
     await page.goto("/ar");
 
     const title = await page.locator(".dressing__title").boundingBox();
@@ -93,19 +93,19 @@ test.describe("Le dressing", () => {
     const width = page.viewportSize()!.width;
 
     expect(title!.x + title!.width).toBeGreaterThan(width * 0.75);
-    // « نحوّس » (Je chine) vient en premier, donc à droite.
+    // AI Stylist vient en premier, donc à droite.
     expect(first!.x).toBeGreaterThan(width * 0.4);
   });
 
-  test("les deux chemins ouvrent le catalogue et la vente", async ({ page }) => {
+  test("les deux outils en tête ouvrent AI Stylist et Outfit Builder", async ({ page }) => {
     await page.goto("/");
-    const paths = page.getByRole("navigation", { name: "Que veux-tu faire ?" });
+    const tools = page.getByRole("navigation", { name: "Composer une tenue" });
 
-    await paths.getByRole("link", { name: /Je chine/ }).click();
-    await expect(page).toHaveURL(/\/catalogue$/);
+    await tools.getByRole("link", { name: /AI Stylist/ }).click();
+    await expect(page).toHaveURL(/\/stylist$/);
 
     await page.goto("/");
-    await paths.getByRole("link", { name: /Je vends/ }).click();
-    await expect(page).toHaveURL(/\/vendre$/);
+    await tools.getByRole("link", { name: /Outfit Builder/ }).click();
+    await expect(page).toHaveURL(/\/tenues\/nouvelle$/);
   });
 });

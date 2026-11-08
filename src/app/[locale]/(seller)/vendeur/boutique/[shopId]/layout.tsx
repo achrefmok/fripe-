@@ -62,6 +62,7 @@ export default async function SellerShopLayout({
           myVideos: t("myVideos"),
           activity: t("activity"),
           products: t("products"),
+          arrivals: t("arrivals"),
           quick: t("quick"),
           collections: t("collections"),
           stock: t("stock"),

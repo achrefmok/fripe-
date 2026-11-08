@@ -96,7 +96,7 @@ function Hanging({ category, locale, closed }: { category: Category; locale: str
   );
 }
 
-// L'accueil s'ouvre sur deux chemins, chiner ou vendre, et sur le dressing. L'armoire s'ouvre à
+// L'accueil s'ouvre sur deux outils, AI Stylist et Outfit Builder, et sur le dressing. L'armoire s'ouvre à
 // l'arrivée, une fois par visite, en CSS : rien n'attend JavaScript.
 export function DressingHero({
   categories,
@@ -148,16 +148,29 @@ export function DressingHero({
           </h1>
 
           <nav aria-label={t("pathsLabel")} className="paths">
-            <Link href="/catalogue" className="path path--chine">
+            <Link href="/stylist" className="path path--chine">
               <span className="path__eyelet" aria-hidden="true" />
-              <span className="path__name">{t("tagBuyTitle")}</span>
-              <span className="path__body">{t("chineBody")}</span>
+              {/* Une tenue complète sous une étiquette de budget. */}
+              <span className="path__scene" aria-hidden="true">
+                <span className="path__budget">{t("discoverStylistTag")}</span>
+                <Garment universe={universeFor("hauts")} className="path__piece" />
+                <Garment universe={universeFor("bas")} className="path__piece" />
+                <Garment universe={universeFor("chaussures")} className="path__piece" />
+              </span>
+              <span className="path__name">{t("discoverStylist")}</span>
+              <span className="path__body">{t("discoverStylistBody")}</span>
               <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
             </Link>
-            <Link href="/vendre" className="path path--vends">
+            <Link href="/tenues/nouvelle" className="path path--vends">
               <span className="path__eyelet" aria-hidden="true" />
-              <span className="path__name">{t("tagSellTitle")}</span>
-              <span className="path__body">{t("vendsBody")}</span>
+              {/* Trois pièces qui s'assemblent. */}
+              <span className="path__scene" aria-hidden="true">
+                <Garment universe={universeFor("vestes-manteaux")} className="path__piece" />
+                <Garment universe={universeFor("robes")} className="path__piece" />
+                <Garment universe={universeFor("accessoires")} className="path__piece" />
+              </span>
+              <span className="path__name">{t("discoverOutfit")}</span>
+              <span className="path__body">{t("discoverOutfitBody")}</span>
               <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
             </Link>
           </nav>

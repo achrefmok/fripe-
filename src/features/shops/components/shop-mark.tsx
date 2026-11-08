@@ -41,7 +41,7 @@ export function ShopMark({
 }: {
   name: string;
   logoPath?: string | null;
-  size?: "xs" | "sm" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) {
   if (logoPath) {

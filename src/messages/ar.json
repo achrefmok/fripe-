@@ -53,15 +53,7 @@
   },
   "home": {
     "tagline": "كل قطعة لها حكاية. اكتشف الحكاية القادمة.",
-    "tagBuyTitle": "نحوّس",
-    "tagBuyBody": "أنشئ حسابك",
-    "tagSellTitle": "نبيع",
-    "tagSellBody": "افتح محلك",
-    "tagSoonTitle": "الكتالوج",
-    "tagSoonBody": "تصفّح القطع",
-    "closeTitle": "خذ مكانك على الرف.",
-    "closeBody": "يمكن للمحلات التسجيل من الآن. يراجع فريقنا كل طلب.",
-    "arrivalsTitle": "وصل حديثا",
+    "arrivalsTitle": "السلع الجديدة",
     "popularTitle": "الأكثر إعجابا",
     "categoriesTitle": "الأصناف",
     "shopsTitle": "محلات لاكتشافها",
@@ -71,19 +63,14 @@
     "shopPieces": "{count, plural, one {قطعة واحدة} two {قطعتان} few {{count} قطع} many {{count} قطعة} other {{count} قطعة}}",
     "emptyTitle": "الرف يمتلئ",
     "emptyBody": "تصل القطع الأولى فور نشرها من المحلات.",
-    "discoverTitle": "اكتشف بطريقة أخرى",
-    "discoverWalk": "Fripe Walk",
-    "discoverWalkBody": "الوصول الجديد بالفيديو.",
     "discoverStylist": "AI Stylist",
     "discoverStylistBody": "إطلالات في حدود ميزانيتك.",
     "discoverOutfit": "Outfit Builder",
     "discoverOutfitBody": "ركّب قطعة بقطعة.",
     "defileWalk": "شاهد Fripe Walk",
-    "heroLead": "افتح خزانة الملابس، اختر قطعة وادخل إلى عالمها.",
     "heroRunway": "شاهد العرض",
     "heroOpen": "افتح الخزانة",
     "heroClose": "أغلق الخزانة",
-    "heroHint": "المس قطعة لتدخل إلى عالمها.",
     "universeEmpty": "هذا الرف ينتظر قطعه الأولى.",
     "runwayLooksTitle": "عرض المجموعات",
     "runwayArrivalsTitle": "عرض الوافدين الجدد",
@@ -96,19 +83,11 @@
     "runwayMore": "{count, plural, one {+ قطعة أخرى} other {+ {count} قطع أخرى}}",
     "runwaySeeLook": "شاهد الإطلالة",
     "runwaySeePiece": "شاهد القطعة",
-    "discoverTry": "جرّب",
-    "discoverWatch": "شاهد",
     "discoverStylistTag": "ميزانيتك",
     "sectionsTitle": "أيضًا على FRIPE",
-    "videosTitle": "بالفيديو",
-    "videosAll": "شاهد كل الفيديوهات",
-    "pathsLabel": "ماذا تريد أن تفعل؟",
-    "chineBody": "موضة، سلع متنوعة وخزانة للبيع.",
-    "vendsBody": "قطعة، غرض أو محلك.",
+    "pathsLabel": "ركّب إطلالة",
     "heroHintClosed": "المس الباب لتفتح الخزانة.",
-    "heroHintOpen": "المس قطعة لتدخل إلى عالمها.",
-    "atelierTitle": "الورشة",
-    "atelierLead": "ثلاث طرق أخرى للتحويس: نركّب لك، تركّب بنفسك، أو تشاهد الجديد."
+    "heroHintOpen": "المس قطعة لتدخل إلى عالمها."
   },
   "auth": {
     "signInTitle": "سعداء بعودتك",
@@ -195,7 +174,8 @@
     "governorateRequired": "اختر الولاية.",
     "messageEmpty": "اكتب رسالة.",
     "phoneRequired": "أدخل رقم هاتفك.",
-    "codeInvalid": "يتكوّن الرمز من 6 أرقام."
+    "codeInvalid": "يتكوّن الرمز من 6 أرقام.",
+    "arrivalTitleShort": "اكتب عنوانًا من 3 أحرف على الأقل."
   },
   "errors": {
     "invalidInput": "تحقق من الحقول المشار إليها.",
@@ -274,7 +254,9 @@
     "emailCodeWrong": "الرمز غير صحيح أو منتهي الصلاحية. تحقّق منه أو اطلب رمزًا جديدًا.",
     "codeTooSoon": "أُرسل رمز للتو. انتظر دقيقة قبل طلب رمز آخر.",
     "micDenied": "الوصول إلى الميكروفون مرفوض. اسمح به في إعدادات المتصفح.",
-    "renderFailed": "لم يكتمل المونتاج. أعد المحاولة أو انشر الفيديو دون مونتاج."
+    "renderFailed": "لم يكتمل المونتاج. أعد المحاولة أو انشر الفيديو دون مونتاج.",
+    "arrival_title": "يجب أن يتكوّن العنوان من 3 إلى 80 حرفًا.",
+    "arrival_pieces": "اختر من 1 إلى 12 قطعة معروضة من محلك."
   },
   "account": {
     "title": "حسابي",
@@ -803,7 +785,8 @@
     "editInfo": "تعديل المعلومات والشعار",
     "productsSummary": "{published, plural, =0 {لا منتجات معروضة} other {# معروضة}} · {drafts, plural, =0 {لا مسودات} other {# مسودات}}",
     "videosSummary": "{count, plural, =0 {لا فيديو معروض} one {فيديو واحد معروض} two {فيديوهان معروضان} other {# فيديوهات معروضة}}",
-    "figuresTitle": "أرقامك"
+    "figuresTitle": "أرقامك",
+    "arrivals": "السلع الجديدة"
   },
   "adminMarket": {
     "navProducts": "المنتجات",
@@ -1452,5 +1435,48 @@
     "publish": "انشر الفيديو",
     "backToEdit": "العودة إلى المونتاج",
     "published": "تم نشر الفيديو"
+  },
+  "arrivals": {
+    "badge": "سلعة جديدة",
+    "allGone": "وجدت كل قطع هذه السلعة الجديدة أصحابها.",
+    "sellerTitle": "السلع الجديدة",
+    "sellerLead": "أعلن عن سلعة جديدة بقطعك المعروضة. بعد مصادقة فريق FRIPE، تظهر في أعلى الصفحة الرئيسية.",
+    "newTitle": "سلعة جديدة",
+    "title": "عنوان السلعة الجديدة",
+    "titleHint": "مثال: سترات جينز من التسعينات",
+    "note": "كلمة للحرفاء",
+    "pieces": "قطع السلعة الجديدة",
+    "piecesCount": "{count} من {max}",
+    "piecesRequired": "اختر من 1 إلى 12 قطعة معروضة.",
+    "noCandidates": "انشر قطعًا أولًا: تتكوّن السلعة الجديدة من قطع معروضة.",
+    "submit": "أرسل للمصادقة",
+    "submitted": "أُرسلت السلعة الجديدة: ستظهر بعد المصادقة.",
+    "notAllowed": "يُعلن عن السلع الجديدة بعد المصادقة على المحل، من قبل صاحبه أو مسيّر.",
+    "listTitle": "سلعي الجديدة",
+    "listEmpty": "لا توجد سلع جديدة بعد.",
+    "piecesShort": "{count, plural, one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
+    "status": {
+      "pending": "في انتظار المصادقة",
+      "approved": "مصادق عليها، معروضة",
+      "rejected": "مرفوضة"
+    },
+    "reason": "السبب: {note}",
+    "viewPublic": "شاهد السلعة الجديدة",
+    "withdraw": "سحب",
+    "withdrawn": "تم سحب السلعة الجديدة",
+    "withdrawFailed": "لم يتم السحب. أعد المحاولة.",
+    "adminNav": "السلع الجديدة",
+    "adminTitle": "سلع جديدة للمصادقة",
+    "adminLead": "بعد المصادقة، تظهر في أعلى الصفحة الرئيسية. الرفض يتطلب سببًا يقرؤه المحل.",
+    "adminEmpty": "لا توجد سلع جديدة في الانتظار.",
+    "approve": "مصادقة",
+    "approveLabel": "المصادقة على « {title} »",
+    "reject": "رفض",
+    "rejectLabel": "رفض « {title} »",
+    "rejectTitle": "رفض السلعة الجديدة",
+    "rejectReason": "السبب (يقرؤه المحل)",
+    "approved": "تمت المصادقة",
+    "rejected": "تم الرفض",
+    "reviewFailed": "لم يُسجَّل القرار. أعد المحاولة."
   }
 }

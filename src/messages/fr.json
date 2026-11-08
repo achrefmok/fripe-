@@ -53,14 +53,6 @@
   },
   "home": {
     "tagline": "Chaque pièce a déjà une histoire. Trouve la suivante.",
-    "tagBuyTitle": "Je chine",
-    "tagBuyBody": "Crée ton compte",
-    "tagSellTitle": "Je vends",
-    "tagSellBody": "Ouvre ta boutique",
-    "tagSoonTitle": "Le catalogue",
-    "tagSoonBody": "Parcourir les pièces",
-    "closeTitle": "Prends ta place sur le portant.",
-    "closeBody": "Les boutiques peuvent s'inscrire dès maintenant. Chaque demande est vérifiée par notre équipe.",
     "arrivalsTitle": "Nouveaux arrivages",
     "popularTitle": "Les plus aimées",
     "categoriesTitle": "Catégories",
@@ -71,19 +63,14 @@
     "shopPieces": "{count, plural, one {{count} pièce} other {{count} pièces}}",
     "emptyTitle": "Le portant se remplit",
     "emptyBody": "Les premières pièces arrivent dès que les boutiques publient.",
-    "discoverTitle": "Découvrir autrement",
-    "discoverWalk": "Fripe Walk",
-    "discoverWalkBody": "Les arrivages en vidéo.",
     "discoverStylist": "AI Stylist",
     "discoverStylistBody": "Des tenues dans ton budget.",
     "discoverOutfit": "Outfit Builder",
     "discoverOutfitBody": "Compose pièce par pièce.",
     "defileWalk": "Voir Fripe Walk",
-    "heroLead": "Ouvre le dressing, choisis un vêtement et entre dans son univers.",
     "heroRunway": "Voir le défilé",
     "heroOpen": "Ouvrir le dressing",
     "heroClose": "Fermer le dressing",
-    "heroHint": "Touche un vêtement pour entrer dans son univers.",
     "universeEmpty": "Ce rayon attend encore ses premières pièces.",
     "runwayLooksTitle": "Le défilé des collections",
     "runwayArrivalsTitle": "Le défilé des nouveaux arrivages",
@@ -96,19 +83,11 @@
     "runwayMore": "{count, plural, one {+ {count} autre pièce} other {+ {count} autres pièces}}",
     "runwaySeeLook": "Voir le look",
     "runwaySeePiece": "Voir la pièce",
-    "discoverTry": "Essayer",
-    "discoverWatch": "Regarder",
     "discoverStylistTag": "Ton budget",
     "sectionsTitle": "Aussi sur FRIPE",
-    "videosTitle": "En vidéo",
-    "videosAll": "Tout voir en vidéo",
-    "pathsLabel": "Que veux-tu faire ?",
-    "chineBody": "Mode, objets et vide-dressing.",
-    "vendsBody": "Une pièce, un objet ou ta boutique.",
+    "pathsLabel": "Composer une tenue",
     "heroHintClosed": "Touche la porte pour ouvrir le dressing.",
-    "heroHintOpen": "Touche un vêtement pour entrer dans son univers.",
-    "atelierTitle": "L'atelier",
-    "atelierLead": "Trois façons de chiner autrement : laisser composer, assembler soi-même, regarder les arrivages."
+    "heroHintOpen": "Touche un vêtement pour entrer dans son univers."
   },
   "auth": {
     "signInTitle": "Content de te revoir",
@@ -195,7 +174,8 @@
     "governorateRequired": "Choisis le gouvernorat.",
     "messageEmpty": "Écris un message.",
     "phoneRequired": "Indique ton numéro de téléphone.",
-    "codeInvalid": "Le code contient 6 chiffres."
+    "codeInvalid": "Le code contient 6 chiffres.",
+    "arrivalTitleShort": "Indique un titre d'au moins 3 caractères."
   },
   "errors": {
     "invalidInput": "Vérifie les champs signalés.",
@@ -274,7 +254,9 @@
     "emailCodeWrong": "Code incorrect ou expiré. Vérifie-le ou demande-en un nouveau.",
     "codeTooSoon": "Un code vient de partir. Attends une minute avant d'en demander un autre.",
     "micDenied": "L'accès au micro est refusé. Autorise-le dans les réglages du navigateur.",
-    "renderFailed": "Le montage n'a pas abouti. Réessaie, ou publie la vidéo sans montage."
+    "renderFailed": "Le montage n'a pas abouti. Réessaie, ou publie la vidéo sans montage.",
+    "arrival_title": "Le titre doit faire de 3 à 80 caractères.",
+    "arrival_pieces": "Choisis de 1 à 12 pièces en ligne de ta boutique."
   },
   "account": {
     "title": "Mon compte",
@@ -803,7 +785,8 @@
     "editInfo": "Modifier les infos et le logo",
     "productsSummary": "{published, plural, =0 {Aucun produit en ligne} one {# en ligne} other {# en ligne}} · {drafts, plural, =0 {aucun brouillon} one {# brouillon} other {# brouillons}}",
     "videosSummary": "{count, plural, =0 {Aucune vidéo en ligne} one {# vidéo en ligne} other {# vidéos en ligne}}",
-    "figuresTitle": "Tes chiffres"
+    "figuresTitle": "Tes chiffres",
+    "arrivals": "Arrivages"
   },
   "adminMarket": {
     "navProducts": "Produits",
@@ -1452,5 +1435,48 @@
     "publish": "Publier la vidéo",
     "backToEdit": "Revenir au montage",
     "published": "Vidéo publiée"
+  },
+  "arrivals": {
+    "badge": "Nouvel arrivage",
+    "allGone": "Toutes les pièces de cet arrivage ont trouvé preneur.",
+    "sellerTitle": "Arrivages",
+    "sellerLead": "Annonce un nouvel arrivage avec tes pièces en ligne. Une fois validé par l'équipe FRIPE, il paraît en tête de l'accueil.",
+    "newTitle": "Nouvel arrivage",
+    "title": "Titre de l'arrivage",
+    "titleHint": "Ex. Vestes en jean des années 90",
+    "note": "Un mot pour les clients",
+    "pieces": "Pièces de l'arrivage",
+    "piecesCount": "{count} sur {max}",
+    "piecesRequired": "Choisis de 1 à 12 pièces en ligne.",
+    "noCandidates": "Publie d'abord des pièces : un arrivage se compose de pièces en ligne.",
+    "submit": "Envoyer pour validation",
+    "submitted": "Arrivage envoyé : il paraîtra après validation.",
+    "notAllowed": "Les arrivages s'annoncent une fois la boutique validée, par son propriétaire ou un gérant.",
+    "listTitle": "Mes arrivages",
+    "listEmpty": "Aucun arrivage pour l'instant.",
+    "piecesShort": "{count, plural, one {# pièce} other {# pièces}}",
+    "status": {
+      "pending": "En attente de validation",
+      "approved": "Validé, en ligne",
+      "rejected": "Refusé"
+    },
+    "reason": "Motif : {note}",
+    "viewPublic": "Voir l'arrivage en ligne",
+    "withdraw": "Retirer",
+    "withdrawn": "Arrivage retiré",
+    "withdrawFailed": "Le retrait n'a pas abouti. Réessaie.",
+    "adminNav": "Arrivages",
+    "adminTitle": "Arrivages à valider",
+    "adminLead": "Validés, ils passent en tête de l'accueil. Un refus demande un motif, que la boutique lit.",
+    "adminEmpty": "Aucun arrivage en attente.",
+    "approve": "Valider",
+    "approveLabel": "Valider l'arrivage « {title} »",
+    "reject": "Refuser",
+    "rejectLabel": "Refuser l'arrivage « {title} »",
+    "rejectTitle": "Refuser l'arrivage",
+    "rejectReason": "Motif (lu par la boutique)",
+    "approved": "Arrivage validé",
+    "rejected": "Arrivage refusé",
+    "reviewFailed": "La décision n'a pas été enregistrée. Réessaie."
   }
 }

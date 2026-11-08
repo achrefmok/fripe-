@@ -1,22 +1,18 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { ProductGrid, ProductRail } from "@/features/catalog/components/product-card";
-import { getHomeFeed, getRunwayLooks, getUniverseShelves } from "@/features/catalog/queries";
+import { getHomeFeed, getRunwayLooks, getUniverseShelves, listHomeArrivals } from "@/features/catalog/queries";
 import { getLatestListings } from "@/features/marketplace/queries";
-import { VideoRail } from "@/features/walk/components/video-rail";
-import { getWalkPage } from "@/features/walk/queries";
+import { ArrivalCard } from "@/features/arrivals/components/arrival-card";
 import { DressingHero } from "@/features/home/components/dressing-hero";
 import { Runway, type Look } from "@/features/home/components/runway";
 import { UniverseProvider } from "@/features/home/components/universe-context";
 import { UniverseShowcase, type Shelf } from "@/features/home/components/universe-showcase";
-import { Garment } from "@/features/home/components/garment";
-import { universeFor } from "@/features/home/universes";
-import { ShopTile } from "@/features/shops/components/shop-tile";
+import { ShopBadge } from "@/features/shops/components/shop-badge";
 import { Link } from "@/i18n/navigation";
-import { productImageUrl } from "@/lib/utils/storage";
 import Image from "next/image";
-import { localizedName } from "@/lib/utils/format";
+import { formatDate, localizedName } from "@/lib/utils/format";
 
 export const revalidate = 60;
 
@@ -73,7 +69,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const currentLocale = await getLocale();
 
   // L'accueil reste affichable si la base est momentanément injoignable.
-  const [feed, shelfRows, lookRows, marketLatest, dressingLatest, market, walk, walkT] = await Promise.all([
+  const [feed, shelfRows, lookRows, marketLatest, dressingLatest, market, arrivals] = await Promise.all([
     getHomeFeed().catch((error) => {
       console.error("Accueil : flux indisponible", error);
       return EMPTY_FEED;
@@ -89,8 +85,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     getLatestListings("marketplace", 3).catch(() => []),
     getLatestListings("vide_dressing", 3).catch(() => []),
     getTranslations("market"),
-    getWalkPage(null).catch(() => ({ items: [], nextCursor: null })),
-    getTranslations("walk"),
+    listHomeArrivals(6).catch((error) => {
+      console.error("Accueil : arrivages indisponibles", error);
+      return [];
+    }),
   ]);
 
   // Les deux autres rubriques, présentées par leurs vraies dernières annonces.
@@ -129,9 +127,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   // Les rails de pièces : les arrivages ne sont listés que si le défilé montre des collections.
   const pieceSections = [
-    lookRows.length && feed.arrivals.length
-      ? { key: "arrivals", title: t("arrivalsTitle"), href: "/catalogue", node: <ProductRail products={feed.arrivals} /> }
-      : null,
     feed.popular.length ? { key: "popular", title: t("popularTitle"), href: undefined, node: <ProductRail products={feed.popular} /> } : null,
     feed.recent.length ? { key: "recent", title: t("recentTitle"), href: "/catalogue", node: <ProductGrid products={feed.recent} /> } : null,
   ].filter((section) => section !== null);
@@ -141,14 +136,23 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <UniverseProvider initial={busiestShelf(shelves)}>
         <DressingHero categories={feed.categories} locale={currentLocale} hasRunway={looks.length > 0} />
         <div className="rail text-ink dark:text-paper" aria-hidden="true" />
+        {arrivals.length ? (
+          <Section title={t("arrivalsTitle")} href="/catalogue" linkLabel={t("seeAll")}>
+            <ul className="arrival-rail rail-scroll">
+              {arrivals.map((arrival) => (
+                <li key={arrival.id}>
+                  <ArrivalCard
+                    arrival={arrival}
+                    piecesLabel={t("shopPieces", { count: arrival.products.length })}
+                    dateLabel={arrival.reviewedAt ? formatDate(arrival.reviewedAt, currentLocale) : null}
+                  />
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : null}
         <UniverseShowcase shelves={shelves} />
       </UniverseProvider>
-
-      {walk.items.length ? (
-        <Section title={t("videosTitle")} href="/walk" linkLabel={t("videosAll")}>
-          <VideoRail items={walk.items} locale={currentLocale} playLabel={walkT("play")} />
-        </Section>
-      ) : null}
 
       {looks.length ? (
         <Runway
@@ -170,39 +174,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Section>
       )}
 
-      <Section title={t("sectionsTitle")} divided>
-        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
-          {sections.map((section) => (
-            <li key={section.href}>
-              <Link href={section.href} className={`sell-tile ${section.tone} gap-4`}>
-                <span className="font-display text-3xl font-extrabold">{section.title}</span>
-                <span className="max-w-md leading-snug">{section.body}</span>
-                {section.items.length ? (
-                  <span className="mt-auto grid grid-cols-3 gap-1.5" aria-hidden="true">
-                    {section.items.map((item) => (
-                      <span key={item.id} className="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-black/15">
-                        {item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 12rem, 30vw" className="object-cover" /> : null}
-                      </span>
-                    ))}
-                  </span>
-                ) : null}
-                <ArrowRight className="size-5 rtl:-scale-x-100" aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Section>
 
       {feed.shops.length ? (
         <Section title={t("shopsTitle")} href="/boutiques" linkLabel={t("seeAll")} divided>
-          <ul className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="shop-badges">
             {feed.shops.map((shop) => (
               <li key={shop.id}>
-                <ShopTile
+                <ShopBadge
                   name={shop.name}
                   slug={shop.slug}
                   logoPath={shop.logoPath}
-                  previews={shop.previews}
                   place={localizedName({ name_fr: shop.city_fr, name_ar: shop.city_ar }, currentLocale)}
                   pieces={t("shopPieces", { count: shop.product_count })}
                 />
@@ -232,81 +213,28 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       ) : null}
 
 
-      {/* L'atelier : les outils pour chiner autrement, présentés comme des étiquettes de collection. */}
-      <section className="atelier" aria-labelledby="atelier-titre">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="atelier__head">
-            <h2 id="atelier-titre" className="atelier__title">{t("atelierTitle")}</h2>
-            <p className="atelier__lead">{t("atelierLead")}</p>
-          </div>
-          <ul className="atelier__list">
-            <li>
-              <Link href="/stylist" className="atelier__row">
-                <span className="atelier__text">
-                  <span className="atelier__name">{t("discoverStylist")}</span>
-                  <span className="atelier__body">{t("discoverStylistBody")}</span>
-                </span>
-                {/* Une tenue complète sous une étiquette de budget. */}
-                <span className="atelier__visual atelier-stylist" aria-hidden="true">
-                  <span className="atelier-stylist__tag">{t("discoverStylistTag")}</span>
-                  <Garment universe={universeFor("hauts")} className="atelier-stylist__piece" />
-                  <Garment universe={universeFor("bas")} className="atelier-stylist__piece" />
-                  <Garment universe={universeFor("chaussures")} className="atelier-stylist__piece" />
-                </span>
-                <span className="atelier__go">
-                  {t("discoverTry")}
-                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-                </span>
+      <Section title={t("sectionsTitle")} divided>
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+          {sections.map((section) => (
+            <li key={section.href}>
+              <Link href={section.href} className={`sell-tile ${section.tone} gap-4`}>
+                <span className="font-display text-3xl font-extrabold">{section.title}</span>
+                <span className="max-w-md leading-snug">{section.body}</span>
+                {section.items.length ? (
+                  <span className="mt-auto grid grid-cols-3 gap-1.5" aria-hidden="true">
+                    {section.items.map((item) => (
+                      <span key={item.id} className="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-black/15">
+                        {item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 12rem, 30vw" className="object-cover" /> : null}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
+                <ArrowRight className="size-5 rtl:-scale-x-100" aria-hidden="true" />
               </Link>
             </li>
-            <li>
-              <Link href="/tenues/nouvelle" className="atelier__row">
-                <span className="atelier__text">
-                  <span className="atelier__name">{t("discoverOutfit")}</span>
-                  <span className="atelier__body">{t("discoverOutfitBody")}</span>
-                </span>
-                {/* Trois pièces qui s'assemblent. */}
-                <span className="atelier__visual atelier-outfit" aria-hidden="true">
-                  <Garment universe={universeFor("vestes-manteaux")} className="atelier-outfit__piece" />
-                  <Garment universe={universeFor("robes")} className="atelier-outfit__piece" />
-                  <Garment universe={universeFor("accessoires")} className="atelier-outfit__piece" />
-                </span>
-                <span className="atelier__go">
-                  {t("discoverTry")}
-                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/walk" className="atelier__row">
-                <span className="atelier__text">
-                  <span className="atelier__name">{t("discoverWalk")}</span>
-                  <span className="atelier__body">{t("discoverWalkBody")}</span>
-                </span>
-                {/* Trois écrans verticaux, avec les vraies dernières pièces. */}
-                <span className="atelier__visual atelier-walk" aria-hidden="true">
-                  {[0, 1, 2].map((slot) => (
-                    <span key={slot} className="atelier-walk__frame">
-                      {feed.arrivals[slot]?.imagePath ? (
-                        <Image src={productImageUrl(feed.arrivals[slot].imagePath!)} alt="" fill unoptimized sizes="5rem" className="object-cover" />
-                      ) : null}
-                      {slot === 1 ? (
-                        <span className="atelier-walk__play">
-                          <Play className="size-3.5 fill-current" />
-                        </span>
-                      ) : null}
-                    </span>
-                  ))}
-                </span>
-                <span className="atelier__go">
-                  {t("discoverWatch")}
-                  <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-                </span>
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </section>
+          ))}
+        </ul>
+      </Section>
 
     </>
   );

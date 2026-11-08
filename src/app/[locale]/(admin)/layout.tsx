@@ -12,6 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const reviews = await getTranslations("reviews");
   const listings = await getTranslations("market");
   const delivery = await getTranslations("delivery");
+  const arrivals = await getTranslations("arrivals");
 
   return (
     <AppShell
@@ -20,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin", label: t("navOverview"), icon: "overview", exact: true },
         { href: "/admin/boutiques", label: t("navShops"), icon: "store" },
         { href: "/admin/produits", label: market("navProducts"), icon: "products" },
+        { href: "/admin/arrivages", label: arrivals("adminNav"), icon: "arrivals" },
         { href: "/admin/videos", label: market("navVideos"), icon: "videos" },
         { href: "/admin/annonces", label: listings("adminTitle"), icon: "listings" },
         { href: "/admin/commandes", label: market("navOrders"), icon: "orders" },

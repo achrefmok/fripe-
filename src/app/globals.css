@@ -377,6 +377,34 @@
     translate: 50% 0;
   }
 
+  .path__scene {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.15rem;
+    height: 3rem;
+    margin-block-end: 0.75rem;
+  }
+
+  .path__piece {
+    width: 2rem;
+    height: auto;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .path__budget {
+    position: absolute;
+    inset-block-start: -0.9rem;
+    inset-inline-start: 0;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    color: oklch(0.2 0.014 55);
+    background: oklch(0.74 0.085 72);
+    font-size: 0.65rem;
+    font-weight: 800;
+    rotate: -5deg;
+  }
+
   .path__name {
     font-family: var(--font-title);
     font-size: clamp(1.85rem, 8.5vw, 3.4rem);
@@ -467,6 +495,14 @@
 
     .path:hover .path__arrow {
       translate: 0.2rem 0;
+    }
+
+    .path:hover .path__piece:nth-of-type(1) {
+      transform: translateY(-0.25rem) rotate(-4deg);
+    }
+
+    .path:hover .path__piece:nth-of-type(3) {
+      transform: translateY(-0.25rem) rotate(4deg);
     }
 
     [dir="rtl"] .path:hover .path__arrow {
@@ -1536,81 +1572,180 @@
     }
   }
 
-  /* Vidéos en vedette */
-  .video-rail {
+  /* Nouveaux arrivages : une planche contact par boutique */
+  .arrival-rail {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: minmax(8.5rem, 10rem);
-    gap: 0.75rem;
+    grid-auto-columns: minmax(15rem, 82%);
+    gap: 0.9rem;
     overflow-x: auto;
     margin-inline: -1rem;
-    padding-inline: 1rem;
-    padding-block-end: 0.5rem;
+    padding: 0 1rem 0.5rem;
     scroll-snap-type: inline mandatory;
   }
 
-  .video-rail > li {
+  .arrival-rail > li {
     scroll-snap-align: start;
   }
 
-  .video-rail__item {
-    display: block;
-  }
-
-  .video-rail__screen {
-    position: relative;
-    display: block;
-    aspect-ratio: 9 / 16;
-    overflow: hidden;
-    border-radius: 2px;
-    background: var(--ink);
-  }
-
-  .video-rail__screen img {
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .video-rail__play {
-    position: absolute;
-    inset-inline-start: 0.6rem;
-    top: 0.6rem;
+  .arrival-card {
     display: grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    height: 100%;
+    gap: 0.6rem;
+    padding: 0.9rem;
+    border: 2px solid var(--foreground);
     border-radius: 2px;
-    background: oklch(0.2 0.014 55 / 0.72);
-    color: oklch(0.97 0.012 85);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease;
   }
 
-  .video-rail__price {
-    position: absolute;
-    inset-inline-start: 0.6rem;
-    bottom: 0.6rem;
-    padding: 0.15rem 0.5rem;
-    background: var(--harissa);
-    color: oklch(0.97 0.012 85);
-    font-size: 0.875rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+  .arrival-card:hover {
+    background: var(--secondary);
   }
 
-  .video-rail__item:focus-visible {
+  .arrival-card:focus-visible {
     outline: 3px solid var(--harissa);
     outline-offset: 3px;
   }
 
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .video-rail__item:hover .video-rail__screen img {
-      transform: scale(1.05);
-    }
+  .arrival-card__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .arrival-card__title {
+    font-family: var(--font-title);
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .arrival-card__sheet {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .arrival-card__photo {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--secondary);
   }
 
   @media (min-width: 48rem) {
-    .video-rail {
+    .arrival-rail {
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: row;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       margin-inline: 0;
       padding-inline: 0;
+      overflow: visible;
     }
+  }
+
+  @media (min-width: 64rem) {
+    .arrival-rail {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Boutiques sur l'accueil : des badges compacts, logo à gauche. */
+  .shop-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+    gap: 0.6rem;
+  }
+
+  .shop-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 4rem;
+    padding: 0.65rem 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .shop-badge:hover {
+    border-color: var(--foreground);
+    background: var(--secondary);
+  }
+
+  .shop-badge:focus-visible {
+    outline: 3px solid var(--harissa);
+    outline-offset: 2px;
+  }
+
+  .shop-mark[data-size="md"] {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 0.95rem;
+  }
+
+  .shop-badge__mark {
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 3px var(--border);
+  }
+
+  /* Choisir les pièces d'un arrivage */
+  .arrival-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 0.6rem;
+  }
+
+  .arrival-pick {
+    display: grid;
+    gap: 0.2rem;
+    cursor: pointer;
+  }
+
+  .arrival-pick__photo {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--secondary);
+    box-shadow: 0 0 0 1.5px var(--border);
+    transition: box-shadow 0.15s ease;
+  }
+
+  .arrival-pick.is-checked .arrival-pick__photo {
+    box-shadow: 0 0 0 3px var(--harissa);
+  }
+
+  .arrival-pick:has(input:focus-visible) .arrival-pick__photo {
+    outline: 3px solid var(--foreground);
+    outline-offset: 2px;
+  }
+
+  .arrival-pick:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .arrival-pick__check {
+    position: absolute;
+    inset-block-start: 0.35rem;
+    inset-inline-end: 0.35rem;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    color: oklch(0.97 0.012 85);
+    background: var(--harissa);
+  }
+
+  .arrival-pick__title {
+    overflow: hidden;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   /* Annuaire des boutiques */
@@ -1661,267 +1796,11 @@
     }
   }
 
-  /* L'atelier : Stylist, Outfit Builder, Fripe Walk, en rangées d'étiquettes sur encre. */
-  .atelier {
-    margin-block-start: 1.5rem;
-    padding-block: 3.5rem 4rem;
-    color: oklch(0.955 0.016 88);
-    background: oklch(0.2 0.014 55);
-  }
-
-  .dark .atelier {
-    background: oklch(0.255 0.018 55);
-  }
-
-  .atelier__head {
-    display: grid;
-    gap: 0.75rem;
-    margin-block-end: 2rem;
-  }
-
-  .atelier__title {
-    font-family: var(--font-title);
-    font-size: clamp(2.8rem, 11vw, 5.75rem);
-    font-weight: 800;
-    line-height: 0.88;
-    letter-spacing: -0.03em;
-  }
-
-  .atelier__lead {
-    max-width: 38ch;
-    font-size: 1rem;
-    line-height: 1.5;
-    opacity: 0.78;
-  }
-
-  .atelier__list {
-    border-block-start: 1px solid oklch(0.955 0.016 88 / 0.22);
-  }
-
-  .atelier__row {
-    position: relative;
-    isolation: isolate;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "text visual"
-      "go visual";
-    align-items: center;
-    gap: 0.6rem 1rem;
-    padding: 1.4rem 0.25rem;
-    border-block-end: 1px solid oklch(0.955 0.016 88 / 0.22);
-  }
-
-  /* Au survol, le rouge glisse sous la rangée depuis le début de ligne. */
-  .atelier__row::before {
-    content: "";
-    position: absolute;
-    inset: 0 -1rem;
-    z-index: -1;
-    background: var(--harissa);
-    clip-path: inset(0 100% 0 0);
-    transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  [dir="rtl"] .atelier__row::before {
-    clip-path: inset(0 0 0 100%);
-  }
-
-  .atelier__text {
-    grid-area: text;
-    min-width: 0;
-  }
-
-  .atelier__name {
-    display: block;
-    font-family: var(--font-title);
-    font-size: clamp(1.7rem, 6.5vw, 2.9rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-
-  .atelier__body {
-    display: block;
-    margin-block-start: 0.4rem;
-    opacity: 0.78;
-  }
-
-  .atelier__go {
-    grid-area: go;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: oklch(0.8 0.08 75);
-  }
-
-  .atelier__visual {
-    grid-area: visual;
-    position: relative;
-    display: flex;
-    width: 6.5rem;
-    height: 5.5rem;
-    align-items: flex-end;
-    justify-content: center;
-  }
-
-  .atelier__row:focus-visible {
-    outline: 3px solid var(--harissa);
-    outline-offset: 2px;
-  }
-
-  .atelier-stylist__tag {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    z-index: 1;
-    padding: 0.15rem 0.45rem;
-    border-radius: 2px;
-    color: oklch(0.2 0.014 55);
-    background: oklch(0.74 0.085 72);
-    font-size: 0.7rem;
-    font-weight: 800;
-    rotate: -6deg;
-    transition: rotate 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
-  }
-
-  .atelier-stylist__piece,
-  .atelier-outfit__piece {
-    width: 2.6rem;
-    height: auto;
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .atelier-stylist__piece + .atelier-stylist__piece {
-    margin-inline-start: -0.7rem;
-  }
-
-  .atelier-outfit {
-    gap: 0.15rem;
-  }
-
-  .atelier-outfit__piece:nth-of-type(2) {
-    transform: translateY(-0.5rem);
-  }
-
-  .atelier-walk__frame {
-    position: relative;
-    width: 2.2rem;
-    aspect-ratio: 9 / 16;
-    overflow: hidden;
-    border-radius: 2px;
-    background: oklch(0.955 0.016 88 / 0.12);
-    box-shadow: 0 0 0 1.5px oklch(0.955 0.016 88 / 0.5);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .atelier-walk__frame:nth-child(1) {
-    transform: translateX(0.5rem) rotate(-9deg);
-  }
-
-  .atelier-walk__frame:nth-child(2) {
-    z-index: 1;
-    width: 2.5rem;
-  }
-
-  .atelier-walk__frame:nth-child(3) {
-    transform: translateX(-0.5rem) rotate(9deg);
-  }
-
-  .atelier-walk__play {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    color: oklch(0.955 0.016 88);
-    background: oklch(0.2 0.014 55 / 0.35);
-  }
-
-  @media (min-width: 48rem) {
-    .atelier {
-      padding-block: 5rem 5.5rem;
-    }
-
-    .atelier__head {
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: end;
-      gap: 3rem;
-      margin-block-end: 2.5rem;
-    }
-
-    .atelier__row {
-      grid-template-columns: minmax(0, 1fr) 10rem 8rem;
-      grid-template-areas: "text visual go";
-      padding-block: 1.9rem;
-    }
-
-    .atelier__go {
-      justify-content: flex-end;
-    }
-
-    .atelier__visual {
-      width: 9rem;
-      height: 6rem;
-    }
-
-    .atelier-stylist__piece,
-    .atelier-outfit__piece {
-      width: 3.2rem;
-    }
-
-    .atelier-walk__frame {
-      width: 2.7rem;
-    }
-
-    .atelier-walk__frame:nth-child(2) {
-      width: 3.1rem;
-    }
-  }
-
   @media (hover: hover) {
     .shop-tile:hover .shop-tile__photo img {
       transform: scale(1.06);
     }
 
-    .atelier__row:hover::before,
-    .atelier__row:focus-visible::before {
-      clip-path: inset(0 0 0 0);
-    }
-
-    .atelier__row:hover .atelier__go,
-    .atelier__row:focus-visible .atelier__go {
-      color: oklch(0.97 0.012 85);
-    }
-
-    .atelier__row:hover .atelier-stylist__tag {
-      rotate: 5deg;
-    }
-
-    .atelier__row:hover .atelier-stylist__piece:nth-of-type(1) {
-      transform: translateX(-0.35rem) rotate(-4deg);
-    }
-
-    .atelier__row:hover .atelier-stylist__piece:nth-of-type(3) {
-      transform: translateX(0.35rem) rotate(4deg);
-    }
-
-    .atelier__row:hover .atelier-outfit__piece {
-      transform: translateY(-0.35rem);
-    }
-
-    .atelier__row:hover .atelier-outfit__piece:nth-of-type(2) {
-      transform: translateY(-0.85rem);
-    }
-
-    .atelier__row:hover .atelier-walk__frame:nth-child(1) {
-      transform: translateX(0.1rem) rotate(-14deg);
-    }
-
-    .atelier__row:hover .atelier-walk__frame:nth-child(3) {
-      transform: translateX(-0.1rem) rotate(14deg);
-    }
   }
 
   /* Le rideau d'univers et le bandeau du catalogue */
@@ -2517,11 +2396,8 @@
   .armoire__inside::after,
   .showcase,
   .path,
-  .atelier__row::before,
-  .atelier-stylist__tag,
-  .atelier-stylist__piece,
-  .atelier-outfit__piece,
-  .atelier-walk__frame {
+  .path__piece,
+  .arrival-card {
     transition: none;
   }
 

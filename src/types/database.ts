@@ -5,7 +5,53 @@ export type Database = {
   
   "public": {
           Tables: {
-            "account_deletions": {
+            "arrival_products": {
+                  Row: {
+                    "arrival_id": string,"position": number,"product_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "arrival_id": string,"position"?: number,"product_id": string
+                  }
+                  Update: {
+                    "arrival_id"?: string,"position"?: number,"product_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "arrival_products_arrival_id_fkey"
+      columns: ["arrival_id"]
+isOneToOne: false
+      referencedRelation: "arrivals"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "arrival_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"arrivals": {
+                  Row: {
+                    "created_at": string,"id": string,"note": string | null,"review_note": string | null,"reviewed_at": string | null,"shop_id": string,"status": Database["public"]['Enums']["arrival_status"],"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"shop_id": string,"status"?: Database["public"]['Enums']["arrival_status"],"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"shop_id"?: string,"status"?: Database["public"]['Enums']["arrival_status"],"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "arrivals_shop_id_fkey"
+      columns: ["shop_id"]
+isOneToOne: false
+      referencedRelation: "shops"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"account_deletions": {
                   Row: {
                     "attempts": number,"completed_at": string | null,"requested_at": string,"user_id": string
                   }
@@ -1606,8 +1652,17 @@ isOneToOne: false
 "review_report":
 { Args: { "p_decision": Database["public"]['Enums']["report_decision"],"p_note": string,"p_report_id": string }; Returns: undefined
                            },
+"review_arrival":
+{ Args: { "p_arrival_id": string,"p_note": string,"p_status": Database["public"]['Enums']["arrival_status"] }; Returns: undefined
+                           },
 "review_shop":
 { Args: { "p_note": string,"p_shop_id": string,"p_status": Database["public"]['Enums']["shop_status"] }; Returns: undefined
+                           },
+"submit_arrival":
+{ Args: { "p_note": string,"p_product_ids": string[],"p_shop_id": string,"p_title": string }; Returns: string
+                           },
+"withdraw_arrival":
+{ Args: { "p_arrival_id": string }; Returns: undefined
                            },
 "save_delivery_rates":
 { Args: { "p_default_fee": number,"p_overrides": Json,"p_shop_id": string }; Returns: undefined
@@ -1662,7 +1717,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "account_status": "active"|"suspended"|"deleted","app_locale": "fr"|"ar","block_side": "client"|"shop","category_section": "mode"|"marketplace","fulfillment_method": "delivery"|"pickup","listing_section": "marketplace"|"vide_dressing","message_side": "client"|"shop","order_status": "pending"|"confirmed"|"preparing"|"shipped"|"delivered"|"cancelled","outfit_slot": "top"|"bottom"|"shoes"|"accessory","product_condition": "new_with_tags"|"like_new"|"very_good"|"good"|"fair","product_status": "available"|"reserved"|"sold","publication_status": "draft"|"published"|"archived","report_decision": "dismiss"|"remove_content"|"suspend","report_status": "open"|"resolved"|"dismissed","report_target": "product"|"video"|"conversation"|"shop"|"account"|"review"|"listing"|"listing_thread","reservation_status": "active"|"converted"|"expired"|"cancelled","review_status": "published"|"hidden","shop_plan": "standard"|"pro","shop_role": "owner"|"manager"|"staff","shop_status": "pending"|"approved"|"rejected"|"suspended"|"closed","stock_request_status": "open"|"answered"|"closed","video_status": "draft"|"published"|"archived"
+            "account_status": "active"|"suspended"|"deleted","arrival_status": "pending"|"approved"|"rejected","app_locale": "fr"|"ar","block_side": "client"|"shop","category_section": "mode"|"marketplace","fulfillment_method": "delivery"|"pickup","listing_section": "marketplace"|"vide_dressing","message_side": "client"|"shop","order_status": "pending"|"confirmed"|"preparing"|"shipped"|"delivered"|"cancelled","outfit_slot": "top"|"bottom"|"shoes"|"accessory","product_condition": "new_with_tags"|"like_new"|"very_good"|"good"|"fair","product_status": "available"|"reserved"|"sold","publication_status": "draft"|"published"|"archived","report_decision": "dismiss"|"remove_content"|"suspend","report_status": "open"|"resolved"|"dismissed","report_target": "product"|"video"|"conversation"|"shop"|"account"|"review"|"listing"|"listing_thread","reservation_status": "active"|"converted"|"expired"|"cancelled","review_status": "published"|"hidden","shop_plan": "standard"|"pro","shop_role": "owner"|"manager"|"staff","shop_status": "pending"|"approved"|"rejected"|"suspended"|"closed","stock_request_status": "open"|"answered"|"closed","video_status": "draft"|"published"|"archived"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1778,7 +1833,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "account_status": ["active", "suspended", "deleted"],"app_locale": ["fr", "ar"],"block_side": ["client", "shop"],"category_section": ["mode", "marketplace"],"fulfillment_method": ["delivery", "pickup"],"listing_section": ["marketplace", "vide_dressing"],"message_side": ["client", "shop"],"order_status": ["pending", "confirmed", "preparing", "shipped", "delivered", "cancelled"],"outfit_slot": ["top", "bottom", "shoes", "accessory"],"product_condition": ["new_with_tags", "like_new", "very_good", "good", "fair"],"product_status": ["available", "reserved", "sold"],"publication_status": ["draft", "published", "archived"],"report_decision": ["dismiss", "remove_content", "suspend"],"report_status": ["open", "resolved", "dismissed"],"report_target": ["product", "video", "conversation", "shop", "account", "review", "listing", "listing_thread"],"reservation_status": ["active", "converted", "expired", "cancelled"],"review_status": ["published", "hidden"],"shop_plan": ["standard", "pro"],"shop_role": ["owner", "manager", "staff"],"shop_status": ["pending", "approved", "rejected", "suspended", "closed"],"stock_request_status": ["open", "answered", "closed"],"video_status": ["draft", "published", "archived"]
+            "account_status": ["active", "suspended", "deleted"],"arrival_status": ["pending", "approved", "rejected"],"app_locale": ["fr", "ar"],"block_side": ["client", "shop"],"category_section": ["mode", "marketplace"],"fulfillment_method": ["delivery", "pickup"],"listing_section": ["marketplace", "vide_dressing"],"message_side": ["client", "shop"],"order_status": ["pending", "confirmed", "preparing", "shipped", "delivered", "cancelled"],"outfit_slot": ["top", "bottom", "shoes", "accessory"],"product_condition": ["new_with_tags", "like_new", "very_good", "good", "fair"],"product_status": ["available", "reserved", "sold"],"publication_status": ["draft", "published", "archived"],"report_decision": ["dismiss", "remove_content", "suspend"],"report_status": ["open", "resolved", "dismissed"],"report_target": ["product", "video", "conversation", "shop", "account", "review", "listing", "listing_thread"],"reservation_status": ["active", "converted", "expired", "cancelled"],"review_status": ["published", "hidden"],"shop_plan": ["standard", "pro"],"shop_role": ["owner", "manager", "staff"],"shop_status": ["pending", "approved", "rejected", "suspended", "closed"],"stock_request_status": ["open", "answered", "closed"],"video_status": ["draft", "published", "archived"]
           }
         }
 } as const

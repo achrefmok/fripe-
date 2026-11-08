@@ -58,6 +58,8 @@ const KNOWN_RPC_ERRORS = new Set([
   "too_many_outfits",
   "empty_outfit",
   "product_locked",
+  "arrival_title",
+  "arrival_pieces",
   "price_changed",
   "invalid_parent",
   "invalid_decision",

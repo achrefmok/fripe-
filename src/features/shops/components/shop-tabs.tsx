@@ -8,12 +8,13 @@ import { cn } from "@/lib/utils";
 // Le reste (ventes, échanges, avis) reste à un geste, dans une rangée secondaire.
 const PRIMARY: { key: "myShop" | "myProducts" | "myVideos"; icon: LucideIcon; paths: string[] }[] = [
   { key: "myShop", icon: Store, paths: ["", "/reglages"] },
-  { key: "myProducts", icon: Package, paths: ["/produits", "/publication-rapide", "/collections", "/stock"] },
+  { key: "myProducts", icon: Package, paths: ["/produits", "/arrivages", "/publication-rapide", "/collections", "/stock"] },
   { key: "myVideos", icon: Clapperboard, paths: ["/videos"] },
 ];
 
 const PRODUCT_PAGES = [
   ["products", "/produits"],
+  ["arrivals", "/arrivages"],
   ["quick", "/publication-rapide"],
   ["collections", "/collections"],
   ["stock", "/stock"],
