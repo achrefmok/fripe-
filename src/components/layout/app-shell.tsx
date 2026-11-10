@@ -70,11 +70,11 @@ export function AppShell({
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
-      <aside className="hidden w-60 shrink-0 flex-col border-e md:sticky md:top-0 md:flex md:h-svh">
+      <aside className="hidden w-60 shrink-0 flex-col border-e bg-surface md:sticky md:top-0 md:flex md:h-svh">
         <div className="flex h-14 items-center px-5">
           <BrandLink />
         </div>
-        <p className="px-5 pb-3 pt-4 text-sm font-semibold text-muted-foreground">{title}</p>
+        <p className="luxe-kicker px-5 pb-3 pt-4">{title}</p>
         <nav aria-label={title} className="grid gap-0.5 px-2">
           {links.map((link) => (
             <Link
@@ -82,7 +82,7 @@ export function AppShell({
               href={link.href}
               aria-current={isActive(link) ? "page" : undefined}
               className={cn(
-                "flex h-10 items-center gap-2.5 px-3 text-sm font-medium transition-colors",
+                "flex h-10 items-center gap-2.5 rounded-full px-4 text-sm font-medium transition-colors",
                 isActive(link)
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -99,7 +99,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b bg-background pt-[env(safe-area-inset-top)]">
+        <header className="luxe-header sticky top-0 z-30 pt-[env(safe-area-inset-top)]">
           <div className="flex h-14 items-center gap-1 px-4 md:px-6">
             <BrandLink className="me-auto md:hidden" />
             <div className="ms-auto flex items-center gap-1">
@@ -117,8 +117,8 @@ export function AppShell({
                 href={link.href}
                 aria-current={isActive(link) ? "page" : undefined}
                 className={cn(
-                  "flex h-9 shrink-0 items-center gap-1.5 px-3 text-sm font-medium",
-                  isActive(link) ? "bg-foreground text-background" : "text-muted-foreground",
+                  "flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium",
+                  isActive(link) ? "border-foreground bg-foreground text-background" : "text-muted-foreground",
                 )}
               >
                 <LinkIcon name={link.icon} />

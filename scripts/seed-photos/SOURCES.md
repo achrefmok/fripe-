@@ -38,3 +38,7 @@ Source : [Unsplash](https://unsplash.com), [licence Unsplash](https://unsplash.c
 | chaussures-cuir.jpg | https://unsplash.com/photos/1614252235316-8c857d38b5f4 |
 
 Les identifiants sont ceux des fichiers `images.unsplash.com/photo-<identifiant>` d'où les photos ont été téléchargées.
+
+## Visuels de l'interface
+
+`public/visuals/connexion-poncho.jpg` reprend `poncho-crochet.jpg` (même photo Unsplash, même licence) pour le panneau des pages de connexion.

@@ -23,16 +23,16 @@ export function ThemeToggle() {
   );
 }
 
-export function LocaleSwitch() {
+export function LocaleSwitch({ compact = false }: { compact?: boolean }) {
   const t = useTranslations("common");
   const locale = useLocale();
   const pathname = usePathname();
 
   return (
-    <Button variant="ghost" asChild className="px-3">
+    <Button variant="ghost" asChild className={compact ? "px-2.5" : "px-3"}>
       <Link href={pathname} locale={locale === "ar" ? "fr" : "ar"} aria-label={t("languageLabel")}>
         <Languages />
-        <span lang={locale === "ar" ? "fr" : "ar"}>{t("language")}</span>
+        <span lang={locale === "ar" ? "fr" : "ar"} className={compact ? "max-sm:sr-only" : undefined}>{t("language")}</span>
       </Link>
     </Button>
   );

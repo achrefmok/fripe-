@@ -1,13 +1,11 @@
 "use client";
 
-import { ArrowDown, ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { CSSProperties, MouseEvent } from "react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "@/i18n/navigation";
 import { universeFor } from "../universes";
 import { Garment } from "./garment";
-import { useUniverse } from "./universe-context";
 
 type Category = { id: string; slug: string; nameFr: string; nameAr: string };
 type DoorState = "intro" | "open" | "closed";
@@ -34,26 +32,15 @@ function rememberOpened() {
   }
 }
 
-// La porte est le seul bouton du dressing : on la touche pour ouvrir, on la touche pour refermer.
-// La porte gauche porte le nom et l'état pour les lecteurs d'écran ; la droite fait le même geste
-// à la souris et au doigt sans doubler l'annonce.
-function Door({
-  side,
-  label,
-  expanded,
-  onToggle,
-}: {
-  side: "left" | "right";
-  label: string;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+// Une porte de l'arche : la face aux filets d'or, le dos au miroir. La porte gauche porte le nom et
+// l'état pour les lecteurs d'écran ; la droite fait le même geste sans doubler l'annonce.
+function Door({ side, label, expanded, onToggle }: { side: "left" | "right"; label: string; expanded: boolean; onToggle: () => void }) {
   const primary = side === "left";
 
   return (
     <button
       type="button"
-      className={`armoire__door armoire__door--${side}`}
+      className={`arch__door arch__door--${side}`}
       onClick={onToggle}
       aria-label={primary ? label : undefined}
       aria-expanded={primary ? expanded : undefined}
@@ -61,70 +48,35 @@ function Door({
       aria-hidden={primary ? undefined : true}
       tabIndex={primary ? undefined : -1}
     >
-      <span className="armoire__face armoire__face--front" aria-hidden="true">
-        <span className="armoire__panel" />
-        <span className="armoire__handle" />
+      <span className="arch__face arch__face--front" aria-hidden="true">
+        <span className="arch__trim" />
+        <span className="arch__hinge" />
+        <span className="arch__knob" />
       </span>
-      <span className="armoire__face armoire__face--back" aria-hidden="true">
-        {primary ? <span className="armoire__mirror" /> : null}
+      <span className="arch__face arch__face--back" aria-hidden="true">
+        {primary ? <span className="arch__mirror" /> : null}
       </span>
     </button>
   );
 }
 
-function Hanging({ category, locale, closed }: { category: Category; locale: string; closed: boolean }) {
-  const { select } = useUniverse();
-  const universe = universeFor(category.slug);
-  const name = locale === "ar" ? category.nameAr : category.nameFr;
-
-  function open(event: MouseEvent<HTMLAnchorElement>) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-    event.preventDefault();
-    select(category.slug, { reveal: true });
-  }
-
-  return (
-    <Link
-      href={{ pathname: "/catalogue", query: { categorie: category.slug } }}
-      className="armoire__item"
-      onClick={open}
-      tabIndex={closed ? -1 : undefined}
-    >
-      <Garment universe={universe} className="armoire__garment" />
-      <span className="armoire__name">{name}</span>
-    </Link>
-  );
-}
-
-// L'accueil s'ouvre sur deux outils, AI Stylist et Outfit Builder, et sur le dressing. L'armoire s'ouvre à
-// l'arrivée, une fois par visite, en CSS : rien n'attend JavaScript.
-export function DressingHero({
-  categories,
-  locale,
-  hasRunway,
-}: {
-  categories: Category[];
-  locale: string;
-  hasRunway: boolean;
-}) {
+// Le haut de l'accueil : la nuit, l'or, la phrase, les deux chemins et le dressing en arche tunisienne.
+export function DressingHero({ categories, locale }: { categories: Category[]; locale: string }) {
   const t = useTranslations("home");
   const opened = useSyncExternalStore(subscribe, wasOpened, () => false);
   const [toggled, setToggled] = useState<Exclude<DoorState, "intro"> | null>(null);
   const state: DoorState = toggled ?? (opened ? "open" : "intro");
   const closed = state === "closed";
-  const rods = [categories.slice(0, Math.ceil(categories.length / 2)), categories.slice(Math.ceil(categories.length / 2))];
+  const rods = [categories.slice(0, 3), categories.slice(3, 6)];
   const doors = useRef<HTMLDivElement>(null);
   const toggle = () => setToggled(closed ? "open" : "closed");
 
-  // L'ouverture peut finir avant que JavaScript arrive, sur un téléphone lent : on lit l'état réel
-  // de l'animation plutôt que d'attendre un événement déjà passé.
+  // L'ouverture peut finir avant que JavaScript arrive : on lit l'état réel de l'animation.
   useEffect(() => {
     if (state !== "intro" || !doors.current) return;
 
     let cancelled = false;
-    const animations = doors.current.getAnimations({ subtree: true });
-
-    Promise.all(animations.map((animation) => animation.finished))
+    Promise.all(doors.current.getAnimations({ subtree: true }).map((animation) => animation.finished))
       .then(() => {
         if (cancelled) return;
         rememberOpened();
@@ -139,77 +91,62 @@ export function DressingHero({
     };
   }, [state]);
 
-  return (
-    <section className="dressing" aria-labelledby="accueil-titre">
-      <div className="dressing__grid mx-auto max-w-7xl px-4 md:px-6">
-        <div className="dressing__intro">
-          <h1 id="accueil-titre" className="dressing__title">
-            {t("tagline")}
-          </h1>
+  // Le projecteur suit la souris ; l'arche se tourne légèrement vers elle.
+  function follow(event: MouseEvent<HTMLElement>) {
+    const box = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty("--mx", `${((event.clientX - box.left) / box.width) * 100}%`);
+    event.currentTarget.style.setProperty("--my", `${((event.clientY - box.top) / box.height) * 100}%`);
+    event.currentTarget.style.setProperty("--tilt", `${((event.clientX - box.left) / box.width - 0.5) * 14}deg`);
+  }
 
-          <nav aria-label={t("pathsLabel")} className="paths">
-            <Link href="/stylist" className="path path--chine">
-              <span className="path__eyelet" aria-hidden="true" />
-              {/* Une tenue complète sous une étiquette de budget. */}
-              <span className="path__scene" aria-hidden="true">
-                <span className="path__budget">{t("discoverStylistTag")}</span>
-                <Garment universe={universeFor("hauts")} className="path__piece" />
-                <Garment universe={universeFor("bas")} className="path__piece" />
-                <Garment universe={universeFor("chaussures")} className="path__piece" />
-              </span>
-              <span className="path__name">{t("discoverStylist")}</span>
-              <span className="path__body">{t("discoverStylistBody")}</span>
-              <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
-            </Link>
-            <Link href="/tenues/nouvelle" className="path path--vends">
-              <span className="path__eyelet" aria-hidden="true" />
-              {/* Trois pièces qui s'assemblent. */}
-              <span className="path__scene" aria-hidden="true">
-                <Garment universe={universeFor("vestes-manteaux")} className="path__piece" />
-                <Garment universe={universeFor("robes")} className="path__piece" />
-                <Garment universe={universeFor("accessoires")} className="path__piece" />
-              </span>
-              <span className="path__name">{t("discoverOutfit")}</span>
-              <span className="path__body">{t("discoverOutfitBody")}</span>
-              <ArrowRight className="path__arrow rtl:-scale-x-100" aria-hidden="true" />
-            </Link>
+  return (
+    <section className="lx-hero" onMouseMove={follow} aria-labelledby="accueil-titre">
+      <div className="lx-hero__inner">
+        <div className="lx-hero__intro">
+          <span className="lx-hero__kicker">{t("heroKicker")}</span>
+          <h1 id="accueil-titre" className="lx-hero__title">
+            {t.rich("heroTitle", { em: (chunks) => <em>{chunks}</em> })}
+          </h1>
+          <p className="lx-hero__lead">{t("heroLead")}</p>
+          <nav aria-label={t("pathsLabel")} className="flex flex-wrap gap-3 pt-1.5">
+            <Link href="/catalogue" className="lx-tag lx-tag--gold">{t("chine")}</Link>
+            <Link href="/vendre" className="lx-tag lx-tag--cream">{t("vends")}</Link>
           </nav>
         </div>
 
         {categories.length ? (
-          <div className="dressing__stage">
-            <div className="armoire" data-state={state}>
-              <div className="armoire__body">
-                <nav id="armoire-interieur" aria-label={t("categoriesTitle")} className="armoire__inside" inert={closed}>
+          <div className="lx-hero__stage">
+            <div className="arch" data-state={state}>
+              <div className="arch__frame">
+                <nav id="armoire-interieur" aria-label={t("categoriesTitle")} className="arch__inside" inert={closed}>
+                  <span className="arch__light" aria-hidden="true" />
                   {rods.map((rod, rodIndex) => (
-                    <div key={rodIndex} className="armoire__shelf">
-                      <div className="armoire__rod" aria-hidden="true" />
-                      <ul className="armoire__rack">
+                    <div key={rodIndex} className="arch__shelf">
+                      <span className="arch__rod" aria-hidden="true" />
+                      <ul className="arch__rack">
                         {rod.map((category, index) => (
                           <li key={category.id} style={{ "--i": rodIndex * 3 + index } as CSSProperties}>
-                            <Hanging category={category} locale={locale} closed={closed} />
+                            <Link href={{ pathname: "/catalogue", query: { categorie: category.slug } }} className="arch__item" tabIndex={closed ? -1 : undefined}>
+                              <Garment universe={universeFor(category.slug)} className="arch__garment" />
+                              <span className="arch__name">{locale === "ar" ? category.nameAr : category.nameFr}</span>
+                            </Link>
                           </li>
                         ))}
                       </ul>
                     </div>
                   ))}
                 </nav>
-                <div ref={doors} className="armoire__doors" dir="ltr">
+                <div ref={doors} className="arch__doors" dir="ltr">
                   <Door side="left" label={closed ? t("heroOpen") : t("heroClose")} expanded={!closed} onToggle={toggle} />
                   <Door side="right" label={closed ? t("heroOpen") : t("heroClose")} expanded={!closed} onToggle={toggle} />
                 </div>
               </div>
-              <div className="armoire__feet" aria-hidden="true" />
+              <span className="arch__feet" aria-hidden="true">
+                <span />
+                <span />
+              </span>
             </div>
-            <p className="dressing__hint">
-              {closed ? t("heroHintClosed") : t("heroHintOpen")}
-              {hasRunway ? (
-                <a href="#defile" className="dressing__runway">
-                  {t("heroRunway")}
-                  <ArrowDown className="size-3.5" aria-hidden="true" />
-                </a>
-              ) : null}
-            </p>
+            <p className="lx-hero__hint">{closed ? t("heroHintClosed") : t("heroHintOpen")}</p>
           </div>
         ) : null}
       </div>

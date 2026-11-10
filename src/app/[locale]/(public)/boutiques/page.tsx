@@ -7,7 +7,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Pagination } from "@/features/admin/components/pagination";
 import { CATALOG_PAGE_SIZE } from "@/features/catalog/constants";
 import { listPublicShops, listShopGovernorates } from "@/features/catalog/queries";
-import { ShopTile } from "@/features/shops/components/shop-tile";
+import { ShopCard } from "@/features/shops/components/shop-card";
 import { getPathname, Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
 
@@ -35,11 +35,14 @@ export default async function ShopsPage({ searchParams }: PageProps<"/[locale]/b
   if (governorateId) params.gouvernorat = String(governorateId);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 md:px-6 md:pb-16 md:pt-10">
+    <div className="mx-auto max-w-[1200px] px-[18px] pb-24 pt-[22px] md:pb-12">
       <header className="shops-head">
         <div className="max-w-2xl">
-          <h1 className="font-display text-4xl font-extrabold text-balance md:text-6xl">{t("title")}</h1>
-          <p className="mt-3 max-w-xl text-pretty leading-relaxed text-muted-foreground md:text-lg">{t("lead")}</p>
+          <p className="luxe-kicker">{t("kicker")}</p>
+          <h1 className="mt-1 font-display text-[clamp(34px,5vw,56px)] font-normal leading-none">
+            {t.rich("titleRich", { em: (chunks) => <em>{chunks}</em> })}
+          </h1>
+          <p className="mt-3 max-w-xl text-pretty leading-relaxed text-muted-foreground">{t("lead")}</p>
         </div>
 
         <form action={getPathname({ href: "/boutiques", locale })} className="shops-filter" role="search">
@@ -77,7 +80,25 @@ export default async function ShopsPage({ searchParams }: PageProps<"/[locale]/b
         </form>
       </header>
 
-      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-foreground pb-2">
+      {governorates.length > 1 ? (
+        <nav aria-label={t("governorateLabel")} className="lx-chips rail-scroll mb-4">
+          <Link href={{ pathname: "/boutiques", query: search ? { q: search } : {} }} aria-current={governorateId ? undefined : "page"} className="lx-chip">
+            {t("allGovernorates")}
+          </Link>
+          {governorates.map((governorate) => (
+            <Link
+              key={governorate.id}
+              href={{ pathname: "/boutiques", query: { ...(search ? { q: search } : {}), gouvernorat: String(governorate.id) } }}
+              aria-current={governorateId === governorate.id ? "page" : undefined}
+              className="lx-chip"
+            >
+              {localizedName(governorate, locale)}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b pb-2">
         <p className="font-semibold tabular-nums" role="status">
           {t("resultCount", { count: total })}
         </p>
@@ -92,20 +113,18 @@ export default async function ShopsPage({ searchParams }: PageProps<"/[locale]/b
         <ul className="shops-grid">
           {shops.map((shop) => (
             <li key={shop.id}>
-              <ShopTile
+              <ShopCard
                 name={shop.name}
                 slug={shop.slug}
                 logoPath={shop.logoPath}
                 coverPath={shop.coverPath}
+                description={shop.description}
                 previews={shop.previews}
-                place={[shop.city, shop.governorate]
+                meta={`${[shop.city, shop.governorate]
                   .filter((entry): entry is { name_fr: string; name_ar: string } => Boolean(entry))
                   .map((entry) => localizedName(entry, locale))
                   .filter((name, index, names) => names.indexOf(name) === index)
-                  .join(", ")}
-                pieces={t("piecesOnline", { count: shop.productCount })}
-                description={shop.description}
-                emptyLabel={t("windowEmpty")}
+                  .join(", ")} · ${t("piecesOnline", { count: shop.productCount })}`}
               />
             </li>
           ))}

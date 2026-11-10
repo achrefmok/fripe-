@@ -25,7 +25,7 @@ export default async function CartPage() {
 
   return (
     <>
-      <h1 className="font-display text-4xl font-extrabold">{t("title")}</h1>
+      <h1 className="font-display text-[clamp(34px,5vw,54px)] font-normal">{t.rich("titleRich", { em: (chunks) => <em>{chunks}</em> })}</h1>
 
       {items.length ? (
         <>
@@ -33,15 +33,21 @@ export default async function CartPage() {
           <div className="mt-4">
             <CartList items={items} />
           </div>
-          <div className="mt-4 flex items-baseline justify-between text-lg font-bold">
-            <span>{t("subtotal")}</span>
-            <span>{formatPrice(subtotal, locale)}</span>
-          </div>
-          {purchasable.length ? (
-            <Button asChild size="lg" className="mt-4 w-full">
-              <Link href="/commande">{t("checkout")}</Link>
-            </Button>
-          ) : null}
+          {/* Le récapitulatif à l'encre : le total en or, le paiement à la livraison. */}
+          <aside className="lx-summary mt-5">
+            <span className="font-display text-2xl">{t("summary")}</span>
+            <span className="flex justify-between border-t border-current/30 pt-3 text-sm opacity-85">
+              <span>{t("payment")}</span>
+              <span>{t("paymentOnDelivery")}</span>
+            </span>
+            <span className="flex items-baseline justify-between">
+              <span className="text-sm">{t("subtotal")}</span>
+              <span className="font-display text-[30px] text-gold">{formatPrice(subtotal, locale)}</span>
+            </span>
+            {purchasable.length ? (
+              <Link href="/commande" className="lx-summary__go">{t("checkout")}</Link>
+            ) : null}
+          </aside>
         </>
       ) : (
         <div className="mt-6">

@@ -13,6 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
 import { productImageUrl } from "@/lib/utils/storage";
+import { FittingBooth } from "./fitting-booth";
 
 function SlotPicker({ slot, onPick }: { slot: Slot; onPick: (item: StyleItem) => void }) {
   const t = useTranslations("outfits");
@@ -29,7 +30,7 @@ function SlotPicker({ slot, onPick }: { slot: Slot; onPick: (item: StyleItem) =>
   }
 
   return (
-    <div className="mt-2 bg-secondary p-3">
+    <div className="mt-2 rounded-2xl bg-secondary p-3">
       <form
         className="flex gap-2"
         onSubmit={(event) => {
@@ -152,6 +153,7 @@ export function OutfitBuilder({
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+      <FittingBooth pieces={pieces} total={total} budget={budgetMillimes} />
       <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
         {SLOTS.map((slot) => {
           const piece = pieces[slot];
@@ -159,7 +161,7 @@ export function OutfitBuilder({
           return (
             <li key={slot} className="border-b pb-3">
               <div className="flex items-center gap-3">
-                <span className="relative h-16 w-12 shrink-0 overflow-hidden bg-secondary">
+                <span className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
                   {piece?.imagePath ? (
                     <Image src={productImageUrl(piece.imagePath)} alt="" fill unoptimized sizes="48px" className="object-cover" />
                   ) : null}

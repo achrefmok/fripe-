@@ -235,7 +235,7 @@ test("stock : masquer et retirer une ligne", async ({ page }) => {
   await expect.poll(async () => (await admin.from("inventory_items").select("is_visible").eq("shop_id", shop.id).single()).data?.is_visible).toBe(false);
   await page.context().clearCookies();
 
-  await page.goto(`/boutique/${shop.slug}`);
+  await page.goto(`/boutique/${shop.slug}?onglet=magasin`);
   await expect(page.getByText("environ 100 pièces")).toHaveCount(0);
 
   await signIn(page, shop.owner.email, `/vendeur/boutique/${shop.id}/stock`);

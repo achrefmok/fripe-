@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { StatusTag } from "@/components/layout/status-tag";
@@ -29,14 +29,20 @@ export default async function SellerShopLayout({
         <ShopMark name={shop.name} logoPath={shop.logo_path} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="min-w-0 font-display text-2xl font-extrabold [overflow-wrap:anywhere] md:text-3xl" dir="auto">{shop.name}</h1>
+            <h1 className="min-w-0 font-display text-[clamp(26px,3.4vw,32px)] font-normal leading-tight [overflow-wrap:anywhere]" dir="auto">{shop.name}</h1>
             <StatusTag status={shop.status} />
           </div>
           {shop.cities ? <p className="text-sm text-muted-foreground">{localizedName(shop.cities, locale)}</p> : null}
         </div>
         <div className="seller-head__actions">
+          <Button asChild>
+            <Link href={`/vendeur/boutique/${shopId}/produits/nouveau`}>
+              <Plus aria-hidden="true" />
+              {t("newProduct")}
+            </Link>
+          </Button>
           {shop.status === "approved" ? (
-            <Button asChild>
+            <Button asChild variant="outline">
               <Link href={`/boutique/${shop.slug}`}>
                 <ExternalLink aria-hidden="true" />
                 {t("viewMyShop")}
@@ -45,7 +51,7 @@ export default async function SellerShopLayout({
           ) : (
             <p className="text-sm text-muted-foreground">{t("viewMyShopPending")}</p>
           )}
-          <Button asChild variant="outline">
+          <Button asChild variant="ghost">
             <Link href="/">
               <ArrowLeft className="rtl:-scale-x-100" aria-hidden="true" />
               {t("backToApp")}

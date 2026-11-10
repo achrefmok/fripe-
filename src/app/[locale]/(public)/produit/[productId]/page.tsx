@@ -16,6 +16,8 @@ import { getViewer } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
 import { formatPrice } from "@/lib/utils/price";
 import { colorLabel } from "@/features/catalog/product-options";
+import { FlipTag } from "@/features/catalog/components/flip-tag";
+import { ShopMark } from "@/features/shops/components/shop-mark";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/produit/[productId]">) {
   const { productId } = await params;
@@ -58,90 +60,98 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
   ].filter((detail) => detail.value);
 
   const availability = { available: "available", reserved: "reserved", sold: "sold" } as const;
+  const city = product.shops.cities ? localizedName(product.shops.cities, locale) : null;
+  const category = product.categories;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-4 md:px-6 md:pb-16 md:pt-10">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-2 md:gap-10">
-        <ProductGallery images={product.product_images} title={title} />
+    <div className="mx-auto max-w-[1200px] px-[18px] pb-24 pt-3.5 md:pb-12">
+      <Link
+        href={category ? { pathname: "/catalogue", query: { categorie: category.slug } } : "/catalogue"}
+        className="inline-block py-1.5 text-[13px] text-muted-foreground hover:text-harissa"
+      >
+        <span className="rtl:hidden">← </span>
+        {category ? localizedName(category, locale) : t("backToCatalogue")}
+        <span className="ltr:hidden"> →</span>
+      </Link>
 
-        <div>
+      <div className="mt-2 flex flex-wrap items-start gap-8">
+        <div className="lx-gallery">
+          <ProductGallery images={product.product_images} title={title} />
+          <span className="lx-gallery__unique" aria-hidden="true">✦ {t("uniquePiece")}</span>
+        </div>
+
+        <div className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
           {product.publication_status !== "published" ? (
-            <p className="mb-3 bg-secondary px-3 py-2 text-sm font-medium">{t("draftNotice")}</p>
+            <p className="rounded-2xl bg-secondary px-3 py-2 text-sm font-medium">{t("draftNotice")}</p>
           ) : null}
 
-          <h1 className="font-display text-3xl leading-tight font-extrabold md:text-4xl">{title}</h1>
-          <p className="mt-2 font-display text-3xl font-extrabold text-harissa">
+          <Link href={`/boutique/${product.shops.slug}`} className="flex items-center gap-2.5 self-start">
+            <ShopMark name={product.shops.name} logoPath={product.shops.logo_path} size="md" />
+            <span className="flex flex-col">
+              <span className="font-medium" dir="auto">{product.shops.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {city ? `${city} · ` : ""}
+                {t("verifiedShop")}
+              </span>
+            </span>
+          </Link>
+
+          <h1 className="font-display text-[clamp(32px,4vw,46px)] leading-[1.05]" dir="auto">{title}</h1>
+          <p className="font-display text-[30px] leading-none text-goldink">
             {product.price_millimes ? formatPrice(product.price_millimes, locale) : null}
           </p>
-          <p className="mt-1 text-sm font-semibold">{t(availability[product.status])}</p>
+          <p className="text-sm font-medium">{t(availability[product.status])}</p>
 
-          <div className="mt-5">
-            <ProductActions
-              productId={product.id}
-              title={title}
-              status={product.status}
-              signedIn={Boolean(viewer)}
-              isFavorite={state.isFavorite}
-              inCart={state.inCart}
-              reservation={state.reservation}
-              ttlMinutes={ttlMinutes}
-            />
-          </div>
+          <FlipTag
+            specs={details.map((detail) => ({ label: detail.label, value: String(detail.value) }))}
+            defectsTitle={t("defects")}
+            defects={product.defects || t("noDefects")}
+            reference={null}
+            flipLabel={t("flipTag")}
+            backLabel={t("flipBack")}
+          />
 
-          <div className="mt-2 flex flex-wrap">
-            <ContactButton
-              signedIn={Boolean(viewer)}
-              next={`/produit/${product.id}`}
-              shopId={product.shops.id}
-              productId={product.id}
-            />
-            {viewer ? <ReportDialog targetType="product" targetId={product.id} /> : null}
-          </div>
+          <ProductActions
+            productId={product.id}
+            title={title}
+            status={product.status}
+            signedIn={Boolean(viewer)}
+            isFavorite={state.isFavorite}
+            inCart={state.inCart}
+            reservation={state.reservation}
+            ttlMinutes={ttlMinutes}
+          />
 
-          <dl className="mt-6 divide-y border-y">
-            {details.map((detail) => (
-              <div key={detail.label} className="flex justify-between gap-4 py-2.5">
-                <dt className="text-muted-foreground">{detail.label}</dt>
-                <dd className="text-end font-medium">{detail.value}</dd>
-              </div>
-            ))}
-            <div className="flex justify-between gap-4 py-2.5">
-              <dt className="text-muted-foreground">{t("shop")}</dt>
-              <dd className="text-end font-medium">
-                <Link href={`/boutique/${product.shops.slug}`} className="underline underline-offset-4">
-                  {product.shops.name}
-                </Link>
-                {product.shops.cities ? (
-                  <span className="block text-sm font-normal text-muted-foreground">
-                    {localizedName(product.shops.cities, locale)}
-                  </span>
-                ) : null}
+          <dl className="flex flex-col border-t">
+            <div className="flex justify-between gap-3 border-b py-3 text-sm">
+              <dt className="text-muted-foreground">{t("deliveryLabel")}</dt>
+              <dd className="text-end">{t("deliveryLine")}</dd>
+            </div>
+            <div className="flex justify-between gap-3 border-b py-3 text-sm">
+              <dt className="text-muted-foreground">{t("pickupLabel")}</dt>
+              <dd className="text-end">{city ? t("pickupLine", { city }) : t("pickupShop")}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2 text-sm">
+              <dt className="text-muted-foreground">{t("question")}</dt>
+              <dd className="flex flex-wrap justify-end">
+                <ContactButton signedIn={Boolean(viewer)} next={`/produit/${product.id}`} shopId={product.shops.id} productId={product.id} />
+                {viewer ? <ReportDialog targetType="product" targetId={product.id} /> : null}
               </dd>
             </div>
           </dl>
 
           {product.description ? (
-            <section className="mt-6">
-              <h2 className="font-semibold">{t("description")}</h2>
-              <p className="mt-1 leading-relaxed whitespace-pre-line text-muted-foreground">
-                {product.description}
-              </p>
+            <section>
+              <h2 className="font-display text-xl">{t("description")}</h2>
+              <p className="mt-1 leading-relaxed whitespace-pre-line text-muted-foreground" dir="auto">{product.description}</p>
             </section>
           ) : null}
-
-          <section className="mt-6">
-            <h2 className="font-semibold">{t("defects")}</h2>
-            <p className="mt-1 leading-relaxed text-muted-foreground">
-              {product.defects || t("noDefects")}
-            </p>
-          </section>
-
         </div>
       </div>
 
       {similar.length ? (
-        <section className="mt-12">
-          <h2 className="mb-4 font-display text-2xl font-extrabold">{t("similar")}</h2>
+        <section className="mt-11">
+          <h2 className="mb-3.5 font-display text-[clamp(22px,3vw,30px)]">{t("similar")}</h2>
           <ProductRail products={similar} />
         </section>
       ) : null}

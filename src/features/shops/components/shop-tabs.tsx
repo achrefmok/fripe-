@@ -69,7 +69,7 @@ export function ShopTabs({ shopId, labels }: { shopId: string; labels: Record<La
               aria-current={at(path) ? "page" : undefined}
               className={cn(
                 "shrink-0 border-b-2 px-3 py-2 text-sm font-semibold transition-colors",
-                at(path) ? "border-harissa text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+                at(path) ? "border-gold text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
               {labels[key]}
@@ -86,7 +86,7 @@ export function ShopTabs({ shopId, labels }: { shopId: string; labels: Record<La
             href={`${base}${path}`}
             aria-current={at(path) ? "page" : undefined}
             className={cn(
-              "inline-flex h-9 shrink-0 items-center border px-3 text-sm font-medium transition-colors",
+              "inline-flex h-9 shrink-0 items-center rounded-full border px-3.5 text-[13px] font-medium transition-colors",
               at(path) ? "border-foreground bg-foreground text-background" : "hover:border-foreground",
             )}
           >

@@ -10,6 +10,7 @@ import { catalogFiltersSchema } from "@/features/catalog/schemas";
 import { Garment } from "@/features/home/components/garment";
 import { universeFor } from "@/features/home/universes";
 import { getLocations } from "@/features/shops/queries";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata() {
   const t = await getTranslations("catalog");
@@ -38,29 +39,69 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
     Object.entries(rest).filter(([, value]) => value),
   ) as Record<string, string>;
 
+  const roots = categories.filter((category) => !category.parentId);
+  const name = (category: { nameFr: string; nameAr: string }) => (locale === "ar" ? category.nameAr : category.nameFr);
+  const subs = root ? categories.filter((category) => category.parentId === root.id).map(name) : [];
+  const chipHref = (slug: string | null) => ({ pathname: "/catalogue" as const, query: { ...params, categorie: slug ?? undefined, page: undefined } });
+
   return (
-    <>
-      {selected && universe ? (
-        <header
-          className="universe-band"
-          style={{ "--u-surface": universe.surface, "--u-ink": universe.ink } as CSSProperties}
-        >
-          <div className="mx-auto flex max-w-7xl items-end justify-between gap-4 px-4 md:px-6">
-            <h1 className="universe-band__title">{locale === "ar" ? selected.nameAr : selected.nameFr}</h1>
-            <Garment universe={universe} className="universe-band__garment" />
-          </div>
-        </header>
-      ) : null}
+    <div className="mx-auto max-w-[1200px] px-[18px] pb-24 pt-[18px] md:pb-16">
+      {/* Friptex Luxe : le bandeau de l'univers, son vêtement qui se balance au cintre. */}
+      <header
+        className="lx-band"
+        style={universe ? ({ "--u-surface": universe.surface, "--u-ink": universe.ink } as CSSProperties) : undefined}
+      >
+        <div className="min-w-0 flex-1">
+          <p className="lx-band__kicker">{t("bandKicker", { count: total })}</p>
+          <h1 className="lx-band__title">{selected ? name(selected) : t("allTitle")}</h1>
+          <p className="lx-band__subs">{subs.length ? subs.join(locale === "ar" ? "، " : ", ") : t("allSubs")}</p>
+        </div>
+        <Garment universe={universe ?? universeFor("tout")} className="lx-band__garment" />
+      </header>
 
-      <div className={`mx-auto max-w-7xl px-4 pb-24 md:px-6 md:pb-16 ${universe ? "pt-4" : "pt-6 md:pt-10"}`}>
-      {universe ? null : <h1 className="font-display text-4xl font-extrabold">{t("title")}</h1>}
+      <nav aria-label={t("categoriesLabel")} className="lx-chips rail-scroll">
+        <Link href={chipHref(null)} aria-current={selected ? undefined : "page"} className="lx-chip">
+          {t("all")}
+        </Link>
+        {roots.map((category) => (
+          <Link key={category.id} href={chipHref(category.slug)} aria-current={root?.id === category.id ? "page" : undefined} className="lx-chip">
+            {name(category)}
+          </Link>
+        ))}
+      </nav>
 
-      <div className="mt-4">
+      {/* Les réglages rapides, soulignés d'or : la taille et l'ordre. */}
+      <div className="lx-quick">
+        <span className="text-muted-foreground">{t("size")}</span>
+        {["", "S", "M", "L", "38", "41"].map((size) => (
+          <Link
+            key={size || "toutes"}
+            href={{ pathname: "/catalogue", query: { ...params, taille: size || undefined, page: undefined } }}
+            aria-current={(filters.taille ?? "") === size ? "true" : undefined}
+            className="lx-quick__link"
+          >
+            {size || t("allSizes")}
+          </Link>
+        ))}
+        <span className="ms-auto flex flex-wrap items-center gap-3">
+          <span className="text-muted-foreground">{t("sort")}</span>
+          {(["recent", "price_asc", "price_desc"] as const).map((sort) => (
+            <Link
+              key={sort}
+              href={{ pathname: "/catalogue", query: { ...params, tri: sort, page: undefined } }}
+              aria-current={filters.tri === sort ? "true" : undefined}
+              className="lx-quick__link"
+            >
+              {t(sort === "recent" ? "sortRecentShort" : sort === "price_asc" ? "sortAscShort" : "sortDescShort")}
+            </Link>
+          ))}
+        </span>
+      </div>
+
+      <div className="mt-2">
         <CatalogFiltersForm
           filters={filters}
-          categories={categories
-            .filter((category) => !category.parentId)
-            .map((category) => ({ value: category.slug, nameFr: category.nameFr, nameAr: category.nameAr }))}
+          categories={roots.map((category) => ({ value: category.slug, nameFr: category.nameFr, nameAr: category.nameAr }))}
           governorates={locations.map((location) => ({
             value: String(location.id),
             nameFr: location.nameFr,
@@ -91,7 +132,6 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
         basePath="/catalogue"
         params={params}
       />
-      </div>
-    </>
+    </div>
   );
 }

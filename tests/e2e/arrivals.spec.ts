@@ -72,17 +72,19 @@ test("arrivage refusé : le motif est lu par la boutique, rien ne paraît", asyn
   await expect(page.getByText(title)).toHaveCount(0);
 });
 
-test("accueil : AI Stylist et Outfit Builder en tête, boutiques en badges, « Aussi sur FRIPE » en bas", async ({ page }) => {
+test("accueil : arrivages validés avant la sélection, Marketplace et Vide-Dressing puis l'atelier en bas", async ({ page }) => {
   await page.goto("/");
-  const tools = page.getByRole("navigation", { name: "Composer une tenue" });
-  await expect(tools.getByRole("link", { name: /AI Stylist/ })).toHaveAttribute("href", "/stylist");
-  await expect(tools.getByRole("link", { name: /Outfit Builder/ })).toHaveAttribute("href", "/tenues/nouvelle");
 
-  // Plus de rangée vidéo ni d'atelier en bas de page.
-  await expect(page.getByRole("heading", { name: "En vidéo" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "L'atelier" })).toHaveCount(0);
-
-  // « Aussi sur FRIPE » est la dernière section de l'accueil.
+  // Les arrivages validés passent avant la sélection et les boutiques.
   const headings = await page.locator("main h2").allTextContents();
-  expect(headings.at(-1)).toBe("Aussi sur FRIPE");
+  const arrivals = headings.indexOf("Nouveaux arrivages");
+  if (arrivals !== -1) expect(arrivals).toBeLessThan(headings.indexOf("Boutiques"));
+
+  // « Aussi sur FRIPE » puis l'atelier ferment la page.
+  const sections = page.getByRole("region", { name: "Aussi sur FRIPE" });
+  await expect(sections.getByRole("link", { name: /Marketplace/ })).toHaveAttribute("href", "/marketplace");
+  await expect(sections.getByRole("link", { name: /Vide-Dressing/ })).toHaveAttribute("href", "/vide-dressing");
+  const atelier = page.getByRole("region", { name: "L'atelier" });
+  await expect(atelier.getByRole("link", { name: /AI Stylist/ })).toHaveAttribute("href", "/stylist");
+  await expect(atelier.getByRole("link", { name: /Outfit Builder/ })).toHaveAttribute("href", "/tenues/nouvelle");
 });

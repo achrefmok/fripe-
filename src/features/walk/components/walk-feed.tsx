@@ -116,7 +116,7 @@ function WalkSlide({
       ref={slide}
       aria-label={item.shop.name}
       data-active={active}
-      className="relative h-full snap-start snap-always overflow-hidden bg-[oklch(0.15_0.01_55)] text-[oklch(0.955_0.016_88)]"
+      className="relative h-full snap-start snap-always overflow-hidden bg-[oklch(0.12_0.008_55)] text-[oklch(0.96_0.015_85)]"
     >
       <video
         ref={video}
@@ -130,7 +130,7 @@ function WalkSlide({
         onPlay={() => setPaused(false)}
         onPause={() => setPaused(true)}
         onClick={togglePlay}
-        className="absolute inset-0 size-full object-contain"
+        className="absolute inset-0 size-full object-contain md:inset-y-6 md:mx-auto md:h-[calc(100%-3rem)] md:w-auto md:max-w-[440px] md:rounded-[999px_999px_22px_22px] md:object-cover md:shadow-[0_0_0_2px_oklch(0.78_0.1_82)]"
       />
 
       {paused ? (
@@ -138,7 +138,7 @@ function WalkSlide({
           type="button"
           aria-label={t("play")}
           onClick={togglePlay}
-          className="absolute inset-0 m-auto flex size-16 items-center justify-center bg-black/50"
+          className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-[oklch(0.78_0.1_82)] text-[oklch(0.17_0.008_60)]"
         >
           <Play className="size-8" />
         </button>
@@ -150,24 +150,24 @@ function WalkSlide({
           aria-pressed={favorite}
           aria-label={favorite ? t("unfavorite") : t("favorite")}
           onClick={favoriteVideo}
-          className="flex size-11 flex-col items-center justify-center bg-black/50 text-xs"
+          className="flex size-[46px] flex-col items-center justify-center rounded-full border border-white/30 bg-black/50 text-xs"
         >
-          <Heart className={favorite ? "size-5 fill-harissa text-harissa" : "size-5"} />
+          <Heart className={favorite ? "size-5 fill-[oklch(0.78_0.1_82)] text-[oklch(0.78_0.1_82)]" : "size-5"} />
           {count}
         </button>
-        <button type="button" aria-label={t("share")} onClick={share} className="flex size-11 items-center justify-center bg-black/50">
+        <button type="button" aria-label={t("share")} onClick={share} className="flex size-[46px] items-center justify-center rounded-full border border-white/30 bg-black/50">
           <Share2 className="size-5" />
         </button>
         <button
           type="button"
           aria-label={muted ? t("unmute") : t("mute")}
           onClick={onToggleMute}
-          className="flex size-11 items-center justify-center bg-black/50"
+          className="flex size-[46px] items-center justify-center rounded-full border border-white/30 bg-black/50"
         >
           {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
         </button>
         {paused ? null : (
-          <button type="button" aria-label={t("pause")} onClick={togglePlay} className="flex size-11 items-center justify-center bg-black/50">
+          <button type="button" aria-label={t("pause")} onClick={togglePlay} className="flex size-[46px] items-center justify-center rounded-full border border-white/30 bg-black/50">
             <Pause className="size-5" />
           </button>
         )}
@@ -175,7 +175,7 @@ function WalkSlide({
       </div>
 
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 pt-12">
-        <Link href={`/boutique/${item.shop.slug}`} className="inline-flex items-center gap-2 font-display text-lg font-bold">
+        <Link href={`/boutique/${item.shop.slug}`} className="inline-flex items-center gap-2 font-display text-[22px]">
           <Store className="size-4" />
           {item.shop.name}
         </Link>
@@ -187,7 +187,7 @@ function WalkSlide({
               type="button"
               aria-expanded={showProducts}
               onClick={() => setShowProducts(!showProducts)}
-              className="inline-flex items-center gap-2 bg-paper px-3 py-1.5 text-sm font-semibold text-[oklch(0.2_0.014_55)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[oklch(0.78_0.1_82)] px-3.5 py-1.5 text-sm font-semibold text-[oklch(0.17_0.008_60)]"
             >
               <ShoppingBag className="size-4" />
               {t("pieces", { count: item.products.length })}
@@ -196,7 +196,7 @@ function WalkSlide({
               <ul className="mt-2 grid max-w-[80%] gap-1">
                 {item.products.map((product) => (
                   <li key={product.id}>
-                    <Link href={`/produit/${product.id}`} className="flex justify-between gap-3 bg-black/60 px-3 py-2 text-sm">
+                    <Link href={`/produit/${product.id}`} className="flex justify-between gap-3 rounded-full bg-black/60 px-3.5 py-2 text-sm">
                       <span className="truncate">{product.title}</span>
                       <span className="shrink-0 font-semibold">{formatPrice(product.priceMillimes, locale)}</span>
                     </Link>

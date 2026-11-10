@@ -1,48 +1,49 @@
-import { ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { AccountLink } from "./account-link";
 import { BrandLink } from "./brand";
+import { HeaderNav } from "./header-nav";
 import { LocaleSwitch, ThemeToggle } from "./header-controls";
 
-// Les trois expériences d'abord, puis les services de la mode, puis le compte.
+// Friptex Luxe : un bandeau de verre, la marque, les rubriques soulignées d'or, puis les gestes rapides.
+// Sous l'en-tête, une frise de zellige fine.
 export function SiteHeader() {
   const t = useTranslations("nav");
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 pt-[env(safe-area-inset-top)]">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 md:px-6">
-        <BrandLink className="me-auto" />
-        <nav aria-label={t("mainLabel")} className="hidden items-center gap-1 md:flex">
-          <span className="header-sections">
-            <Link href="/catalogue" className="header-section">{t("mode")}</Link>
-            <Link href="/marketplace" className="header-section">{t("marketplace")}</Link>
-            <Link href="/vide-dressing" className="header-section">{t("videDressing")}</Link>
+    <>
+      <header className="luxe-header">
+        <div className="mx-auto flex max-w-[1200px] items-center gap-3 px-[18px] py-2.5">
+          <BrandLink />
+          <HeaderNav
+            label={t("mainLabel")}
+            links={[
+              { href: "/catalogue", label: t("mode") },
+              { href: "/marketplace", label: t("marketplace") },
+              { href: "/vide-dressing", label: t("videDressing") },
+              { href: "/boutiques", label: t("shops"), wide: true },
+              { href: "/walk", label: t("walk"), wide: true },
+              { href: "/chine", label: t("chine") },
+              { href: "/tenues/nouvelle", label: t("cabine") },
+              { href: "/vendre", label: t("sell") },
+            ]}
+          />
+          <span className="ms-auto flex items-center gap-0.5">
+            <ThemeToggle />
+            <LocaleSwitch compact />
+            <Link href="/compte/favoris" aria-label={t("favorites")} className="luxe-icon-button">
+              <Heart className="size-[19px]" strokeWidth={1.6} />
+            </Link>
+            <Link href="/panier" aria-label={t("cart")} className="luxe-icon-button">
+              <ShoppingBag className="size-[19px]" strokeWidth={1.6} />
+            </Link>
+            <Link href="/compte" aria-label={t("account")} className="luxe-icon-button max-md:hidden">
+              <UserRound className="size-[19px]" strokeWidth={1.6} />
+            </Link>
           </span>
-          <Link href="/boutiques" className="hidden px-3 py-2 text-sm font-semibold hover:text-harissa lg:inline-flex">
-            {t("shops")}
-          </Link>
-          <Link href="/walk" className="hidden px-3 py-2 text-sm font-semibold hover:text-harissa lg:inline-flex">
-            {t("videos")}
-          </Link>
-          <Link href="/stylist" className="hidden px-3 py-2 text-sm font-semibold hover:text-harissa xl:inline-flex">
-            {t("stylist")}
-          </Link>
-          <Link href="/vendre" className="px-3 py-2 text-sm font-semibold hover:text-harissa">
-            {t("sell")}
-          </Link>
-          <Link href="/compte" className="px-3 py-2 text-sm font-semibold hover:text-harissa">
-            {t("account")}
-          </Link>
-        </nav>
-        {/* Le panier quitte la barre du bas pour laisser la place aux trois rubriques. */}
-        <Link href="/panier" aria-label={t("cart")} className="inline-flex size-11 items-center justify-center hover:text-harissa">
-          <ShoppingBag className="size-5" />
-        </Link>
-        <AccountLink />
-        <LocaleSwitch />
-        <ThemeToggle />
-      </div>
-    </header>
+        </div>
+      </header>
+      <div className="zellige" aria-hidden="true" />
+    </>
   );
 }

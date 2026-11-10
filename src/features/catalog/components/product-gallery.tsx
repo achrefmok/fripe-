@@ -23,7 +23,7 @@ export function ProductGallery({
 
   return (
     <div>
-      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-secondary">
         {current ? (
           <Image
             src={imageUrl(current.path)}
@@ -41,7 +41,7 @@ export function ProductGallery({
         )}
       </div>
       {images.length > 1 ? (
-        <div className="rail-scroll mt-2 flex gap-2 overflow-x-auto">
+        <div className="rail-scroll mt-2.5 flex justify-center gap-2 overflow-x-auto">
           {images.map((image, index) => (
             <button
               key={image.id}
@@ -50,8 +50,8 @@ export function ProductGallery({
               aria-current={index === active}
               onClick={() => setActive(index)}
               className={cn(
-                "relative aspect-[3/4] w-16 shrink-0 overflow-hidden border-2",
-                index === active ? "border-foreground" : "border-transparent",
+                "relative aspect-[4/5] w-[62px] shrink-0 overflow-hidden rounded-xl border-[1.5px]",
+                index === active ? "border-gold" : "border-transparent",
               )}
             >
               <Image src={imageUrl(image.path)} alt="" fill unoptimized sizes="64px" className="object-cover" />

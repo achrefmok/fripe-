@@ -170,6 +170,9 @@ test("stock physique : déclaration indicative, non commandable", async ({ page 
 
   await page.context().clearCookies();
   await page.goto(`/boutique/${shop.slug}`);
+  // Le stock en magasin a son propre onglet, à côté des pièces en ligne.
+  await page.getByRole("navigation", { name: "Rayons de la boutique" }).getByRole("link", { name: "En magasin" }).click();
+  await expect(page).toHaveURL(/onglet=magasin/);
   await expect(page.getByText("environ 240 pièces")).toBeVisible();
   await expect(page.getByText("Quantités indicatives")).toBeVisible();
   await expect(page.getByRole("button", { name: /Acheter|Réserver|panier/ })).toHaveCount(0);

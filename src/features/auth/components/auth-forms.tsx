@@ -35,7 +35,7 @@ export function SignInForm({ next, initialMethod = "password" }: { next?: string
 
   return (
     <div className="grid gap-5">
-      <div role="group" aria-label={t("methodLabel")} className="grid grid-cols-2 border p-1">
+      <div role="group" aria-label={t("methodLabel")} className="grid grid-cols-2 rounded-full bg-cream p-1">
         {(["password", "code"] as const).map((value) => (
           <button
             key={value}
@@ -44,8 +44,8 @@ export function SignInForm({ next, initialMethod = "password" }: { next?: string
             onClick={() => setMethod(value)}
             className={
               method === value
-                ? "min-h-11 bg-foreground px-3 text-sm font-semibold text-background"
-                : "min-h-11 px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+                ? "min-h-11 rounded-full bg-foreground px-3 text-sm font-semibold text-background"
+                : "min-h-11 rounded-full px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
             }
           >
             {t(value === "password" ? "methodPassword" : "methodCode")}

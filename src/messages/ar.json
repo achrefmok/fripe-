@@ -31,13 +31,16 @@
     "catalog": "الكتالوج",
     "shops": "المحلات",
     "cart": "السلة",
-    "walk": "Walk",
+    "walk": "Fripe Walk",
     "stylist": "المنسّق",
     "mode": "الموضة",
     "marketplace": "سلع متنوعة",
     "videDressing": "خزانة للبيع",
     "sellShort": "بيع",
-    "videos": "فيديو"
+    "videos": "فيديو",
+    "chine": "تحويس",
+    "cabine": "الكابين",
+    "favorites": "المفضلة"
   },
   "footer": {
     "legal": "البيانات القانونية",
@@ -56,7 +59,7 @@
     "arrivalsTitle": "السلع الجديدة",
     "popularTitle": "الأكثر إعجابا",
     "categoriesTitle": "الأصناف",
-    "shopsTitle": "محلات لاكتشافها",
+    "shopsTitle": "المحلات",
     "collectionsTitle": "المجموعات",
     "recentTitle": "نُشرت مؤخرا",
     "seeAll": "عرض الكل",
@@ -74,10 +77,10 @@
     "universeEmpty": "هذا الرف ينتظر قطعه الأولى.",
     "runwayLooksTitle": "عرض المجموعات",
     "runwayArrivalsTitle": "عرض الوافدين الجدد",
-    "runwayPause": "إيقاف العرض مؤقتًا",
-    "runwayPlay": "استئناف العرض",
+    "runwayPause": "إيقاف",
+    "runwayPlay": "تشغيل",
     "runwayPrevious": "الإطلالة السابقة",
-    "runwayNext": "الإطلالة التالية",
+    "runwayNext": "القطعة التالية",
     "runwayGoTo": "شاهد الإطلالة {index}",
     "runwayPosition": "الإطلالة {index} من {count}",
     "runwayMore": "{count, plural, one {+ قطعة أخرى} other {+ {count} قطع أخرى}}",
@@ -85,9 +88,41 @@
     "runwaySeePiece": "شاهد القطعة",
     "discoverStylistTag": "ميزانيتك",
     "sectionsTitle": "أيضًا على FRIPE",
-    "pathsLabel": "ركّب إطلالة",
+    "pathsLabel": "تحويس أو بيع",
     "heroHintClosed": "المس الباب لتفتح الخزانة.",
-    "heroHintOpen": "المس قطعة لتدخل إلى عالمها."
+    "heroHintOpen": "المس قطعة لتدخل إلى عالمها.",
+    "heroKicker": "فريب تونسي",
+    "heroTitle": "كل قطعة عندها <em>حكاية.</em>",
+    "heroLead": "اكتشف الحكاية القادمة.",
+    "chine": "نحوّس",
+    "vends": "نبيع",
+    "greetMorning": "صباح الخير",
+    "greetDay": "عسلامة",
+    "greetEvening": "مساء الخير",
+    "greetGuest": "مرحبا بيك",
+    "rubriquesLabel": "الأقسام",
+    "rubriqueMode": "الموضة",
+    "searchPlaceholder": "قطعة، علامة، محل…",
+    "searchLabel": "ابحث في الكتالوج",
+    "searchSubmit": "بحث",
+    "toolsLabel": "تحويس بطريقة أخرى",
+    "newBadge": "جديد",
+    "rackTitle": "الشمّاعة",
+    "rackBody": "حرّك الشمّاعات، وخذ اللي يعجبك.",
+    "rackGo": "← نحوّس",
+    "cabinTitle": "كابين القياس",
+    "cabinBody": "خذ قطعًا من الشمّاعة، اسحب الستارة، وجرّب الإطلالة.",
+    "cabinGo": "← جرّب",
+    "walkTitle": "Fripe Walk",
+    "runwayKicker": "العرض",
+    "runwayTitle": "<em>السلع</em> الجديدة",
+    "runwayPrev": "القطعة السابقة",
+    "selectionTitle": "اختيارنا",
+    "marketKicker": "أغراض",
+    "marketBody": "أثاث، دراجات، ديكور، إلكترونيات.",
+    "dressingKicker": "بين الأفراد",
+    "dressingBody": "الأفراد يبيعون قطعهم.",
+    "atelierLabel": "الورشة"
   },
   "auth": {
     "signInTitle": "سعداء بعودتك",
@@ -137,7 +172,8 @@
     "codeResent": "أُرسل رمز جديد.",
     "codeChangeEmail": "تغيير العنوان",
     "noAccountCode": "لا تريد إنشاء حساب؟",
-    "noAccountCodeLink": "ادخل برمز يصلك عبر البريد"
+    "noAccountCodeLink": "ادخل برمز يصلك عبر البريد",
+    "panelTitle": "كل قطعة عندها <em>حكاية.</em>"
   },
   "validation": {
     "emailInvalid": "هذا البريد الإلكتروني غير صالح.",
@@ -290,7 +326,9 @@
     "deleteConfirm": "أفهم أن هذا الحذف نهائي.",
     "deleteSubmit": "حذف نهائي",
     "securityLink": "أمان الحساب",
-    "securityHint": "أجهزة التحقق."
+    "securityHint": "أجهزة التحقق.",
+    "sellerKicker": "فضاء البائع",
+    "open": "افتح"
   },
   "seller": {
     "title": "فضاء البائع",
@@ -423,7 +461,15 @@
     "emptyTitle": "لا توجد نتائج",
     "emptyBody": "جرّب توسيع بحثك أو مسح بعض عوامل التصفية.",
     "emptyCatalogTitle": "الكتالوج ينتظر قطعه الأولى",
-    "emptyCatalogBody": "عد قريبا: تنشر المحلات قطعها فور قبولها."
+    "emptyCatalogBody": "عد قريبا: تنشر المحلات قطعها فور قبولها.",
+    "bandKicker": "الكتالوج · {count, plural, =0 {لا قطع} one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
+    "allTitle": "كل الكتالوج",
+    "allSubs": "موضة وأحذية وإكسسوارات مستعملة",
+    "categoriesLabel": "العوالم",
+    "allSizes": "الكل",
+    "sortRecentShort": "الأحدث",
+    "sortAscShort": "السعر ↑",
+    "sortDescShort": "السعر ↓"
   },
   "conditions": {
     "new_with_tags": "جديد بالبطاقة",
@@ -467,7 +513,25 @@
     "draftNotice": "معاينة: هذه القطعة غير منشورة.",
     "photoAlt": "الصورة {number}: {title}",
     "noPhoto": "بدون صورة",
-    "signInToAct": "سجّل الدخول للحجز أو الشراء"
+    "signInToAct": "سجّل الدخول للحجز أو الشراء",
+    "sizeShort": "مقاس {size}",
+    "unique": "قطعة فريدة",
+    "favoriteNamed": "أضف « {title} » إلى المفضلة",
+    "unfavoriteNamed": "احذف « {title} » من المفضلة",
+    "favoriteAdded": "باهي! أُضيفت إلى المفضلة",
+    "favoriteRemoved": "حُذفت من المفضلة",
+    "favoriteFailed": "لم يتم الحفظ. أعد المحاولة.",
+    "backToCatalogue": "الكتالوج",
+    "uniquePiece": "قطعة فريدة",
+    "verifiedShop": "محل موثّق",
+    "flipTag": "اقلب البطاقة",
+    "flipBack": "اقلبها من جديد",
+    "deliveryLabel": "التوصيل",
+    "deliveryLine": "في كامل تونس · الدفع عند الاستلام",
+    "pickupLabel": "الاستلام",
+    "pickupLine": "من المحل، {city}",
+    "pickupShop": "من المحل",
+    "question": "عندك سؤال؟"
   },
   "cart": {
     "title": "سلتي",
@@ -479,7 +543,11 @@
     "reservedByYou": "محجوزة لك",
     "warning": "القطعة في السلة غير محفوظة. احجزها لتثبيتها.",
     "subtotal": "المجموع الفرعي",
-    "checkout": "إتمام الطلب"
+    "checkout": "إتمام الطلب",
+    "titleRich": "<em>سلّتك</em>",
+    "summary": "الملخّص",
+    "payment": "الدفع",
+    "paymentOnDelivery": "عند الاستلام"
   },
   "checkout": {
     "title": "الطلب",
@@ -605,7 +673,7 @@
     "stockNote": "الكميات تقريبية، تحقق منها مع المحل. لا يمكن طلب هذه القطع مباشرة.",
     "stockLine": "حوالي {count} قطعة",
     "collections": "المجموعات",
-    "pieces": "القطع المنشورة",
+    "pieces": "القطع المعروضة",
     "noPieces": "لا توجد قطع منشورة لهذا المحل بعد.",
     "emptyCollection": "هذه المجموعة فارغة حاليا.",
     "backToShop": "العودة إلى {shop}",
@@ -620,7 +688,15 @@
     "piecesOnline": "{count, plural, =0 {لا توجد قطع معروضة بعد} one {قطعة واحدة معروضة} two {قطعتان معروضتان} few {# قطع معروضة} many {# قطعة معروضة} other {# قطعة معروضة}}",
     "windowEmpty": "الواجهة قيد التحضير",
     "noMatchTitle": "لا يوجد محل مطابق",
-    "noMatchBody": "جرّب اسمًا آخر أو ولاية أخرى."
+    "noMatchBody": "جرّب اسمًا آخر أو ولاية أخرى.",
+    "piecesCount": "{count, plural, =0 {لا قطع} one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
+    "verified": "محل موثّق",
+    "tabsLabel": "أقسام المحل",
+    "stockLead": "هذا المحل يخدم على الشمّاعة: هذه القطع موجودة في المحل ولم تُصوَّر بعد. اطلب قطعة، والمحل يرد عليك.",
+    "askItem": "اطلب",
+    "stockEmpty": "لا يوجد مخزون مصرّح به بعد.",
+    "kicker": "الدليل",
+    "titleRich": "<em>المحلات</em>"
   },
   "sellerShop": {
     "overview": "نظرة عامة",
@@ -994,7 +1070,11 @@
     "linkCopied": "تم نسخ الرابط",
     "delete": "حذف الإطلالة",
     "missing": "لم تعد متوفرة: {pieces}",
-    "pieces": "{count, plural, one {قطعة واحدة} two {قطعتان} few {{count} قطع} many {{count} قطعة} other {{count} قطعة}}"
+    "pieces": "{count, plural, one {قطعة واحدة} two {قطعتان} few {{count} قطع} many {{count} قطعة} other {{count} قطعة}}",
+    "builderKicker": "Outfit Builder",
+    "builderTitleRich": "كابين <em>القياس</em>",
+    "busy": "مشغول…",
+    "tryOn": "اسحب الستارة"
   },
   "moderation": {
     "report": "إبلاغ",
@@ -1282,7 +1362,13 @@
     "threadsLink": "المحادثات",
     "threadsHint": "محادثاتك حول إعلانات الأفراد.",
     "latestTitle": "أحدث الإعلانات",
-    "you": "أنت"
+    "you": "أنت",
+    "marketplaceKicker": "أغراض مستعملة",
+    "videDressingKicker": "بين الأفراد",
+    "sellKicker": "البيع على Friptex",
+    "sellTitleRich": "شنوّة تحب <em>تبيع</em>؟",
+    "sellShopCta": "أنشئ محلًا",
+    "sellCta": "انشر"
   },
   "delivery": {
     "adminTitle": "التوصيل",
@@ -1478,5 +1564,26 @@
     "approved": "تمت المصادقة",
     "rejected": "تم الرفض",
     "reviewFailed": "لم يُسجَّل القرار. أعد المحاولة."
+  },
+  "chine": {
+    "title": "الشمّاعة",
+    "kicker": "الشمّاعة",
+    "heading": "حرّك. <em>خذ.</em>",
+    "lead": "حرّك الشمّاعات يمينًا أو يسارًا. اسحب قطعة إلى الأعلى لتحتفظ بها.",
+    "rackRole": "شمّاعة",
+    "rackLabel": "الشمّاعة {current} من {total}",
+    "size": "مقاس {size}",
+    "unique": "قطعة فريدة",
+    "previous": "الشمّاعة السابقة",
+    "next": "الشمّاعة التالية",
+    "keep": "خذها",
+    "open": "شاهد « {title} »",
+    "keptLabel": "{count, plural, =0 {لم تأخذ شيئًا بعد} one {قطعة واحدة مأخوذة} two {قطعتان مأخوذتان} few {# قطع مأخوذة} many {# قطعة مأخوذة} other {# قطعة مأخوذة}}",
+    "kept": "باهي! أخذتها",
+    "unkept": "رجعت للشمّاعة",
+    "signInToKeep": "سجّل الدخول لتحتفظ بقطعك.",
+    "signIn": "تسجيل الدخول",
+    "keepFailed": "لم يتم الحفظ. أعد المحاولة.",
+    "empty": "الشمّاعة فارغة حاليًا."
   }
 }

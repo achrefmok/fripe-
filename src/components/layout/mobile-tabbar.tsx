@@ -1,36 +1,35 @@
 "use client";
 
-import { Clapperboard, Home, Plus, Shirt, Sofa, type LucideIcon } from "lucide-react";
+import { Home, Plus, UserRound } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
 import { useTranslations } from "next-intl";
+import { useBadges } from "@/hooks/use-badges";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { CabinIcon, HangerIcon } from "./luxe-icons";
 
-// Trois expériences et la vidéo : la mode, les objets divers, le Vide-Dressing et Fripe Walk, avec la
-// vente au centre, à portée de pouce. Le compte est dans l'en-tête.
-const MODE_PATHS = ["/catalogue", "/produit", "/boutique", "/stylist", "/tenues", "/panier", "/commande"];
-
+// Friptex Luxe : une barre flottante en verre. L'accueil, le portant à chiner, la vente au centre
+// sur un disque d'or, la cabine d'essayage et le compte.
 const TABS: {
   href: string;
-  key: "mode" | "marketplace" | "sellShort" | "videDressing" | "videos";
-  icon: LucideIcon;
+  key: "home" | "chine" | "sellShort" | "cabine" | "account";
+  icon: ComponentType<SVGProps<SVGSVGElement> & { strokeWidth?: number }>;
   isActive: (pathname: string) => boolean;
 }[] = [
-  { href: "/", key: "mode", icon: Home, isActive: (path) => path === "/" || MODE_PATHS.some((base) => path.startsWith(base)) },
-  { href: "/marketplace", key: "marketplace", icon: Sofa, isActive: (path) => path.startsWith("/marketplace") },
+  { href: "/", key: "home", icon: Home, isActive: (path) => path === "/" },
+  { href: "/chine", key: "chine", icon: HangerIcon, isActive: (path) => path.startsWith("/chine") },
   { href: "/vendre", key: "sellShort", icon: Plus, isActive: (path) => path.startsWith("/vendre") || path.startsWith("/compte/annonces/nouvelle") },
-  { href: "/vide-dressing", key: "videDressing", icon: Shirt, isActive: (path) => path.startsWith("/vide-dressing") },
-  { href: "/walk", key: "videos", icon: Clapperboard, isActive: (path) => path.startsWith("/walk") },
+  { href: "/tenues/nouvelle", key: "cabine", icon: CabinIcon, isActive: (path) => path.startsWith("/tenues") },
+  { href: "/compte", key: "account", icon: UserRound, isActive: (path) => path.startsWith("/compte") && !path.startsWith("/compte/annonces/nouvelle") },
 ];
 
 export function MobileTabbar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const badges = useBadges();
 
   return (
-    <nav
-      aria-label={t("mainLabel")}
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
-    >
+    <nav aria-label={t("mainLabel")} className="luxe-tabbar md:hidden">
       <ul className="grid grid-cols-5">
         {TABS.map(({ href, key, icon: Icon, isActive }) => {
           const active = isActive(pathname);
@@ -38,16 +37,12 @@ export function MobileTabbar() {
 
           return (
             <li key={key}>
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "tabbar-link flex h-15 flex-col items-center justify-center gap-0.5 text-[0.7rem] font-semibold transition-colors",
-                  active ? "text-harissa" : "text-muted-foreground",
-                )}
-              >
-                <span className={cn("relative", sell && "tabbar-sell")}>
-                  <Icon className="size-5" strokeWidth={sell ? 2.6 : active ? 2.4 : 1.8} />
+              <Link href={href} aria-current={active ? "page" : undefined} className={cn("luxe-tab", active && "is-active")}>
+                <span className={cn("relative grid place-items-center", sell && "luxe-tab__sell")}>
+                  <Icon className={sell ? "size-5" : "size-[21px]"} strokeWidth={sell ? 2.4 : active ? 2 : 1.6} />
+                  {key === "account" && badges > 0 ? (
+                    <span data-testid="account-badge" className="absolute -end-1.5 -top-1 size-2.5 rounded-full bg-harissa" />
+                  ) : null}
                 </span>
                 {t(key)}
               </Link>

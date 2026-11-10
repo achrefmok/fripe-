@@ -363,7 +363,7 @@ export async function getPublicShop(slug: string) {
   const { data, error } = await supabase
     .from("shops")
     .select(
-      "id, name, slug, description, phone, logo_path, follower_count, rating_count, rating_sum, governorates (name_fr, name_ar), cities (name_fr, name_ar)",
+      "id, name, slug, description, phone, logo_path, cover_path, follower_count, rating_count, rating_sum, governorates (name_fr, name_ar), cities (name_fr, name_ar)",
     )
     .eq("slug", slug)
     .eq("status", "approved")
@@ -748,4 +748,9 @@ export async function listPendingArrivals() {
 
   if (error) throw error;
   return (data as unknown as (RawArrival & { created_at: string })[]).map((row) => ({ ...toArrival(row), createdAt: row.created_at }));
+}
+
+// Le portant à chiner : les dernières pièces en ligne, à faire défiler cintre par cintre.
+export async function listRackProducts(limit = 24) {
+  return (await feed("published_at", limit)).filter((product) => product.imagePath && product.status !== "sold");
 }

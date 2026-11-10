@@ -21,7 +21,8 @@ export default async function NewOutfitPage({ searchParams }: PageProps<"/[local
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 md:pb-16 md:pt-10">
-      <h1 className="font-display text-4xl font-extrabold">{t("builderTitle")}</h1>
+      <p className="luxe-kicker">{t("builderKicker")}</p>
+      <h1 className="mt-1 font-display text-[clamp(34px,5vw,56px)] font-normal leading-none">{t.rich("builderTitleRich", { em: (chunks) => <em className="text-goldink">{chunks}</em> })}</h1>
       <p className="mt-2 text-muted-foreground">{t("builderLead")}</p>
       <div className="mt-6">
         <OutfitBuilder signedIn={Boolean(viewer)} initial={initial} />

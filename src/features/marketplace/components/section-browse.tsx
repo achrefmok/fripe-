@@ -11,8 +11,8 @@ import { MarketGrid } from "./market-card";
 // Chaque rubrique a sa matière, comme les univers de la mode : denim pour la Marketplace,
 // garance pour le Vide-Dressing.
 const THEMES: Record<ListingSection, CSSProperties> = {
-  marketplace: { "--s-surface": "oklch(0.38 0.075 255)", "--s-ink": "oklch(0.97 0.012 85)" } as CSSProperties,
-  vide_dressing: { "--s-surface": "oklch(0.47 0.135 5)", "--s-ink": "oklch(0.97 0.012 85)" } as CSSProperties,
+  marketplace: { "--s-surface": "oklch(0.3 0.05 250)", "--s-ink": "oklch(0.96 0.015 85)" } as CSSProperties,
+  vide_dressing: { "--s-surface": "oklch(0.36 0.09 22)", "--s-ink": "oklch(0.96 0.015 85)" } as CSSProperties,
 };
 
 export async function SectionBrowse({
@@ -60,12 +60,13 @@ export async function SectionBrowse({
   return (
     <>
       <header className="section-band" style={THEMES[section]}>
-        <div className="mx-auto max-w-7xl px-4 pt-8 pb-6 md:px-6 md:pt-12 md:pb-8">
+        <div className="section-band__inner">
           {scope ? (
             <Link href={route} className="text-sm font-semibold underline underline-offset-4">
               {title}
             </Link>
           ) : null}
+          <p className="section-band__kicker">{section === "marketplace" ? t("marketplaceKicker") : t("videDressingKicker")}</p>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h1 className="section-band__title">{heading}</h1>
             <Link href={`/compte/annonces/nouvelle?rubrique=${section}`} className="section-band__cta">

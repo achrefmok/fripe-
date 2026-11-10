@@ -31,13 +31,16 @@
     "catalog": "Catalogue",
     "shops": "Boutiques",
     "cart": "Panier",
-    "walk": "Walk",
+    "walk": "Fripe Walk",
     "stylist": "Stylist",
     "mode": "Mode",
     "marketplace": "Marketplace",
     "videDressing": "Vide-Dressing",
     "sellShort": "Vendre",
-    "videos": "Vidéos"
+    "videos": "Vidéos",
+    "chine": "Chine",
+    "cabine": "Cabine",
+    "favorites": "Favoris"
   },
   "footer": {
     "legal": "Mentions légales",
@@ -56,7 +59,7 @@
     "arrivalsTitle": "Nouveaux arrivages",
     "popularTitle": "Les plus aimées",
     "categoriesTitle": "Catégories",
-    "shopsTitle": "Boutiques à découvrir",
+    "shopsTitle": "Boutiques",
     "collectionsTitle": "Collections",
     "recentTitle": "Récemment publiées",
     "seeAll": "Tout voir",
@@ -74,10 +77,10 @@
     "universeEmpty": "Ce rayon attend encore ses premières pièces.",
     "runwayLooksTitle": "Le défilé des collections",
     "runwayArrivalsTitle": "Le défilé des nouveaux arrivages",
-    "runwayPause": "Mettre le défilé en pause",
-    "runwayPlay": "Relancer le défilé",
+    "runwayPause": "Pause",
+    "runwayPlay": "Lecture",
     "runwayPrevious": "Look précédent",
-    "runwayNext": "Look suivant",
+    "runwayNext": "Pièce suivante",
     "runwayGoTo": "Voir le look {index}",
     "runwayPosition": "Look {index} sur {count}",
     "runwayMore": "{count, plural, one {+ {count} autre pièce} other {+ {count} autres pièces}}",
@@ -85,9 +88,41 @@
     "runwaySeePiece": "Voir la pièce",
     "discoverStylistTag": "Ton budget",
     "sectionsTitle": "Aussi sur FRIPE",
-    "pathsLabel": "Composer une tenue",
+    "pathsLabel": "Chiner ou vendre",
     "heroHintClosed": "Touche la porte pour ouvrir le dressing.",
-    "heroHintOpen": "Touche un vêtement pour entrer dans son univers."
+    "heroHintOpen": "Touche un vêtement pour entrer dans son univers.",
+    "heroKicker": "Friperie tunisienne",
+    "heroTitle": "Chaque pièce a déjà une <em>histoire.</em>",
+    "heroLead": "Trouve la suivante.",
+    "chine": "Je chine",
+    "vends": "Je vends",
+    "greetMorning": "Sbah el khir",
+    "greetDay": "Aslema",
+    "greetEvening": "Mse el khir",
+    "greetGuest": "Bienvenue",
+    "rubriquesLabel": "Rubriques",
+    "rubriqueMode": "Mode",
+    "searchPlaceholder": "Une pièce, une marque, une boutique…",
+    "searchLabel": "Rechercher dans le catalogue",
+    "searchSubmit": "Chercher",
+    "toolsLabel": "Chiner autrement",
+    "newBadge": "Nouveau",
+    "rackTitle": "Le portant à chiner",
+    "rackBody": "Fais glisser les cintres, décroche ce qui te plaît.",
+    "rackGo": "Chiner →",
+    "cabinTitle": "La cabine d'essayage",
+    "cabinBody": "Décroche des pièces du portant, tire le rideau, essaie le look.",
+    "cabinGo": "Essayer →",
+    "walkTitle": "Fripe Walk",
+    "runwayKicker": "Le défilé",
+    "runwayTitle": "Les nouveaux <em>arrivages</em>",
+    "runwayPrev": "Pièce précédente",
+    "selectionTitle": "La sélection",
+    "marketKicker": "Objets",
+    "marketBody": "Meubles, vélos, déco, high-tech.",
+    "dressingKicker": "Entre particuliers",
+    "dressingBody": "Les particuliers vendent leurs pièces.",
+    "atelierLabel": "L'atelier"
   },
   "auth": {
     "signInTitle": "Content de te revoir",
@@ -137,7 +172,8 @@
     "codeResent": "Nouveau code envoyé.",
     "codeChangeEmail": "Changer d'adresse",
     "noAccountCode": "Pas envie de créer un compte ?",
-    "noAccountCodeLink": "Connecte-toi avec un code reçu par e-mail"
+    "noAccountCodeLink": "Connecte-toi avec un code reçu par e-mail",
+    "panelTitle": "Chaque pièce a déjà une <em>histoire.</em>"
   },
   "validation": {
     "emailInvalid": "Cette adresse e-mail n'est pas valide.",
@@ -290,7 +326,9 @@
     "deleteConfirm": "Je comprends que cette suppression est définitive.",
     "deleteSubmit": "Supprimer définitivement",
     "securityLink": "Sécurité du compte",
-    "securityHint": "Appareils de vérification."
+    "securityHint": "Appareils de vérification.",
+    "sellerKicker": "Espace vendeur",
+    "open": "Ouvrir"
   },
   "seller": {
     "title": "Espace vendeur",
@@ -418,12 +456,20 @@
     "sortRecent": "Les plus récentes",
     "sortPriceAsc": "Prix croissant",
     "sortPriceDesc": "Prix décroissant",
-    "all": "Tous",
+    "all": "Tout",
     "results": "{count, plural, =0 {Aucune pièce} one {{count} pièce} other {{count} pièces}}",
     "emptyTitle": "Rien ne correspond",
     "emptyBody": "Essaie d'élargir ta recherche ou d'effacer des filtres.",
     "emptyCatalogTitle": "Le catalogue attend ses premières pièces",
-    "emptyCatalogBody": "Reviens bientôt : les boutiques publient dès leur validation."
+    "emptyCatalogBody": "Reviens bientôt : les boutiques publient dès leur validation.",
+    "bandKicker": "Catalogue · {count, plural, =0 {aucune pièce} one {# pièce} other {# pièces}}",
+    "allTitle": "Tout le catalogue",
+    "allSubs": "Mode, chaussures et accessoires de seconde main",
+    "categoriesLabel": "Univers",
+    "allSizes": "Toutes",
+    "sortRecentShort": "Récentes",
+    "sortAscShort": "Prix ↑",
+    "sortDescShort": "Prix ↓"
   },
   "conditions": {
     "new_with_tags": "Neuf avec étiquette",
@@ -467,7 +513,25 @@
     "draftNotice": "Aperçu : cette pièce n'est pas publiée.",
     "photoAlt": "Photo {number} : {title}",
     "noPhoto": "Pas de photo",
-    "signInToAct": "Connecte-toi pour réserver ou acheter"
+    "signInToAct": "Connecte-toi pour réserver ou acheter",
+    "sizeShort": "T. {size}",
+    "unique": "Pièce unique",
+    "favoriteNamed": "Ajouter « {title} » aux favoris",
+    "unfavoriteNamed": "Retirer « {title} » des favoris",
+    "favoriteAdded": "Behi ! Ajouté aux favoris",
+    "favoriteRemoved": "Retiré des favoris",
+    "favoriteFailed": "Le favori n'a pas été enregistré. Réessaie.",
+    "backToCatalogue": "Catalogue",
+    "uniquePiece": "Pièce unique",
+    "verifiedShop": "Boutique vérifiée",
+    "flipTag": "Retourne l'étiquette",
+    "flipBack": "Retourne-la encore",
+    "deliveryLabel": "Livraison",
+    "deliveryLine": "Partout en Tunisie · paiement à la livraison",
+    "pickupLabel": "Retrait",
+    "pickupLine": "En boutique, {city}",
+    "pickupShop": "En boutique",
+    "question": "Une question ?"
   },
   "cart": {
     "title": "Mon panier",
@@ -479,7 +543,11 @@
     "reservedByYou": "Réservée pour toi",
     "warning": "Une pièce au panier n'est pas gardée. Réserve-la pour la bloquer.",
     "subtotal": "Sous-total",
-    "checkout": "Passer la commande"
+    "checkout": "Passer la commande",
+    "titleRich": "Ton <em>panier</em>",
+    "summary": "Récapitulatif",
+    "payment": "Paiement",
+    "paymentOnDelivery": "À la livraison"
   },
   "checkout": {
     "title": "Commande",
@@ -620,7 +688,15 @@
     "piecesOnline": "{count, plural, =0 {pas encore de pièce en ligne} one {# pièce en ligne} other {# pièces en ligne}}",
     "windowEmpty": "Vitrine en préparation",
     "noMatchTitle": "Aucune boutique ne correspond",
-    "noMatchBody": "Essaie un autre nom ou un autre gouvernorat."
+    "noMatchBody": "Essaie un autre nom ou un autre gouvernorat.",
+    "piecesCount": "{count, plural, =0 {aucune pièce} one {# pièce} other {# pièces}}",
+    "verified": "Boutique vérifiée",
+    "tabsLabel": "Rayons de la boutique",
+    "stockLead": "Cette boutique travaille au portant : ces pièces sont en magasin mais pas encore photographiées. Demande un article, la boutique te répond.",
+    "askItem": "Demander",
+    "stockEmpty": "Aucun stock déclaré pour l'instant.",
+    "kicker": "Annuaire",
+    "titleRich": "Les <em>boutiques</em>"
   },
   "sellerShop": {
     "overview": "Vue d'ensemble",
@@ -994,7 +1070,11 @@
     "linkCopied": "Lien copié",
     "delete": "Supprimer la tenue",
     "missing": "Plus disponibles : {pieces}",
-    "pieces": "{count, plural, one {{count} pièce} other {{count} pièces}}"
+    "pieces": "{count, plural, one {{count} pièce} other {{count} pièces}}",
+    "builderKicker": "Outfit Builder",
+    "builderTitleRich": "La cabine <em>d'essayage</em>",
+    "busy": "Occupé…",
+    "tryOn": "Tirer le rideau"
   },
   "moderation": {
     "report": "Signaler",
@@ -1282,7 +1362,13 @@
     "threadsLink": "Échanges",
     "threadsHint": "Tes conversations sur les annonces de particuliers.",
     "latestTitle": "Dernières annonces",
-    "you": "Toi"
+    "you": "Toi",
+    "marketplaceKicker": "Objets de seconde main",
+    "videDressingKicker": "Entre particuliers",
+    "sellKicker": "Vendre sur Friptex",
+    "sellTitleRich": "Que veux-tu <em>vendre</em> ?",
+    "sellShopCta": "Créer une boutique",
+    "sellCta": "Publier"
   },
   "delivery": {
     "adminTitle": "Livraison",
@@ -1478,5 +1564,26 @@
     "approved": "Arrivage validé",
     "rejected": "Arrivage refusé",
     "reviewFailed": "La décision n'a pas été enregistrée. Réessaie."
+  },
+  "chine": {
+    "title": "Le portant à chiner",
+    "kicker": "Le portant à chiner",
+    "heading": "Fais glisser. <em>Décroche.</em>",
+    "lead": "Glisse les cintres à gauche ou à droite. Tire une pièce vers le haut pour la garder.",
+    "rackRole": "portant",
+    "rackLabel": "Cintre {current} sur {total}",
+    "size": "T. {size}",
+    "unique": "Pièce unique",
+    "previous": "Cintre précédent",
+    "next": "Cintre suivant",
+    "keep": "Décrocher",
+    "open": "Voir « {title} »",
+    "keptLabel": "{count, plural, =0 {Rien de décroché pour l'instant} one {# pièce décrochée} other {# pièces décrochées}}",
+    "kept": "Behi ! Décrochée et gardée",
+    "unkept": "Remise sur le portant",
+    "signInToKeep": "Connecte-toi pour garder tes pièces.",
+    "signIn": "Se connecter",
+    "keepFailed": "La pièce n'a pas été gardée. Réessaie.",
+    "empty": "Le portant est vide pour l'instant."
   }
 }

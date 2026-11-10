@@ -1,22 +1,25 @@
 import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Alexandria, Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
+import { Alexandria, Bodoni_Moda, Jost } from "next/font/google";
 import { notFound } from "next/navigation";
+import { PageCurtain } from "@/components/layout/page-curtain";
 import { Providers } from "@/components/layout/providers";
 import { StagingBanner } from "@/components/layout/staging-banner";
 import { directionOf, routing } from "@/i18n/routing";
 import { getSiteUrl } from "@/lib/env";
 import "../globals.css";
 
-const display = Bricolage_Grotesque({
+// Friptex Luxe : un didone à contraste pour les titres, une géométrique douce pour le texte.
+const display = Bodoni_Moda({
   subsets: ["latin"],
   variable: "--font-wordmark",
-  axes: ["opsz", "wdth"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
   display: "swap",
 });
 
-const body = Hanken_Grotesk({
+const body = Jost({
   subsets: ["latin"],
   variable: "--font-hanken",
   display: "swap",
@@ -47,8 +50,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3efe4" },
-    { media: "(prefers-color-scheme: dark)", color: "#1b1712" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f5ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#16130f" },
   ],
   viewportFit: "cover",
   // Le clavier virtuel réduit la mise en page au lieu de recouvrir les champs (Android Chrome).
@@ -77,6 +80,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           <Providers dir={dir}>
             <StagingBanner />
             {children}
+            <PageCurtain />
           </Providers>
         </NextIntlClientProvider>
       </body>

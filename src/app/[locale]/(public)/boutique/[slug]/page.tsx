@@ -19,6 +19,9 @@ import { listPublicInventory } from "@/features/inventory/queries";
 import { Link } from "@/i18n/navigation";
 import { getViewer } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
+import { shopAssetUrl } from "@/lib/utils/storage";
+import { ShopMark } from "@/features/shops/components/shop-mark";
+import Image from "next/image";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/boutique/[slug]">) {
   const { slug } = await params;
@@ -31,7 +34,8 @@ export default async function PublicShopPage({
   searchParams,
 }: PageProps<"/[locale]/boutique/[slug]">) {
   const { slug } = await params;
-  const { page } = await searchParams;
+  const { page, onglet } = await searchParams;
+  const tab = onglet === "magasin" ? "stock" : "pieces";
   const shop = await getPublicShop(slug);
 
   if (!shop) {
@@ -60,36 +64,50 @@ export default async function PublicShopPage({
   const average = shop.rating_count ? Math.round((shop.rating_sum / shop.rating_count) * 10) / 10 : 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-24 pt-6 md:px-6 md:pb-16 md:pt-10">
-      <h1 className="font-display text-4xl leading-tight font-extrabold md:text-5xl">{shop.name}</h1>
-      <p className="mt-1 text-muted-foreground">
-        {shop.cities && localizedName(shop.cities, locale)}
-        {shop.governorates && `, ${localizedName(shop.governorates, locale)}`}
-      </p>
-      {shop.rating_count ? (
-        <a href="#avis" className="mt-2 inline-flex items-center gap-2 text-sm font-semibold">
-          <RatingStars rating={Math.round(average)} />
-          {reviewLabels("summary", { average, count: shop.rating_count })}
-        </a>
-      ) : null}
-      {shop.description ? <p className="mt-3 max-w-2xl leading-relaxed">{shop.description}</p> : null}
+    <div className="mx-auto max-w-[1200px] px-[18px] pb-24 pt-[18px] md:pb-12">
+      {/* Friptex Luxe : la couverture de la boutique, son médaillon cerclé d'or et le bouton suivre. */}
+      <section className="lx-shophero">
+        {shop.cover_path ? (
+          <Image src={shopAssetUrl(shop.cover_path)} alt="" fill unoptimized priority sizes="100vw" className="lx-shophero__cover" />
+        ) : null}
+        <span className="lx-shophero__veil" aria-hidden="true" />
+        <div className="lx-shophero__body">
+          <ShopMark name={shop.name} logoPath={shop.logo_path} size="lg" className="lx-shophero__mark" />
+          <div className="min-w-0 flex-[1_1_200px]">
+            <h1 className="font-display text-[clamp(30px,4.4vw,48px)] leading-none" dir="auto">{shop.name}</h1>
+            <p className="mt-1 text-sm opacity-90">
+              {shop.cities && localizedName(shop.cities, locale)}
+              {shop.governorates && `, ${localizedName(shop.governorates, locale)}`}
+              {" · "}
+              {t("piecesCount", { count: total })}
+              {" · "}
+              {t("verified")}
+            </p>
+            {shop.rating_count ? (
+              <a href="#avis" className="mt-1.5 inline-flex items-center gap-2 text-sm font-medium">
+                <RatingStars rating={Math.round(average)} />
+                {reviewLabels("summary", { average, count: shop.rating_count })}
+              </a>
+            ) : null}
+          </div>
+          <FollowButton
+            shopId={shop.id}
+            slug={shop.slug}
+            signedIn={Boolean(viewer)}
+            initialFollowing={following}
+            initialCount={shop.follower_count}
+          />
+        </div>
+      </section>
 
-      <div className="mt-4">
-        <FollowButton
-          shopId={shop.id}
-          slug={shop.slug}
-          signedIn={Boolean(viewer)}
-          initialFollowing={following}
-          initialCount={shop.follower_count}
-        />
-      </div>
+      {shop.description ? <p className="mt-4 max-w-2xl leading-relaxed" dir="auto">{shop.description}</p> : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {blockSides.length ? (
           <p className="w-full text-sm text-muted-foreground">{messaging("blockedNotice")}</p>
         ) : (
           <>
-            <Button asChild>
+            <Button asChild variant="outline">
               <Link href={`/boutique/${shop.slug}/demande`}>{requests("ask")}</Link>
             </Button>
             <ContactButton signedIn={Boolean(viewer)} next={`/boutique/${shop.slug}`} shopId={shop.id} />
@@ -103,35 +121,24 @@ export default async function PublicShopPage({
         ) : null}
       </div>
 
-      {stock.length ? (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl font-extrabold">{t("stockTitle")}</h2>
-          <ul className="mt-3 divide-y border-y">
-            {stock.map((item) => (
-              <li key={item.id} className="flex items-baseline justify-between gap-4 py-2.5">
-                <span className="font-semibold">
-                  {item.categories && localizedName(item.categories, locale)}
-                  {item.label ? ` · ${item.label}` : ""}
-                </span>
-                <span className="shrink-0 text-muted-foreground">
-                  {t("stockLine", { count: item.approx_quantity })}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-sm text-muted-foreground">{t("stockNote")}</p>
-        </section>
-      ) : null}
+      <nav aria-label={t("tabsLabel")} className="lx-segment mt-[18px] w-max max-w-full">
+        <Link href={`/boutique/${shop.slug}`} aria-current={tab === "pieces" ? "page" : undefined} className="lx-segment__item">
+          {t("pieces")}
+        </Link>
+        <Link href={{ pathname: `/boutique/${shop.slug}`, query: { onglet: "magasin" } }} aria-current={tab === "stock" ? "page" : undefined} className="lx-segment__item">
+          {t("stockTitle")}
+        </Link>
+      </nav>
 
       {collections.length ? (
         <section className="mt-10">
-          <h2 className="font-display text-2xl font-extrabold">{t("collections")}</h2>
+          <h2 className="font-display text-2xl">{t("collections")}</h2>
           <ul className="mt-3 flex flex-wrap gap-2">
             {collections.map((collection) => (
               <li key={collection.id}>
                 <Link
                   href={`/boutique/${shop.slug}/collection/${collection.id}`}
-                  className="block bg-secondary px-4 py-2 font-semibold hover:bg-foreground hover:text-background"
+                  className="block rounded-full bg-secondary px-4 py-2 font-medium hover:bg-foreground hover:text-background"
                 >
                   {collection.name}
                 </Link>
@@ -141,8 +148,31 @@ export default async function PublicShopPage({
         </section>
       ) : null}
 
-      <section className="mt-10">
-        <h2 className="mb-4 font-display text-2xl font-extrabold">{t("pieces")}</h2>
+      {tab === "stock" ? (
+        <section className="mt-5" aria-label={t("stockTitle")}>
+          <p className="mb-3.5 max-w-xl leading-relaxed text-muted-foreground">{t("stockLead")}</p>
+          {stock.length ? (
+            <ul className="border-t">
+              {stock.map((item) => (
+                <li key={item.id} className="flex flex-wrap items-center gap-3.5 border-b py-4">
+                  <span className="flex-[1_1_200px] font-display text-xl">
+                    {item.categories && localizedName(item.categories, locale)}
+                    {item.label ? ` · ${item.label}` : ""}
+                  </span>
+                  <span className="text-sm tabular-nums text-muted-foreground">{t("stockLine", { count: item.approx_quantity })}</span>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/boutique/${shop.slug}/demande`}>{t("askItem")}</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">{t("stockEmpty")}</p>
+          )}
+          <p className="mt-2 text-sm text-muted-foreground">{t("stockNote")}</p>
+        </section>
+      ) : (
+      <section className="mt-5" aria-label={t("pieces")}>
         {products.length ? (
           <ProductGrid products={products} />
         ) : (
@@ -156,9 +186,10 @@ export default async function PublicShopPage({
           params={{}}
         />
       </section>
+      )}
 
       <section id="avis" className="mt-10 scroll-mt-20">
-        <h2 className="font-display text-2xl font-extrabold">{reviewLabels("title")}</h2>
+        <h2 className="font-display text-2xl">{reviewLabels("title")}</h2>
         {reviews.length ? (
           <ul className="mt-3 max-w-2xl divide-y border-y">
             {reviews.map((review) => (
