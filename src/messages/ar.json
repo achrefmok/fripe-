@@ -928,7 +928,21 @@
     "deleted": "تم حذف الفيديو",
     "linkPieces": "القطع المرتبطة ({count})",
     "savePieces": "حفظ القطع",
-    "piecesSaved": "تم ربط القطع"
+    "piecesSaved": "تم ربط القطع",
+    "heading": "Fripe <em>Walk</em>",
+    "hint": "اسحب للأعلى للفيديو الموالي، والمس مرّتين باش يعجبك.",
+    "progress": "فيديو {current} من {total}",
+    "inVideo": "في هذا الفيديو",
+    "upNext": "الموالي",
+    "previous": "الفيديو السابق",
+    "next": "الفيديو الموالي",
+    "seeShop": "شوف المحل",
+    "addToCart": "للسلة",
+    "added": "تزادت للسلة",
+    "signInToAdd": "ادخل لحسابك باش تعبّي سلّتك.",
+    "signIn": "دخول",
+    "addFailed": "ما نجمناش نزيدو هالقطعة.",
+    "noPieces": "ما فماش قطع مربوطة بهالفيديو."
   },
   "social": {
     "follow": "متابعة",
@@ -1031,7 +1045,13 @@
       "marron": "بني",
       "rose": "وردي",
       "jaune": "أصفر"
-    }
+    },
+    "kicker": "AI Stylist",
+    "titleRich": "الستيليست <em>متاعك</em>",
+    "formTitle": "طلبك",
+    "resultsTitle": "الإطلالات متاعك",
+    "waitingTitle": "الإطلالات باش تظهر هنا",
+    "waitingBody": "عطينا ميزانية وقياس وستايل: نركّبولك قطع متوفرة توّا."
   },
   "outfits": {
     "title": "إطلالاتي",
@@ -1074,7 +1094,19 @@
     "builderKicker": "Outfit Builder",
     "builderTitleRich": "كابين <em>القياس</em>",
     "busy": "مشغول…",
-    "tryOn": "اسحب الستارة"
+    "tryOn": "اسحب الستارة",
+    "lookLabel": "قطع الإطلالة",
+    "railLabel": "القطع المتوفرة: {slot}",
+    "loading": "قاعد يتحمّل…",
+    "budgetKicker": "الميزانية",
+    "budgetRange": "عدّل الميزانية بالمؤشر",
+    "noBudget": "بلا حدّ",
+    "lookTotal": "مجموع الإطلالة",
+    "withinBudget": "في الميزانية",
+    "random": "بالصدفة",
+    "randomEmpty": "ما فماش قطع كافية لإطلالة بالصدفة.",
+    "selectSlot": "بدّل {slot}",
+    "saveKicker": "خبّي هالإطلالة"
   },
   "moderation": {
     "report": "إبلاغ",

@@ -928,7 +928,21 @@
     "deleted": "Vidéo supprimée",
     "linkPieces": "Pièces associées ({count})",
     "savePieces": "Enregistrer les pièces",
-    "piecesSaved": "Pièces associées"
+    "piecesSaved": "Pièces associées",
+    "heading": "Fripe <em>Walk</em>",
+    "hint": "Glisse vers le haut pour la vidéo suivante, touche deux fois pour aimer.",
+    "progress": "Vidéo {current} sur {total}",
+    "inVideo": "Dans cette vidéo",
+    "upNext": "À suivre",
+    "previous": "Vidéo précédente",
+    "next": "Vidéo suivante",
+    "seeShop": "Voir la boutique",
+    "addToCart": "Au panier",
+    "added": "Ajouté au panier",
+    "signInToAdd": "Connecte-toi pour remplir ton panier.",
+    "signIn": "Se connecter",
+    "addFailed": "Impossible d'ajouter cette pièce.",
+    "noPieces": "Aucune pièce associée à cette vidéo."
   },
   "social": {
     "follow": "Suivre",
@@ -1031,7 +1045,13 @@
       "marron": "Marron",
       "rose": "Rose",
       "jaune": "Jaune"
-    }
+    },
+    "kicker": "AI Stylist",
+    "titleRich": "Ton styliste <em>de poche</em>",
+    "formTitle": "Ton brief",
+    "resultsTitle": "Tes tenues",
+    "waitingTitle": "Tes tenues apparaîtront ici",
+    "waitingBody": "Donne un budget, une taille, un style : on assemble des pièces disponibles en ce moment."
   },
   "outfits": {
     "title": "Mes tenues",
@@ -1074,7 +1094,19 @@
     "builderKicker": "Outfit Builder",
     "builderTitleRich": "La cabine <em>d'essayage</em>",
     "busy": "Occupé…",
-    "tryOn": "Tirer le rideau"
+    "tryOn": "Tirer le rideau",
+    "lookLabel": "Pièces du look",
+    "railLabel": "Pièces disponibles : {slot}",
+    "loading": "Chargement…",
+    "budgetKicker": "Budget",
+    "budgetRange": "Régler le budget au curseur",
+    "noBudget": "Sans limite",
+    "lookTotal": "Total du look",
+    "withinBudget": "Dans le budget",
+    "random": "Au hasard",
+    "randomEmpty": "Pas encore assez de pièces pour un look au hasard.",
+    "selectSlot": "Changer {slot}",
+    "saveKicker": "Garder ce look"
   },
   "moderation": {
     "report": "Signaler",

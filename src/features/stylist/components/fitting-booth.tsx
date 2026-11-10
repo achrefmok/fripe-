@@ -1,8 +1,11 @@
 "use client";
 
+import { X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { productImageUrl } from "@/lib/utils/storage";
 import type { Slot, StyleItem } from "../engine";
 
@@ -22,9 +25,21 @@ function HangerHook() {
   );
 }
 
-// La cabine d'essayage : les pièces du look pendues dans une arche, et un rideau qu'on tire
-// pour « essayer ». Purement visuelle : le choix des pièces reste dans la liste en dessous.
-export function FittingBooth({ pieces, total, budget }: { pieces: Partial<Record<Slot, StyleItem>>; total: number; budget: number | null }) {
+// La cabine d'essayage : les pièces du look pendues dans une arche. Toucher un cintre choisit la
+// catégorie à changer, la croix retire la pièce, le rideau se tire pour « essayer ».
+export function FittingBooth({
+  pieces,
+  activeSlot,
+  onSelect,
+  onRemove,
+  children,
+}: {
+  pieces: Partial<Record<Slot, StyleItem>>;
+  activeSlot: Slot;
+  onSelect: (slot: Slot) => void;
+  onRemove: (slot: Slot) => void;
+  children?: ReactNode;
+}) {
   const t = useTranslations("outfits");
   const [closed, setClosed] = useState(false);
 
@@ -34,25 +49,36 @@ export function FittingBooth({ pieces, total, budget }: { pieces: Partial<Record
     return () => window.clearTimeout(timer);
   }, [closed]);
 
-  const ratio = budget ? Math.min(1, total / budget) : 0;
-  const over = budget !== null && total > budget;
-
   return (
-    <div className="flex flex-col items-center gap-3.5">
+    <div className="flex w-full flex-col items-center gap-3.5">
       <div className="lx-booth" data-closed={closed ? "" : undefined}>
         <span className="lx-booth__bar" aria-hidden="true" />
         <ul className="lx-booth__grid">
           {(Object.keys(PLACES) as Slot[]).map((slot) => {
             const piece = pieces[slot];
+            const label = t(`slots.${slot}`);
             return (
               <li key={slot} className={`lx-booth__slot ${PLACES[slot]}`}>
                 <HangerHook />
-                <span className="lx-booth__frame" data-empty={piece ? undefined : ""}>
+                <button
+                  type="button"
+                  className={cn("lx-booth__frame", activeSlot === slot && "is-active")}
+                  data-empty={piece ? undefined : ""}
+                  aria-pressed={activeSlot === slot}
+                  aria-label={t("selectSlot", { slot: label })}
+                  onClick={() => onSelect(slot)}
+                  disabled={closed}
+                >
                   {piece?.imagePath ? (
                     <Image src={productImageUrl(piece.imagePath)} alt={piece.title} fill unoptimized sizes="10rem" className="object-cover" />
                   ) : null}
-                  <span className="lx-booth__label">{t(`slots.${slot}`)}</span>
-                </span>
+                  <span className="lx-booth__label">{label}</span>
+                </button>
+                {piece ? (
+                  <button type="button" className="lx-booth__remove" aria-label={`${t("remove")} ${label}`} onClick={() => onRemove(slot)} disabled={closed}>
+                    <X className="size-3.5" aria-hidden="true" />
+                  </button>
+                ) : null}
               </li>
             );
           })}
@@ -62,16 +88,12 @@ export function FittingBooth({ pieces, total, budget }: { pieces: Partial<Record
         <span className="lx-booth__curtain lx-booth__curtain--right" aria-hidden="true" />
         {closed ? <span className="lx-booth__busy" role="status">{t("busy")}</span> : null}
       </div>
-      <button type="button" className="lx-booth__try" onClick={() => setClosed(true)} disabled={closed}>
-        {t("tryOn")}
-      </button>
-      {budget !== null ? (
-        <div className="w-full max-w-[380px]" aria-hidden="true">
-          <div className="h-2 overflow-hidden rounded-full bg-cream">
-            <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${Math.round(ratio * 100)}%`, background: over ? "var(--destructive)" : "var(--gold)" }} />
-          </div>
-        </div>
-      ) : null}
+      <div className="flex w-[min(100%,380px)] flex-wrap justify-center gap-2.5">
+        <button type="button" className="lx-booth__try flex-[1_1_140px]" onClick={() => setClosed(true)} disabled={closed}>
+          {t("tryOn")}
+        </button>
+        {children}
+      </div>
     </div>
   );
 }

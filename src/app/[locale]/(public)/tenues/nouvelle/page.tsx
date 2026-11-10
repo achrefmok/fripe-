@@ -20,11 +20,11 @@ export default async function NewOutfitPage({ searchParams }: PageProps<"/[local
   const initial = Object.fromEntries(items.map((item) => [item.slot, item])) as Partial<Record<Slot, StyleItem>>;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 md:pb-16 md:pt-10">
+    <div className="mx-auto max-w-[1200px] px-[18px] pb-28 pt-[22px] md:pb-16">
       <p className="luxe-kicker">{t("builderKicker")}</p>
       <h1 className="mt-1 font-display text-[clamp(34px,5vw,56px)] font-normal leading-none">{t.rich("builderTitleRich", { em: (chunks) => <em className="text-goldink">{chunks}</em> })}</h1>
       <p className="mt-2 text-muted-foreground">{t("builderLead")}</p>
-      <div className="mt-6">
+      <div className="mt-5">
         <OutfitBuilder signedIn={Boolean(viewer)} initial={initial} />
       </div>
     </div>

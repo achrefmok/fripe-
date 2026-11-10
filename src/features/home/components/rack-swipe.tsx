@@ -124,7 +124,10 @@ export function RackSwipe({ products }: { products: ProductCardData[] }) {
                 <span className="lx-rackswipe__photo">
                   <Image src={productImageUrl(product.imagePath!)} alt={offset === 0 ? product.title : ""} fill unoptimized draggable={false} sizes="16rem" className="pointer-events-none object-cover" />
                 </span>
-                <span className="lx-rackswipe__price">{formatPrice(product.priceMillimes, locale)}</span>
+                <span className="lx-rackswipe__tag">
+                  <span className="lx-rackswipe__thread" aria-hidden="true" />
+                  <span className="lx-rackswipe__price">{formatPrice(product.priceMillimes, locale)}</span>
+                </span>
               </div>
             );
           })}

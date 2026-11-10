@@ -32,7 +32,7 @@ export default async function WalkPage({ searchParams }: PageProps<"/[locale]/wa
   }
 
   return (
-    <div className="mx-auto h-full max-w-md">
+    <div className="h-full">
       <WalkFeed
         initialItems={items}
         initialCursor={page.nextCursor}

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export const WALK_PAGE_SIZE = 5;
 
 const FEED_COLUMNS =
-  "id, description, video_path, thumbnail_path, favorite_count, published_at, shops!inner (id, name, slug), video_products (position, products (id, title, price_millimes, status, publication_status))";
+  "id, description, video_path, thumbnail_path, favorite_count, published_at, shops!inner (id, name, slug, logo_path, cities (name_fr, name_ar)), video_products (position, products (id, title, price_millimes, status, publication_status, product_images (path, position)))";
 
 type RawVideo = {
   id: string;
@@ -14,7 +14,7 @@ type RawVideo = {
   thumbnail_path: string;
   favorite_count: number;
   published_at: string;
-  shops: { id: string; name: string; slug: string };
+  shops: { id: string; name: string; slug: string; logo_path: string | null; cities: { name_fr: string; name_ar: string } | null };
   video_products: {
     position: number;
     products: {
@@ -23,6 +23,7 @@ type RawVideo = {
       price_millimes: number | null;
       status: string;
       publication_status: string;
+      product_images: { path: string; position: number }[];
     } | null;
   }[];
 };
@@ -35,12 +36,25 @@ function toFeedItem(video: RawVideo) {
     thumbnailPath: video.thumbnail_path,
     favoriteCount: video.favorite_count,
     publishedAt: video.published_at,
-    shop: video.shops,
+    shop: {
+      id: video.shops.id,
+      name: video.shops.name,
+      slug: video.shops.slug,
+      logoPath: video.shops.logo_path,
+      city: video.shops.cities,
+    },
     products: [...video.video_products]
       .sort((a, b) => a.position - b.position)
       .flatMap(({ products: product }) =>
         product?.publication_status === "published" && product.status !== "sold"
-          ? [{ id: product.id, title: product.title ?? "", priceMillimes: product.price_millimes ?? 0 }]
+          ? [
+              {
+                id: product.id,
+                title: product.title ?? "",
+                priceMillimes: product.price_millimes ?? 0,
+                imagePath: [...product.product_images].sort((a, b) => a.position - b.position)[0]?.path ?? null,
+              },
+            ]
           : [],
       ),
   };

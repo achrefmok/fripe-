@@ -17,9 +17,25 @@ import {
   type RecommendedOutfit,
   type StyleItem,
 } from "@/features/stylist/engine";
+import { Garment } from "@/features/home/components/garment";
+import { universeFor } from "@/features/home/universes";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/utils/price";
 import { productImageUrl } from "@/lib/utils/storage";
+
+// Les teintes des pastilles de couleur : la couleur elle-même, lisible sur papier comme sur nuit.
+const SWATCHES: Record<Color, string> = {
+  noir: "oklch(0.2 0.01 60)",
+  blanc: "oklch(0.98 0.005 85)",
+  gris: "oklch(0.65 0.01 80)",
+  bleu: "oklch(0.5 0.12 255)",
+  rouge: "oklch(0.55 0.19 28)",
+  vert: "oklch(0.55 0.11 150)",
+  beige: "oklch(0.86 0.045 80)",
+  marron: "oklch(0.45 0.07 50)",
+  rose: "oklch(0.78 0.09 0)",
+  jaune: "oklch(0.86 0.15 95)",
+};
 
 export function OutfitPieces({ items }: { items: StyleItem[] }) {
   const locale = useLocale();
@@ -28,19 +44,19 @@ export function OutfitPieces({ items }: { items: StyleItem[] }) {
     <ul className="divide-y border-y">
       {items.map((item) => (
         <li key={item.id}>
-          <Link href={`/produit/${item.id}`} className="flex items-center gap-3 py-2">
-            <span className="relative h-16 w-12 shrink-0 overflow-hidden bg-secondary">
+          <Link href={`/produit/${item.id}`} className="flex items-center gap-3 py-2.5">
+            <span className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-cream">
               {item.imagePath ? (
                 <Image src={productImageUrl(item.imagePath)} alt="" fill unoptimized sizes="48px" className="object-cover" />
               ) : null}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{item.title}</span>
+              <span className="block truncate font-medium">{item.title}</span>
               <span className="block truncate text-sm text-muted-foreground">
                 {[item.brand, item.size, item.shopName].filter(Boolean).join(" · ")}
               </span>
             </span>
-            <span className="font-semibold">{formatPrice(item.priceMillimes, locale)}</span>
+            <span className="font-display text-lg">{formatPrice(item.priceMillimes, locale)}</span>
           </Link>
         </li>
       ))}
@@ -75,10 +91,10 @@ export function StylistForm({ signedIn }: { signedIn: boolean }) {
   }
 
   return (
-    <>
+    <div className="flex flex-wrap items-start gap-[30px]">
       <form
         noValidate
-        className="grid gap-4"
+        className="lx-stylistform"
         onSubmit={(event) => {
           event.preventDefault();
           setError(null);
@@ -93,7 +109,8 @@ export function StylistForm({ signedIn }: { signedIn: boolean }) {
           });
         }}
       >
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <p className="luxe-kicker">{t("formTitle")}</p>
+        <div className="grid grid-cols-2 gap-4">
           <Field id="budget" label={t("budget")} error={fields.budget}>
             <Input
               id="budget"
@@ -136,12 +153,13 @@ export function StylistForm({ signedIn }: { signedIn: boolean }) {
 
         <fieldset>
           <legend className="text-[0.8rem] font-semibold">{t("colors")}</legend>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="mt-2 flex flex-wrap gap-2">
             {COLORS.map((color) => (
-              <label key={color} className="flex items-center gap-2 text-sm">
+              <label key={color} className="lx-swatch">
                 <input
                   type="checkbox"
-                  className="size-4 accent-[var(--harissa)]"
+                  className="lx-swatch__dot"
+                  style={{ background: SWATCHES[color] }}
                   checked={colors.includes(color)}
                   onChange={() =>
                     setColors(colors.includes(color) ? colors.filter((value) => value !== color) : [...colors, color])
@@ -159,20 +177,20 @@ export function StylistForm({ signedIn }: { signedIn: boolean }) {
         </Button>
       </form>
 
-      {outfits ? (
-        <section className="mt-8">
-          {outfits.length ? (
-            <div className="grid grid-cols-[minmax(0,1fr)] gap-8">
+      <section className="min-w-0 flex-[1_1_420px]" aria-live="polite" aria-busy={pending}>
+        {outfits ? (
+          outfits.length ? (
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
               {outfits.map((outfit, index) => (
-                <article key={outfit.items.map((item) => item.id).join()}>
+                <article key={outfit.items.map((item) => item.id).join()} className="lx-stylistcard">
                   <div className="mb-2 flex items-baseline justify-between gap-3">
-                    <h2 className="font-display text-xl font-bold">{t("outfitNumber", { number: index + 1 })}</h2>
-                    <p className="font-display text-xl font-extrabold text-harissa">
+                    <h2 className="font-display text-2xl font-normal">{t("outfitNumber", { number: index + 1 })}</h2>
+                    <p className="font-display text-2xl text-goldink">
                       {formatPrice(outfit.totalMillimes, locale)}
                     </p>
                   </div>
                   <OutfitPieces items={outfit.items} />
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button size="sm" disabled={pending} onClick={() => addToCart(outfit)}>{t("addToCart")}</Button>
                     <Button asChild size="sm" variant="outline">
                       <Link href={{ pathname: "/tenues/nouvelle", query: { pieces: outfit.items.map((item) => item.id).join(",") } }}>
@@ -184,10 +202,20 @@ export function StylistForm({ signedIn }: { signedIn: boolean }) {
               ))}
             </div>
           ) : (
-            <p role="status" className="text-muted-foreground">{t("noResult")}</p>
-          )}
-        </section>
-      ) : null}
-    </>
+            <p role="status" className="lx-stylistwait text-muted-foreground">{t("noResult")}</p>
+          )
+        ) : (
+          <div className="lx-stylistwait">
+            <span className="flex items-end gap-2" aria-hidden="true">
+              {["hauts", "bas", "chaussures"].map((slug) => (
+                <Garment key={slug} universe={universeFor(slug)} className="h-16 w-14" />
+              ))}
+            </span>
+            <p className="font-display text-2xl">{t("waitingTitle")}</p>
+            <p className="max-w-sm text-sm text-muted-foreground">{t("waitingBody")}</p>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

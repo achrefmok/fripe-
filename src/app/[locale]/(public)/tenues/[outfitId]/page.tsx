@@ -30,9 +30,9 @@ export default async function OutfitPage({ params }: PageProps<"/[locale]/tenues
   const initial = Object.fromEntries(outfit.items.map((item) => [item.slot, item])) as Partial<Record<Slot, StyleItem>>;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 md:pb-16 md:pt-10">
+    <div className={owner ? "mx-auto max-w-[1200px] px-[18px] pb-28 pt-[22px] md:pb-16" : "mx-auto max-w-2xl px-4 pb-24 pt-6 md:pb-16 md:pt-10"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-4xl font-extrabold">{outfit.name}</h1>
+        <h1 className="font-display text-[clamp(32px,4.4vw,48px)] font-normal leading-tight" dir="auto">{outfit.name}</h1>
         {outfit.is_public ? <OutfitShare title={outfit.name} /> : null}
       </div>
 

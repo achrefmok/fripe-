@@ -6,7 +6,7 @@ export default function WalkLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex h-svh flex-col overflow-hidden">
       <SiteHeader />
-      <main id="contenu" className="min-h-0 flex-1 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main id="contenu" className="min-h-0 flex-1 bg-[oklch(0.12_0.008_55)] pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
       <MobileTabbar />

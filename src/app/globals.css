@@ -454,7 +454,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   .studio-source {
@@ -3354,7 +3354,7 @@
     --cw: min(240px, 62vw);
     position: relative;
     width: 100%;
-    height: calc(var(--cw) * 1.33 + 110px);
+    height: calc(var(--cw) * 1.15 + 84px);
     cursor: grab;
     perspective: 1300px;
     touch-action: pan-y;
@@ -3435,10 +3435,25 @@
     box-shadow: 0 22px 40px -24px oklch(0.17 0.008 60 / 0.55);
   }
 
-  .lx-rackswipe__price {
+  /* L'étiquette du prix pend à son fil depuis le cintre et se balance. */
+  .lx-rackswipe__tag {
     position: absolute;
     top: 44px;
     inset-inline-end: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: 50% 0;
+    animation: lx-band-sway 3s ease-in-out infinite;
+  }
+
+  .lx-rackswipe__thread {
+    width: 1px;
+    height: 22px;
+    background: var(--foreground);
+  }
+
+  .lx-rackswipe__price {
     padding: 8px 8px 6px;
     border: 1px solid var(--border);
     border-radius: 4px 4px 6px 6px;
@@ -3446,9 +3461,8 @@
     background: var(--surface);
     font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
     clip-path: polygon(25% 0, 75% 0, 100% 18%, 100% 100%, 0 100%, 0 18%);
-    transform-origin: 50% 0;
-    animation: lx-band-sway 3s ease-in-out infinite;
   }
 
   .lx-rackbtn {
@@ -3521,7 +3535,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .lx-authpanel__tag,
-    .lx-rackswipe__price,
+    .lx-rackswipe__tag,
     .lx-kept__item {
       animation: none;
     }
@@ -3658,5 +3672,679 @@
 @media (prefers-reduced-motion: reduce) {
   .lx-curtain {
     display: none;
+  }
+}
+
+/* Friptex Luxe : Fripe Walk. Sur téléphone, le fil vertical plein cadre ; dès la tablette, la vidéo
+   dans une arche cerclée d'or et, à côté, la boutique, les pièces suspendues et la suite. */
+@layer components {
+  .walk-stage {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    color: var(--night-ink);
+    background: oklch(0.12 0.008 55);
+  }
+
+  .walk-stage__head {
+    display: none;
+  }
+
+  .walk-stage__body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .walk-feed {
+    width: 100%;
+    max-width: 28rem;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+  }
+
+  .walk-feed::-webkit-scrollbar {
+    display: none;
+  }
+
+  .walk-slide {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .walk-slide__frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: oklch(0.12 0.008 55);
+  }
+
+  .walk-slide__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .walk-slide__play {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    width: 64px;
+    height: 64px;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: oklch(0.17 0.008 60);
+    background: oklch(0.78 0.1 82);
+  }
+
+  .walk-slide__controls {
+    position: absolute;
+    inset-inline-end: 12px;
+    bottom: 6rem;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .walk-round {
+    display: flex;
+    width: 46px;
+    height: 46px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid oklch(0.96 0.015 85 / 0.3);
+    border-radius: 999px;
+    color: var(--night-ink);
+    background: oklch(0.08 0.005 55 / 0.5);
+  }
+
+  .walk-slide__caption {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: 3rem 1rem 1rem;
+    color: var(--night-ink);
+    background: linear-gradient(transparent, oklch(0.08 0.005 55 / 0.9));
+  }
+
+  .walk-slide__burst {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    z-index: 3;
+    width: 110px;
+    height: 110px;
+    margin: -55px 0 0 -55px;
+    color: oklch(0.78 0.1 82);
+    fill: currentColor;
+    pointer-events: none;
+    animation: walk-heart 0.8s ease-out forwards;
+  }
+
+  .walk-aside {
+    display: none;
+  }
+
+  .walk-kicker {
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: oklch(0.78 0.1 82);
+  }
+
+  .walk-pill {
+    display: inline-flex;
+    height: 38px;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 0 16px;
+    border: 1px solid var(--night-ink);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+  }
+
+  .walk-pill:hover {
+    background: oklch(0.96 0.015 85 / 0.1);
+  }
+
+  .walk-pill--cream,
+  .walk-pill--cream:hover {
+    height: 30px;
+    padding: 0 12px;
+    border: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: oklch(0.17 0.008 60);
+    background: var(--night-ink);
+  }
+
+  .walk-pill--cream:disabled {
+    opacity: 0.6;
+  }
+
+  .walk-rack {
+    position: relative;
+    padding-top: 6px;
+  }
+
+  .walk-rack__rod {
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(oklch(0.86 0.09 82), oklch(0.6 0.09 72));
+  }
+
+  .walk-rack__pieces {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: -6px;
+  }
+
+  .walk-piece {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: 50% 0;
+    transition: transform 0.5s cubic-bezier(0.3, 1.7, 0.5, 1);
+  }
+
+  .walk-piece__hook {
+    display: block;
+    width: 74px;
+    height: 30px;
+    overflow: visible;
+    fill: none;
+    stroke: var(--night-ink);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .walk-piece__photo {
+    position: relative;
+    display: block;
+    width: 84%;
+    margin-top: -3px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 8px;
+    background: oklch(0.22 0.012 55);
+  }
+
+  .walk-next {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 14px;
+    background: oklch(0.96 0.015 85 / 0.06);
+    transition: background-color 0.2s ease;
+  }
+
+  .walk-next:hover {
+    background: oklch(0.96 0.015 85 / 0.12);
+  }
+
+  .walk-next__thumb {
+    position: relative;
+    width: 42px;
+    height: 56px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 999px 999px 6px 6px;
+    background: oklch(0.22 0.012 55);
+  }
+
+  .walk-step {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid oklch(0.96 0.015 85 / 0.35);
+    border-radius: 999px;
+  }
+
+  .walk-step--gold {
+    border-color: transparent;
+    color: oklch(0.17 0.008 60);
+    background: oklch(0.78 0.1 82);
+  }
+
+  .walk-step:disabled {
+    opacity: 0.4;
+  }
+
+  .walk-round:focus-visible,
+  .walk-pill:focus-visible,
+  .walk-next:focus-visible,
+  .walk-step:focus-visible,
+  .walk-piece__photo:focus-visible,
+  .walk-slide__play:focus-visible {
+    outline: 2px solid oklch(0.78 0.1 82);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .walk-piece:hover {
+      transform: rotate(4deg);
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .walk-stage__head {
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 auto;
+      padding: 20px 24px 0;
+    }
+
+    .walk-progress {
+      display: flex;
+      flex-basis: 100%;
+      gap: 4px;
+    }
+
+    .walk-progress span {
+      height: 3px;
+      flex: 1;
+      border-radius: 2px;
+      background: oklch(0.96 0.015 85 / 0.22);
+      transition: background-color 0.3s ease;
+    }
+
+    .walk-progress span[data-state="done"] {
+      background: oklch(0.78 0.1 82 / 0.55);
+    }
+
+    .walk-progress span[data-state="active"] {
+      background: oklch(0.78 0.1 82);
+    }
+
+    .walk-stage__body {
+      width: 100%;
+      max-width: 1100px;
+      gap: 40px;
+      margin: 0 auto;
+      padding: 16px 24px 24px;
+    }
+
+    .walk-feed {
+      width: min(440px, 46vw);
+      flex: 0 0 auto;
+    }
+
+    .walk-slide__frame {
+      inset: 6px;
+      border-radius: 999px 999px 22px 22px;
+      background: oklch(0.2 0.01 55);
+      box-shadow: 0 0 0 2px oklch(0.78 0.1 82);
+    }
+
+    .walk-slide__video {
+      object-fit: cover;
+    }
+
+    .walk-aside {
+      display: flex;
+      min-width: 0;
+      max-width: 440px;
+      flex: 1 1 300px;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      padding-block: 6px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .walk-slide__burst {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes walk-heart {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1);
+  }
+}
+
+/* Friptex Luxe : la cabine d'essayage. À gauche le portant de la catégorie choisie et le budget,
+   à droite l'arche où pendent les pièces du look. */
+@layer components {
+  .lx-cabchip {
+    display: inline-flex;
+    height: 38px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 15px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .lx-cabchip:hover {
+    border-color: var(--foreground);
+  }
+
+  .lx-cabchip.is-active {
+    border-color: var(--foreground);
+    color: var(--background);
+    background: var(--foreground);
+  }
+
+  .lx-cabsearch {
+    display: flex;
+    height: 46px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 5px 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+
+  .lx-cabsearch:focus-within {
+    border-color: var(--goldink);
+  }
+
+  .lx-cabsearch__go {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 999px;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .lx-cabsearch__go:disabled {
+    opacity: 0.6;
+  }
+
+  .lx-cabrail {
+    position: relative;
+    padding-top: 10px;
+  }
+
+  .lx-cabrail__rod {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(oklch(0.86 0.09 82), oklch(0.6 0.09 72));
+  }
+
+  .lx-cabrail__row {
+    display: flex;
+    gap: 4px;
+    margin-top: -8px;
+    padding-bottom: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .lx-cabrail__piece {
+    display: flex;
+    width: 112px;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    color: var(--foreground);
+    transform-origin: 50% 0;
+    transition: transform 0.5s cubic-bezier(0.3, 1.7, 0.5, 1);
+  }
+
+  .lx-cabrail__hook {
+    width: 84px;
+    height: 34px;
+  }
+
+  .lx-cabrail__photo {
+    position: relative;
+    display: block;
+    width: 86%;
+    margin-top: -4px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 7px;
+    background: var(--cream);
+    box-shadow: 0 14px 24px -16px oklch(0.17 0.008 60 / 0.5);
+    transition: transform 0.5s ease, border-color 0.2s ease;
+  }
+
+  .lx-cabrail__piece[data-chosen] .lx-cabrail__photo {
+    border-color: var(--gold);
+    transform: translateY(6px);
+  }
+
+  .lx-cabrail__piece:focus-visible {
+    outline: 2px solid var(--goldink);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
+
+  .lx-cabbudget,
+  .lx-cabsave {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--surface);
+  }
+
+  .lx-cabsave {
+    max-width: 380px;
+  }
+
+  .lx-cabbtn {
+    display: inline-flex;
+    height: 52px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    border: 1px solid var(--foreground);
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .lx-cabbtn:hover {
+    background: var(--cream);
+  }
+
+  .lx-cabbtn--gold,
+  .lx-cabbtn--gold:hover {
+    border-color: transparent;
+    color: oklch(0.17 0.008 60);
+    background: oklch(0.78 0.1 82);
+    font-weight: 600;
+  }
+
+  .lx-cabbtn--ink,
+  .lx-cabbtn--ink:hover {
+    border-color: transparent;
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+
+  .lx-cabbtn:disabled {
+    opacity: 0.5;
+  }
+
+  .lx-cabbtn:focus-visible,
+  .lx-cabchip:focus-visible,
+  .lx-booth__frame:focus-visible,
+  .lx-booth__remove:focus-visible {
+    outline: 2px solid var(--goldink);
+    outline-offset: 2px;
+  }
+
+  .lx-booth__slot {
+    position: relative;
+  }
+
+  button.lx-booth__frame {
+    display: block;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .lx-booth__frame.is-active,
+  .lx-booth__frame.is-active[data-empty] {
+    border-style: solid;
+    border-color: var(--goldink);
+  }
+
+  .lx-booth__remove {
+    position: absolute;
+    top: 18px;
+    inset-inline-end: 4px;
+    z-index: 1;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border-radius: 999px;
+    color: var(--foreground);
+    background: var(--surface);
+    box-shadow: 0 1px 4px oklch(0.17 0.008 60 / 0.2);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .lx-cabrail__piece:hover {
+      transform: rotate(5deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lx-cabrail__piece,
+    .lx-cabrail__photo {
+      transition: none;
+    }
+  }
+}
+
+/* Friptex Luxe : l'AI Stylist. Le brief dans une carte, les couleurs en pastilles, les tenues à côté. */
+@layer components {
+  .lx-stylistform {
+    display: grid;
+    min-width: 0;
+    flex: 1 1 380px;
+    gap: 1rem;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--surface);
+  }
+
+  .lx-swatch {
+    display: inline-flex;
+    height: 36px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 13px 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .lx-swatch:hover {
+    border-color: var(--foreground);
+  }
+
+  .lx-swatch:has(:checked) {
+    border-color: var(--foreground);
+    background: var(--cream);
+  }
+
+  .lx-swatch__dot {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px oklch(0.17 0.008 60 / 0.18);
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .lx-swatch__dot:checked {
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--goldink);
+  }
+
+  .lx-swatch__dot:focus-visible {
+    outline: 2px solid var(--goldink);
+    outline-offset: 4px;
+  }
+
+  .lx-stylistcard {
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--surface);
+  }
+
+  .lx-stylistwait {
+    display: flex;
+    min-height: 260px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px;
+    border: 1px dashed var(--border);
+    border-radius: 22px;
+    text-align: center;
   }
 }
