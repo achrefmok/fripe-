@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { productImageUrl } from "@/lib/utils/storage";
 import type { Slot, StyleItem } from "../engine";
+import { Garment } from "./garment";
 
 const PLACES: Record<Slot, string> = {
   top: "lx-booth__slot--top",
@@ -18,8 +19,8 @@ const PLACES: Record<Slot, string> = {
   shoes: "lx-booth__slot--shoes",
 };
 
-// Devant le miroir, les pièces se posent comme on s'habille : le haut, le bas dessous, les
-// chaussures au sol, l'accessoire à portée de main.
+// Devant le miroir, les pièces détourées se superposent comme on s'habille : le bas, le haut qui
+// retombe dessus, les chaussures au sol, l'accessoire à portée de main.
 const LOOK_ORDER: Slot[] = ["bottom", "top", "shoes", "accessory"];
 
 function HangerHook() {
@@ -152,9 +153,7 @@ export function FittingBooth({
                     whileHover={reduced ? undefined : { scale: 1.04 }}
                     whileTap={reduced ? undefined : { scale: 0.97 }}
                   >
-                    {piece.imagePath ? (
-                      <Image src={productImageUrl(piece.imagePath)} alt="" fill unoptimized sizes="14rem" className="object-cover" />
-                    ) : null}
+                    {piece.imagePath ? <Garment src={productImageUrl(piece.imagePath)} sizes="18rem" slot={slot} /> : null}
                     <span className="lx-mirror__edit" aria-hidden="true">
                       <Pencil className="size-3" />
                     </span>
@@ -162,10 +161,6 @@ export function FittingBooth({
                 );
               })}
             </AnimatePresence>
-            <p className="lx-mirror__caption">
-              <span className="lx-mirror__kicker">{t("mirrorKicker")}</span>
-              <span className="font-display text-xl leading-tight">{summary}</span>
-            </p>
           </div>
         )}
         <span className="lx-booth__pelmet" aria-hidden="true" />
@@ -174,9 +169,17 @@ export function FittingBooth({
         {closed ? <span className="lx-booth__busy" role="status">{t("busy")}</span> : null}
       </div>
 
-      {view === "mirror" ? <p className="max-w-[340px] text-center text-sm text-muted-foreground">{t("mirrorHint")}</p> : null}
+      {view === "mirror" ? (
+        <div className="flex max-w-[360px] flex-col items-center gap-1.5 text-center">
+          <p className="lx-mirror__caption">
+            <span className="lx-mirror__kicker">{t("mirrorKicker")}</span>
+            <span className="font-display text-2xl leading-tight">{summary}</span>
+          </p>
+          <p className="text-sm text-muted-foreground">{t("mirrorHint")}</p>
+        </div>
+      ) : null}
 
-      <div className="flex w-[min(100%,380px)] flex-wrap justify-center gap-2.5">
+      <div className="flex w-[min(100%,440px)] flex-wrap justify-center gap-2.5">
         <button type="button" className="lx-booth__try flex-[1_1_140px]" onClick={pull} disabled={closed}>
           {view === "mirror" ? t("backToBooth") : t("tryOn")}
         </button>

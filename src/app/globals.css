@@ -6802,3 +6802,262 @@
     transform: none;
   }
 }
+
+/* Le look porté : devant le miroir, les pièces sont détourées et se superposent comme une tenue,
+   au lieu de photos posées côte à côte. Les pièces du portant et de la cabine gagnent en taille. */
+@layer components {
+  .lx-booth {
+    width: min(100%, 440px);
+  }
+
+  .lx-garment {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transition: opacity 0.35s ease;
+  }
+
+  .lx-garment[data-state="pending"] {
+    opacity: 0;
+  }
+
+  .lx-garment[data-state="cut"] img {
+    object-fit: contain;
+    filter: drop-shadow(0 14px 14px oklch(0.17 0.008 60 / 0.32)) drop-shadow(0 2px 3px oklch(0.17 0.008 60 / 0.25));
+  }
+
+  /* Photo impossible à détourer : elle est taillée à la forme de la pièce. */
+  .lx-garment[data-state="plain"],
+  .lx-garment[data-state="pending"] {
+    filter: drop-shadow(0 12px 12px oklch(0.17 0.008 60 / 0.3)) drop-shadow(0 1px 2px oklch(0.17 0.008 60 / 0.3));
+  }
+
+  .lx-garment[data-state="plain"] img,
+  .lx-garment[data-state="pending"] img {
+    object-fit: cover;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+  }
+
+  .lx-garment[data-slot="top"]:not([data-state="cut"]) img {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 102'%3E%3Cpath d='M42 5 Q60 19 78 5 L105 15 L119 45 L100 55 L92 43 L92 96 Q60 101 28 96 L28 43 L20 55 L1 45 L15 15 Z' stroke='%23000' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-position: 50% 100%;
+  }
+
+  .lx-garment[data-slot="bottom"]:not([data-state="cut"]) img {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 129'%3E%3Cpath d='M17 2 H83 L93 127 H58 L50 42 L42 127 H7 Z' stroke='%23000' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-position: 50% 0;
+  }
+
+  .lx-garment[data-slot="shoes"]:not([data-state="cut"]) img,
+  .lx-garment[data-slot="accessory"]:not([data-state="cut"]) img {
+    border: 3px solid var(--surface);
+    border-radius: 999px;
+  }
+
+  .lx-mirror__piece {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .lx-mirror__piece.is-active .lx-garment[data-state="cut"] img {
+    filter: drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 5px oklch(0.78 0.11 82 / 0.55)) drop-shadow(0 14px 14px oklch(0.17 0.008 60 / 0.3));
+  }
+
+  .lx-mirror__piece.is-active .lx-garment[data-state="plain"] {
+    filter: drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 5px oklch(0.78 0.11 82 / 0.55)) drop-shadow(0 12px 12px oklch(0.17 0.008 60 / 0.3));
+  }
+
+  .lx-mirror__piece:focus-visible {
+    outline-offset: -2px;
+    border-radius: 18px;
+  }
+
+  /* Le haut retombe sur la taille du bas, les chaussures touchent le sol. */
+  .lx-mirror__piece--top {
+    z-index: 3;
+    top: 11%;
+    left: 15%;
+    width: 70%;
+    height: 40%;
+    aspect-ratio: auto;
+    rotate: none;
+  }
+
+  .lx-mirror__piece--top .lx-garment img {
+    object-position: 50% 100%;
+  }
+
+  .lx-mirror__piece--bottom {
+    z-index: 2;
+    top: 45%;
+    left: 23%;
+    width: 54%;
+    height: 40%;
+    aspect-ratio: auto;
+    rotate: none;
+  }
+
+  .lx-mirror__piece--bottom .lx-garment img {
+    object-position: 50% 0;
+  }
+
+  .lx-mirror__piece--shoes {
+    z-index: 4;
+    bottom: 3.5%;
+    left: 29%;
+    width: 42%;
+    height: 15%;
+    aspect-ratio: auto;
+    rotate: none;
+  }
+
+  .lx-mirror__piece--shoes .lx-garment img {
+    object-position: 50% 100%;
+  }
+
+  .lx-mirror__piece--accessory {
+    z-index: 5;
+    top: 40%;
+    right: 9%;
+    width: 25%;
+    height: 22%;
+    aspect-ratio: auto;
+    rotate: 7deg;
+  }
+
+  .lx-mirror__floor {
+    inset-inline: 16%;
+    bottom: 2.5%;
+    height: 7%;
+  }
+
+  .lx-mirror__edit {
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 1px 4px oklch(0.17 0.008 60 / 0.25);
+  }
+
+  @media (hover: none) {
+    .lx-mirror__piece:not(.is-active) .lx-mirror__edit {
+      opacity: 0;
+    }
+  }
+
+  .lx-mirror__caption {
+    position: static;
+    max-width: none;
+    align-items: center;
+    padding: 0;
+    background: none;
+    text-align: center;
+    backdrop-filter: none;
+  }
+
+  /* Les pièces à choisir, sur la tringle de la cabine. */
+  .lx-cabrail__row {
+    gap: 8px;
+  }
+
+  .lx-cabrail__piece {
+    width: 132px;
+  }
+
+  .lx-cabrail__hook {
+    width: 98px;
+    height: 40px;
+  }
+
+  .lx-cabrail__photo {
+    width: 90%;
+    border-radius: 10px;
+  }
+
+  /* Le portant de l'accueil : les pièces occupent toute la largeur de la carte. Leur taille suit
+     celle de la carte, pour rester grandes sur mobile sans déborder sur une colonne étroite. */
+  .lx-feature:has(.lx-rack) {
+    container-type: inline-size;
+  }
+
+  .lx-rack {
+    --rack-main: min(36cqw, 172px);
+    --rack-side: min(28cqw, 134px);
+    height: calc(var(--rack-main) * 1.4 + 56px);
+    margin-top: 10px;
+    perspective: 900px;
+  }
+
+  .lx-rack__rod {
+    top: 11px;
+    height: 5px;
+  }
+
+  .lx-rack__hangers {
+    left: 0;
+    align-items: flex-start;
+    width: 100%;
+    margin-left: 0;
+    direction: ltr;
+  }
+
+  .lx-rack__piece {
+    width: var(--rack-side);
+    flex: none;
+  }
+
+  .lx-rack__piece .lx-hook {
+    width: 70px;
+    height: 28px;
+  }
+
+  .lx-rack__piece[data-slot="0"] {
+    transform: translateX(6px) rotateY(30deg);
+  }
+
+  .lx-rack__piece[data-slot="1"] {
+    width: var(--rack-main);
+    transform: translateZ(40px);
+  }
+
+  .lx-rack__piece[data-slot="1"] .lx-hook {
+    width: 84px;
+    height: 34px;
+  }
+
+  .lx-rack__piece[data-slot="2"] {
+    transform: translateX(-6px) rotateY(-30deg);
+  }
+
+  .lx-rack__photo,
+  .lx-rack__piece[data-slot="1"] .lx-rack__photo {
+    width: 100%;
+    margin-top: -3px;
+    border-radius: 10px;
+    box-shadow: 0 16px 26px -16px oklch(0.17 0.008 60 / 0.6);
+  }
+
+  @media (max-width: 40rem) {
+    .lx-cabrail__piece {
+      width: 118px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lx-garment {
+      transition: none;
+    }
+  }
+}
+
+/* Chaussures non détourées : un médaillon rond posé au sol, plutôt qu'une bande. */
+@layer components {
+  .lx-mirror__piece--shoes:has(.lx-garment:not([data-state="cut"])) {
+    left: 36%;
+    width: 28%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}

@@ -129,7 +129,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   <span key={product.id} className="lx-rack__piece" data-slot={index}>
                     <HangerHook />
                     <span className="lx-rack__photo">
-                      <Image src={productImageUrl(product.imagePath!)} alt="" fill unoptimized sizes="4rem" className="object-cover" />
+                      <Image src={productImageUrl(product.imagePath!)} alt="" fill unoptimized sizes="11rem" className="object-cover" />
                     </span>
                   </span>
                 ))}
