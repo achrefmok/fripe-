@@ -46,6 +46,8 @@ export function MarketFiltersBar({
     <div className="flex items-stretch gap-2">
       <form action={basePath} method="get" role="search" className="flex min-w-0 flex-1 items-stretch gap-2">
         {filters.categorie ? <input type="hidden" name="categorie" value={filters.categorie} /> : null}
+        {filters.marque ? <input type="hidden" name="marque" value={filters.marque} /> : null}
+        {filters.taille ? <input type="hidden" name="taille" value={filters.taille} /> : null}
         <Label htmlFor="q" className="sr-only">
           {t("searchLabel")}
         </Label>
@@ -89,6 +91,8 @@ export function MarketFiltersBar({
 
           <form action={basePath} method="get" className="flex min-h-0 flex-1 flex-col">
             <input type="hidden" name="q" value={filters.q} />
+            {filters.marque ? <input type="hidden" name="marque" value={filters.marque} /> : null}
+            {filters.taille ? <input type="hidden" name="taille" value={filters.taille} /> : null}
             <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-x-4 gap-y-4 overflow-y-auto px-4 pb-4 md:grid-cols-3 md:px-6">
               {subcategories.length ? (
                 <div className="col-span-2 md:col-span-3">

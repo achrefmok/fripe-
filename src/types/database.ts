@@ -1015,6 +1015,213 @@ export type Database = {
           },
         ]
       }
+      live_comments: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          hidden_at: string | null
+          id: number
+          live_id: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          body: string
+          created_at?: string
+          hidden_at?: string | null
+          id?: never
+          live_id: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          hidden_at?: string | null
+          id?: never
+          live_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_comments_live_id_fkey"
+            columns: ["live_id"]
+            isOneToOne: false
+            referencedRelation: "lives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_products: {
+        Row: {
+          live_id: string
+          position: number
+          product_id: string
+        }
+        Insert: {
+          live_id: string
+          position?: number
+          product_id: string
+        }
+        Update: {
+          live_id?: string
+          position?: number
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_products_live_id_fkey"
+            columns: ["live_id"]
+            isOneToOne: false
+            referencedRelation: "lives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_references"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "live_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_signals: {
+        Row: {
+          created_at: string
+          id: number
+          kind: string
+          live_id: string
+          payload: Json
+          viewer_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          kind: string
+          live_id: string
+          payload?: Json
+          viewer_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          kind?: string
+          live_id?: string
+          payload?: Json
+          viewer_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_signals_live_id_fkey"
+            columns: ["live_id"]
+            isOneToOne: false
+            referencedRelation: "lives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lives: {
+        Row: {
+          comment_count: number
+          cover_product_id: string | null
+          created_at: string
+          description: string
+          ended_at: string | null
+          id: string
+          pinned_product_id: string | null
+          scheduled_at: string | null
+          shop_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["live_status"]
+          title: string
+          updated_at: string
+          viewer_peak: number
+        }
+        Insert: {
+          comment_count?: number
+          cover_product_id?: string | null
+          created_at?: string
+          description?: string
+          ended_at?: string | null
+          id?: string
+          pinned_product_id?: string | null
+          scheduled_at?: string | null
+          shop_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["live_status"]
+          title: string
+          updated_at?: string
+          viewer_peak?: number
+        }
+        Update: {
+          comment_count?: number
+          cover_product_id?: string | null
+          created_at?: string
+          description?: string
+          ended_at?: string | null
+          id?: string
+          pinned_product_id?: string | null
+          scheduled_at?: string | null
+          shop_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["live_status"]
+          title?: string
+          updated_at?: string
+          viewer_peak?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lives_cover_product_id_fkey"
+            columns: ["cover_product_id"]
+            isOneToOne: false
+            referencedRelation: "product_references"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "lives_cover_product_id_fkey"
+            columns: ["cover_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lives_pinned_product_id_fkey"
+            columns: ["pinned_product_id"]
+            isOneToOne: false
+            referencedRelation: "product_references"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "lives_pinned_product_id_fkey"
+            columns: ["pinned_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lives_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_runs: {
         Row: {
           error: string | null
@@ -2872,6 +3079,7 @@ export type Database = {
         Args: { p_reason: string; p_shop_id: string }
         Returns: undefined
       }
+      end_live: { Args: { p_live_id: string }; Returns: undefined }
       finalize_video: {
         Args: {
           p_duration_seconds: number
@@ -2903,6 +3111,10 @@ export type Database = {
       }
       moderate_listing: {
         Args: { p_listing_id: string; p_note: string }
+        Returns: undefined
+      }
+      moderate_live_comment: {
+        Args: { p_comment_id: number; p_hidden: boolean }
         Returns: undefined
       }
       moderate_product: {
@@ -2948,6 +3160,10 @@ export type Database = {
         Args: { p_message: string; p_product_id: string; p_request_id: string }
         Returns: undefined
       }
+      pin_live_product: {
+        Args: { p_live_id: string; p_product_id: string }
+        Returns: undefined
+      }
       place_order: {
         Args: {
           p_address_line: string
@@ -2961,8 +3177,16 @@ export type Database = {
         }
         Returns: string
       }
+      post_live_comment: {
+        Args: { p_body: string; p_live_id: string }
+        Returns: number
+      }
       reply_review: {
         Args: { p_reply: string; p_review_id: string }
+        Returns: undefined
+      }
+      report_live_viewers: {
+        Args: { p_count: number; p_live_id: string }
         Returns: undefined
       }
       reservation_ttl_minutes: { Args: never; Returns: number }
@@ -3000,6 +3224,18 @@ export type Database = {
         Args: { p_default_fee: number; p_overrides: Json; p_shop_id: string }
         Returns: undefined
       }
+      save_live: {
+        Args: {
+          p_cover_product_id: string
+          p_description: string
+          p_live_id: string
+          p_product_ids: string[]
+          p_scheduled_at: string
+          p_shop_id: string
+          p_title: string
+        }
+        Returns: string
+      }
       save_outfit: {
         Args: {
           p_budget_millimes: number
@@ -3016,6 +3252,15 @@ export type Database = {
       }
       send_listing_message: {
         Args: { p_body: string; p_thread_id: string }
+        Returns: undefined
+      }
+      send_live_signal: {
+        Args: {
+          p_kind: string
+          p_live_id: string
+          p_payload: Json
+          p_viewer_key: string
+        }
         Returns: undefined
       }
       send_message: {
@@ -3081,6 +3326,7 @@ export type Database = {
         }
         Returns: string
       }
+      start_live: { Args: { p_live_id: string }; Returns: undefined }
       submit_arrival: {
         Args: {
           p_note: string
@@ -3110,6 +3356,7 @@ export type Database = {
         Returns: undefined
       }
       withdraw_arrival: { Args: { p_arrival_id: string }; Returns: undefined }
+      withdraw_live: { Args: { p_live_id: string }; Returns: undefined }
     }
     Enums: {
       account_status: "active" | "suspended" | "deleted"
@@ -3119,6 +3366,7 @@ export type Database = {
       category_section: "mode" | "marketplace"
       fulfillment_method: "delivery" | "pickup"
       listing_section: "marketplace" | "vide_dressing"
+      live_status: "scheduled" | "live" | "ended" | "cancelled"
       message_side: "client" | "shop"
       order_status:
         | "pending"
@@ -3288,6 +3536,7 @@ export const Constants = {
       category_section: ["mode", "marketplace"],
       fulfillment_method: ["delivery", "pickup"],
       listing_section: ["marketplace", "vide_dressing"],
+      live_status: ["scheduled", "live", "ended", "cancelled"],
       message_side: ["client", "shop"],
       order_status: [
         "pending",

@@ -7,7 +7,7 @@
         {
           "heading": "Éditeur du service",
           "body": [
-            "FRIPE est édité par [[À valider : raison sociale ou nom de l'exploitant]], [[À valider : forme juridique]], [[À valider : adresse du siège]].",
+            "FRIPE (Friptex) est un service de G-Mall (g-mall.tn), édité par [[À valider : raison sociale ou nom de l'exploitant]], [[À valider : forme juridique]], [[À valider : adresse du siège]].",
             "Identifiant fiscal ou registre : [[À valider : matricule fiscal et numéro au registre]].",
             "Responsable de la publication : [[À valider : nom du responsable]]."
           ]
@@ -36,7 +36,8 @@
           "heading": "Compte",
           "body": [
             "Créer un compte demande une adresse e-mail confirmée et un mot de passe. Tu es responsable de ce qui se fait depuis ton compte.",
-            "Âge minimum pour créer un compte : [[À valider : âge minimum]]."
+            "Âge minimum pour créer un compte : [[À valider : âge minimum]].",
+            "Friptex est un service de G-Mall : ton compte pourra être rattaché à la plateforme G-Mall, dans les conditions décrites par la politique de confidentialité."
           ]
         },
         {
@@ -150,6 +151,15 @@
             "Une boutique voit le nom, le téléphone et l'adresse uniquement pour ses propres commandes, et les messages et demandes qui la concernent. Elle ne voit pas l'identité de ses abonnés.",
             "L'équipe FRIPE n'a pas accès aux conversations privées. Un signalement de conversation lui transmet un extrait des 20 derniers messages.",
             "Sous-traitants et lieu d'hébergement : [[À valider : liste et pays]]. Transferts hors de Tunisie : [[À valider : existence et garanties]]."
+          ]
+        },
+        {
+          "heading": "Friptex et G-Mall",
+          "body": [
+            "Friptex est un service de G-Mall (g-mall.tn), exploité par le même éditeur.",
+            "Ton compte Friptex pourra être rattaché à la plateforme G-Mall, pour utiliser les deux services avec un seul compte. Ce rattachement reprendrait ton compte, ton profil et ton activité (boutiques, pièces, commandes, favoris, messages), avec la même protection qu'ici.",
+            "Avant tout rattachement, tu seras prévenu·e par e-mail au moins [[À valider : délai de prévenance]] à l'avance. Tu pourras t'y opposer ou supprimer ton compte avant la date annoncée.",
+            "Tes données ne sont ni vendues ni cédées à un autre exploitant."
           ]
         },
         {

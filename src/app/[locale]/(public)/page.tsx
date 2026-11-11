@@ -89,6 +89,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { href: "/stylist", name: t("discoverStylist"), scene: ["hauts", "bas", "chaussures"] },
     { href: "/tenues/nouvelle", name: t("discoverOutfit"), scene: ["vestes-manteaux", "robes", "accessoires"] },
     { href: "/walk", name: t("walkTitle"), scene: ["hauts", "vestes-manteaux", "bas"] },
+    { href: "/lives", name: t("livesTitle"), scene: ["robes", "accessoires", "chaussures"] },
   ];
 
   return (

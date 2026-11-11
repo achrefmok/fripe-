@@ -2,6 +2,10 @@ import { ShieldCheck, UserRound } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/features/catalog/components/product-gallery";
+import { DressingRail } from "@/features/dressing/components/dressing-card";
+import { DressingFavorites } from "@/features/dressing/components/favorites";
+import { getAroundListing } from "@/features/dressing/queries";
+import { dressingFirstName, dressingMonogram, dressingTone } from "@/features/dressing/tone";
 import { getCategoryAttributes, getLatestListings, getListing, getViewerListingState } from "@/features/marketplace/queries";
 import { ContactSellerForm, FavoriteListingButton, OwnerListingActions } from "@/features/marketplace/components/listing-actions";
 import { MarketRail } from "@/features/marketplace/components/market-card";
@@ -26,14 +30,21 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
   const listing = await getListing(listingId);
   if (!listing) notFound();
 
-  const [viewer, t, conditions, locale, attributes, similar] = await Promise.all([
+  const inDressing = listing.section === "vide_dressing";
+  const [viewer, t, dressing, conditions, locale, attributes, similar, around] = await Promise.all([
     getViewer(),
     getTranslations("market"),
+    getTranslations("dressing"),
     getTranslations("conditions"),
     getLocale(),
     getCategoryAttributes([listing.category_id, listing.categories?.parent_id].filter((id): id is string => Boolean(id))),
-    getLatestListings(listing.section, 9),
+    inDressing ? [] : getLatestListings(listing.section, 9),
+    // Autour d'une pièce du Vide-Dressing : le reste du même dressing et des pièces proches.
+    inDressing
+      ? getAroundListing({ id: listing.id, sellerId: listing.seller_id, categoryId: listing.category_id, brand: listing.brand })
+      : null,
   ]);
+  const tone = dressingTone(listing.seller_id);
 
   const own = viewer?.id === listing.seller_id;
   const state = viewer && !own ? await getViewerListingState(listing.id, viewer.id) : null;
@@ -96,9 +107,15 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
           {listing.status === "reserved" ? <p className="mt-1 text-sm font-semibold">{t("reserved")}</p> : null}
 
           <div className="seller-card mt-5">
-            <span className="seller-person seller-person--lg" aria-hidden="true">
-              <UserRound className="size-5" />
-            </span>
+            {inDressing ? (
+              <span className="vd-avatar" style={{ background: tone.surface, color: tone.ink }} aria-hidden="true">
+                {dressingMonogram(listing.seller_name)}
+              </span>
+            ) : (
+              <span className="seller-person seller-person--lg" aria-hidden="true">
+                <UserRound className="size-5" />
+              </span>
+            )}
             <span className="min-w-0">
               <span className="block text-sm text-muted-foreground">{t("sellerTitle")}</span>
               <span className="block truncate font-display text-lg font-extrabold">
@@ -109,12 +126,17 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
                 {place}
                 {listing.published_at ? ` · ${t("publishedOn", { date: formatDate(listing.published_at, locale) })}` : ""}
               </span>
+              {inDressing ? (
+                <Link href={`/vide-dressing/dressing/${listing.seller_id}`} className="mt-1 inline-flex min-h-9 items-center text-sm font-medium text-goldink underline underline-offset-4">
+                  {dressing("visitDressing")}
+                </Link>
+              ) : null}
             </span>
           </div>
 
           <div className="mt-5 grid gap-3">
             {own ? (
-              <div className="grid gap-3 border-2 border-foreground p-4">
+              <div className="grid gap-3 rounded-[18px] border bg-surface p-4">
                 <p className="font-display text-lg font-extrabold">{t("ownListing")}</p>
                 <Link href={`/compte/annonces/${listing.id}`} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">
                   {t("edit")}
@@ -128,7 +150,7 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
               </div>
             ) : notice ? null : viewer ? (
               state?.threadId ? (
-                <Link href={`/compte/echanges/${state.threadId}`} className="inline-flex h-11 items-center justify-center bg-primary px-5 font-semibold text-primary-foreground">
+                <Link href={`/compte/echanges/${state.threadId}`} className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-semibold text-primary-foreground">
                   {t("openThread")}
                 </Link>
               ) : (
@@ -137,7 +159,7 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
             ) : (
               <Link
                 href={`/connexion?next=${encodeURIComponent(`/annonce/${listing.id}`)}`}
-                className="inline-flex h-11 items-center justify-center bg-primary px-5 font-semibold text-primary-foreground"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-semibold text-primary-foreground"
               >
                 {t("contactSignIn")}
               </Link>
@@ -172,7 +194,7 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
             </section>
           ) : null}
 
-          <aside className="mt-6 flex gap-3 bg-secondary p-4 text-sm leading-relaxed">
+          <aside className="mt-6 flex gap-3 rounded-[18px] bg-cream p-4 text-sm leading-relaxed">
             <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
             <span>
               <strong className="block">{t("safetyTitle")}</strong>
@@ -181,6 +203,30 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
           </aside>
         </div>
       </div>
+
+      {around ? (
+        <DressingFavorites next={`/annonce/${listing.id}`}>
+          {around.sameDressing.length ? (
+            <section className="vd-section" aria-labelledby="vd-same">
+              <div className="vd-section__head">
+                <h2 id="vd-same" className="vd-section__title">{dressing("sameDressing")}</h2>
+                <Link href={`/vide-dressing/dressing/${listing.seller_id}`} className="vd-section__lead underline underline-offset-4">
+                  {dressing("dressingOf", { name: dressingFirstName(listing.seller_name) })}
+                </Link>
+              </div>
+              <DressingRail items={around.sameDressing} label={dressing("sameDressing")} />
+            </section>
+          ) : null}
+          {around.similar.length ? (
+            <section className="vd-section" aria-labelledby="vd-similar">
+              <div className="vd-section__head">
+                <h2 id="vd-similar" className="vd-section__title">{dressing("similar")}</h2>
+              </div>
+              <DressingRail items={around.similar} label={dressing("similar")} />
+            </section>
+          ) : null}
+        </DressingFavorites>
+      ) : null}
 
       {similar.filter((item) => item.id !== listing.id).length ? (
         <section className="mt-12">

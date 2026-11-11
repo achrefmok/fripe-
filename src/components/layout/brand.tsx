@@ -21,8 +21,8 @@ export function BrandLink({ className, onHarissa = false }: { className?: string
       href="/"
       className={cn("inline-flex shrink-0 items-center", onHarissa && "rounded-[2px] bg-paper px-2 py-1", className)}
     >
-      <Image src={logo} alt="Friptex" priority className={cn("h-9 w-auto", !onHarissa && "dark:hidden")} />
-      {onHarissa ? null : <Image src={logoDark} alt="Friptex" priority className="hidden h-9 w-auto dark:block" />}
+      <Image src={logo} alt="Friptex" priority className={cn("h-11 w-auto object-contain md:h-[52px]", !onHarissa && "dark:hidden")} />
+      {onHarissa ? null : <Image src={logoDark} alt="Friptex" priority className="hidden h-11 w-auto object-contain md:h-[52px] dark:block" />}
     </Link>
   );
 }

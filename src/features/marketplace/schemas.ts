@@ -62,6 +62,8 @@ export const marketFiltersSchema = z.object({
   gouvernorat: text(10),
   prixMin: text(10),
   prixMax: text(10),
+  marque: text(60),
+  taille: text(20),
   vendeur: z.preprocess(firstValue, z.enum(SELLER_TYPES).optional().catch(undefined)),
   tri: z.preprocess(firstValue, z.enum(MARKET_SORTS).catch("recent").default("recent")),
   page: z.preprocess(firstValue, z.coerce.number().int().min(1).max(500).catch(1).default(1)),

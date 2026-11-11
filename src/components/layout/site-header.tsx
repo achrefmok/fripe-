@@ -23,6 +23,7 @@ export function SiteHeader() {
               { href: "/vide-dressing", label: t("videDressing") },
               { href: "/boutiques", label: t("shops"), wide: true },
               { href: "/walk", label: t("walk"), wide: true },
+              { href: "/lives", label: t("lives"), wide: true },
               { href: "/chine", label: t("chine") },
               { href: "/tenues/nouvelle", label: t("cabine") },
               { href: "/vendre", label: t("sell") },

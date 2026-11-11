@@ -66,6 +66,17 @@ Chaque catégorie racine garde sa matière (`src/features/home/universes.ts`). `
 - Connexion : panneau photo de nuit, étiquette « Friptex » qui se balance, formulaire à droite.
 - Compte, vendeur et administration : sobres, rangées à filets, chiffres tabulaires.
 
+## Vide-Dressing
+
+La garance (`--vd`) est son identité : héros en dégradé, puces actives, bandeau de résultats. Chaque dressing reçoit une teinte stable tirée de l'identifiant de la personne (`src/features/dressing/tone.ts`), reprise sur sa vitrine, son monogramme et sa page. Une carte montre d'abord la photo, puis la marque en petites capitales d'or, la taille, l'état en pastille (dorée pour le neuf) et le prénom du vendeur. Les cartes entrent en décalé ; au survol, la carte se soulève et les pièces d'une vitrine s'écartent. L'éventail du héros est le seul objet 3D : trois photos qui se tournent vers la souris.
+
+## Live Shopping
+
+Côté client, une scène de nuit : la vidéo verticale cerclée d'or, la pièce mise en avant posée dessus en carte crème, le fil des commentaires et les pièces à côté. Le rouge vif (`oklch(0.55 0.2 27)`) est réservé à « En direct » et au bouton qui lance le direct. Côté boutique, le studio est clair et lisible : moniteur, un seul grand bouton, quatre chiffres, les pièces à épingler d'un geste, le fil à modérer sur fond de nuit.
+
+## Cabine, côté miroir
+
+Le rideau se ferme sur la cabine et se rouvre sur le miroir : les pièces du look, posées comme on s'habille, légèrement inclinées, bordées de blanc. Toucher une pièce choisit sa catégorie ; la remplacer se fait sans quitter le miroir.
 ## Photos
 
 Aucune marque visible, aucune personne. Les sources sont notées dans `scripts/seed-photos/SOURCES.md`.

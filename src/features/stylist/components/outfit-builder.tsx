@@ -297,7 +297,13 @@ export function OutfitBuilder({
       </div>
 
       <div className="flex min-w-0 flex-[1_1_340px] flex-col items-center gap-5">
-        <FittingBooth pieces={pieces} activeSlot={slot} onSelect={choose} onRemove={remove}>
+        <FittingBooth
+          pieces={pieces}
+          activeSlot={slot}
+          onSelect={choose}
+          onRemove={remove}
+          summary={`${t("pieces", { count: selected.length })} · ${formatPrice(total, locale)}`}
+        >
           <button type="button" className="lx-cabbtn flex-[1_1_120px]" onClick={randomLook} disabled={pending}>
             <Dices className="size-4" aria-hidden="true" />
             {t("random")}

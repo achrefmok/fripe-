@@ -1,10 +1,12 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Pencil, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { productImageUrl } from "@/lib/utils/storage";
 import type { Slot, StyleItem } from "../engine";
@@ -16,6 +18,10 @@ const PLACES: Record<Slot, string> = {
   shoes: "lx-booth__slot--shoes",
 };
 
+// Devant le miroir, les pièces se posent comme on s'habille : le haut, le bas dessous, les
+// chaussures au sol, l'accessoire à portée de main.
+const LOOK_ORDER: Slot[] = ["bottom", "top", "shoes", "accessory"];
+
 function HangerHook() {
   return (
     <svg viewBox="0 0 100 40" className="lx-hook lx-booth__hook" aria-hidden="true">
@@ -25,72 +31,154 @@ function HangerHook() {
   );
 }
 
-// La cabine d'essayage : les pièces du look pendues dans une arche. Toucher un cintre choisit la
-// catégorie à changer, la croix retire la pièce, le rideau se tire pour « essayer ».
+// La cabine d'essayage. Dans la cabine, chaque pièce pend à son cintre : toucher un emplacement
+// choisit la catégorie à changer, la croix retire la pièce. On tire le rideau, et il se rouvre sur
+// le miroir : le look entier, assemblé, où chaque pièce reste modifiable.
 export function FittingBooth({
   pieces,
   activeSlot,
   onSelect,
   onRemove,
+  summary,
   children,
 }: {
   pieces: Partial<Record<Slot, StyleItem>>;
   activeSlot: Slot;
   onSelect: (slot: Slot) => void;
   onRemove: (slot: Slot) => void;
+  summary: string;
   children?: ReactNode;
 }) {
   const t = useTranslations("outfits");
+  const reduced = useReducedMotion();
   const [closed, setClosed] = useState(false);
+  const [mode, setMode] = useState<"booth" | "mirror">("booth");
+  const frame = useRef<HTMLDivElement>(null);
+  const count = Object.values(pieces).filter(Boolean).length;
+  // Sans pièce, il n'y a rien à regarder : le miroir rend la main à la cabine.
+  const view = count ? mode : "booth";
 
+  // Rideau fermé : on change de décor derrière lui, puis il se rouvre.
   useEffect(() => {
     if (!closed) return;
-    const timer = window.setTimeout(() => setClosed(false), 1400);
-    return () => window.clearTimeout(timer);
-  }, [closed]);
+    const swap = window.setTimeout(() => setMode((current) => (current === "booth" ? "mirror" : "booth")), reduced ? 0 : 750);
+    const open = window.setTimeout(() => setClosed(false), reduced ? 50 : 1300);
+    return () => {
+      window.clearTimeout(swap);
+      window.clearTimeout(open);
+    };
+  }, [closed, reduced]);
+
+  function pull() {
+    if (view === "booth" && !count) {
+      toast.info(t("emptyLook"));
+      return;
+    }
+    setClosed(true);
+    frame.current?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
+  }
+
+  const spring = reduced ? { duration: 0 } : { type: "spring" as const, stiffness: 260, damping: 22 };
 
   return (
     <div className="flex w-full flex-col items-center gap-3.5">
-      <div className="lx-booth" data-closed={closed ? "" : undefined}>
-        <span className="lx-booth__bar" aria-hidden="true" />
-        <ul className="lx-booth__grid">
-          {(Object.keys(PLACES) as Slot[]).map((slot) => {
-            const piece = pieces[slot];
-            const label = t(`slots.${slot}`);
-            return (
-              <li key={slot} className={`lx-booth__slot ${PLACES[slot]}`}>
-                <HangerHook />
-                <button
-                  type="button"
-                  className={cn("lx-booth__frame", activeSlot === slot && "is-active")}
-                  data-empty={piece ? undefined : ""}
-                  aria-pressed={activeSlot === slot}
-                  aria-label={t("selectSlot", { slot: label })}
-                  onClick={() => onSelect(slot)}
-                  disabled={closed}
-                >
-                  {piece?.imagePath ? (
-                    <Image src={productImageUrl(piece.imagePath)} alt={piece.title} fill unoptimized sizes="10rem" className="object-cover" />
-                  ) : null}
-                  <span className="lx-booth__label">{label}</span>
-                </button>
-                {piece ? (
-                  <button type="button" className="lx-booth__remove" aria-label={`${t("remove")} ${label}`} onClick={() => onRemove(slot)} disabled={closed}>
-                    <X className="size-3.5" aria-hidden="true" />
-                  </button>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+      <div ref={frame} className="lx-booth" data-closed={closed ? "" : undefined} data-mode={view}>
+        {view === "booth" ? (
+          <>
+            <span className="lx-booth__bar" aria-hidden="true" />
+            <ul className="lx-booth__grid">
+              {(Object.keys(PLACES) as Slot[]).map((slot) => {
+                const piece = pieces[slot];
+                const label = t(`slots.${slot}`);
+                return (
+                  <li key={slot} className={`lx-booth__slot ${PLACES[slot]}`}>
+                    <HangerHook />
+                    <button
+                      type="button"
+                      className={cn("lx-booth__frame", activeSlot === slot && "is-active")}
+                      data-empty={piece ? undefined : ""}
+                      aria-pressed={activeSlot === slot}
+                      aria-label={t("selectSlot", { slot: label })}
+                      onClick={() => onSelect(slot)}
+                      disabled={closed}
+                    >
+                      <AnimatePresence initial={false}>
+                        {piece?.imagePath ? (
+                          <motion.span
+                            key={piece.id}
+                            className="absolute inset-0"
+                            initial={{ opacity: 0, y: -18, rotate: -4 }}
+                            animate={{ opacity: 1, y: 0, rotate: 0 }}
+                            exit={{ opacity: 0, y: 14, scale: 0.94 }}
+                            transition={spring}
+                          >
+                            <Image src={productImageUrl(piece.imagePath)} alt={piece.title} fill unoptimized sizes="10rem" className="object-cover" />
+                          </motion.span>
+                        ) : null}
+                      </AnimatePresence>
+                      <span className="lx-booth__label">{label}</span>
+                    </button>
+                    {piece ? (
+                      <button type="button" className="lx-booth__remove" aria-label={`${t("remove")} ${label}`} onClick={() => onRemove(slot)} disabled={closed}>
+                        <X className="size-3.5" aria-hidden="true" />
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <div className="lx-mirror" role="group" aria-label={t("mirrorTitle")}>
+            <span className="lx-mirror__sheen" aria-hidden="true" />
+            <span className="lx-mirror__floor" aria-hidden="true" />
+            <AnimatePresence initial>
+              {LOOK_ORDER.map((slot, order) => {
+                const piece = pieces[slot];
+                if (!piece) return null;
+                const label = t(`slots.${slot}`);
+                return (
+                  <motion.button
+                    key={`${slot}-${piece.id}`}
+                    type="button"
+                    className={cn("lx-mirror__piece", `lx-mirror__piece--${slot}`, activeSlot === slot && "is-active")}
+                    aria-label={`${t("replace")} ${label} : ${piece.title}`}
+                    onClick={() => onSelect(slot)}
+                    disabled={closed}
+                    initial={{ opacity: 0, y: 36, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={reduced ? { duration: 0 } : { ...spring, delay: 0.12 * order }}
+                    whileHover={reduced ? undefined : { scale: 1.04 }}
+                    whileTap={reduced ? undefined : { scale: 0.97 }}
+                  >
+                    {piece.imagePath ? (
+                      <Image src={productImageUrl(piece.imagePath)} alt="" fill unoptimized sizes="14rem" className="object-cover" />
+                    ) : null}
+                    <span className="lx-mirror__edit" aria-hidden="true">
+                      <Pencil className="size-3" />
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </AnimatePresence>
+            <p className="lx-mirror__caption">
+              <span className="lx-mirror__kicker">{t("mirrorKicker")}</span>
+              <span className="font-display text-xl leading-tight">{summary}</span>
+            </p>
+          </div>
+        )}
         <span className="lx-booth__pelmet" aria-hidden="true" />
         <span className="lx-booth__curtain lx-booth__curtain--left" aria-hidden="true" />
         <span className="lx-booth__curtain lx-booth__curtain--right" aria-hidden="true" />
         {closed ? <span className="lx-booth__busy" role="status">{t("busy")}</span> : null}
       </div>
+
+      {view === "mirror" ? <p className="max-w-[340px] text-center text-sm text-muted-foreground">{t("mirrorHint")}</p> : null}
+
       <div className="flex w-[min(100%,380px)] flex-wrap justify-center gap-2.5">
-        <button type="button" className="lx-booth__try flex-[1_1_140px]" onClick={() => setClosed(true)} disabled={closed}>
-          {t("tryOn")}
+        <button type="button" className="lx-booth__try flex-[1_1_140px]" onClick={pull} disabled={closed}>
+          {view === "mirror" ? t("backToBooth") : t("tryOn")}
         </button>
         {children}
       </div>

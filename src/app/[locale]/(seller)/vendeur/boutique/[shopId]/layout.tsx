@@ -5,7 +5,7 @@ import { StatusTag } from "@/components/layout/status-tag";
 import { Button } from "@/components/ui/button";
 import { ShopMark } from "@/features/shops/components/shop-mark";
 import { ShopTabs } from "@/features/shops/components/shop-tabs";
-import { getShop } from "@/features/shops/queries";
+import { getShop, getShopStats } from "@/features/shops/queries";
 import { Link } from "@/i18n/navigation";
 import { requireShopAccess } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
@@ -17,7 +17,12 @@ export default async function SellerShopLayout({
   const { shopId } = await params;
   await requireShopAccess(shopId);
 
-  const [shop, t, locale] = await Promise.all([getShop(shopId), getTranslations("sellerShop"), getLocale()]);
+  const [shop, stats, t, locale] = await Promise.all([
+    getShop(shopId),
+    getShopStats(shopId).catch(() => null),
+    getTranslations("sellerShop"),
+    getLocale(),
+  ]);
 
   if (!shop) {
     notFound();
@@ -61,12 +66,16 @@ export default async function SellerShopLayout({
       </header>
       <ShopTabs
         shopId={shopId}
+        badges={{ mySales: (stats?.pending_orders ?? 0) + (stats?.open_requests ?? 0) }}
         labels={{
           sections: t("sections"),
           myShop: t("myShop"),
           myProducts: t("myProducts"),
+          mySales: t("mySales"),
           myVideos: t("myVideos"),
-          activity: t("activity"),
+          myLives: t("myLives"),
+          overview: t("dashboard"),
+          settings: t("settings"),
           products: t("products"),
           arrivals: t("arrivals"),
           quick: t("quick"),
