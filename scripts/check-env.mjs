@@ -48,16 +48,17 @@ if (env.MAINTENANCE_TOKEN && env.MAINTENANCE_TOKEN.length < 32) {
   problems.push("MAINTENANCE_TOKEN : 32 caractères au moins");
 }
 
-if (Boolean(env.TURN_URLS) !== Boolean(env.TURN_SECRET)) {
-  problems.push("TURN_URLS et TURN_SECRET vont ensemble");
+if (Boolean(env.CLOUDFLARE_TURN_KEY_ID) !== Boolean(env.CLOUDFLARE_TURN_API_TOKEN)) {
+  problems.push("CLOUDFLARE_TURN_KEY_ID et CLOUDFLARE_TURN_API_TOKEN vont ensemble");
 }
 
-if (env.TURN_SECRET && env.TURN_SECRET.length < 32) {
-  problems.push("TURN_SECRET : 32 caractères au moins");
+const staticTurn = [env.TURN_URLS, env.TURN_USERNAME, env.TURN_PASSWORD].filter(Boolean).length;
+if (staticTurn > 0 && staticTurn < 3) {
+  problems.push("TURN_URLS, TURN_USERNAME et TURN_PASSWORD vont ensemble");
 }
 
-if (env.TURN_URLS && env.TURN_URLS.split(",").some((url) => !/^turns?:/.test(url.trim()))) {
-  problems.push("TURN_URLS : chaque adresse commence par turn: ou turns:");
+if (env.TURN_URLS && env.TURN_URLS.split(",").some((url) => !/^(turns?:)?[\w.-]+:\d+(\?transport=(udp|tcp))?$/.test(url.trim()))) {
+  problems.push("TURN_URLS : adresses de la forme turn:hôte:port, séparées par des virgules");
 }
 
 const isLocalUrl = (value) => /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(value ?? "");
