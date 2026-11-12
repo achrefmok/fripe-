@@ -129,18 +129,3 @@ export async function refreshLive(liveId: string, afterId: number): Promise<{ li
   const [live, comments] = await Promise.all([getLive(liveId), listLiveComments(liveId, afterId)]);
   return { live, comments };
 }
-
-// La boutique répond à un spectateur qui demande la vidéo : la base vérifie son rôle, et le
-// spectateur n'accepte que cette réponse-là. « full » signale une salle pleine.
-export async function sendLiveSignal(liveId: string, viewerKey: string, kind: "answer" | "full", sdp: string): Promise<void> {
-  if (!idSchema.safeParse(liveId).success) return;
-  if (viewerKey.length < 16 || viewerKey.length > 64 || sdp.length > 12_000) return;
-
-  const supabase = await createClient();
-  await supabase.rpc("send_live_signal", {
-    p_live_id: liveId,
-    p_viewer_key: viewerKey,
-    p_kind: kind,
-    p_payload: kind === "answer" ? { sdp } : {},
-  });
-}

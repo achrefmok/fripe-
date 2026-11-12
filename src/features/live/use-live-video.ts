@@ -1,24 +1,70 @@
 "use client";
 
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { reportLiveViewers, sendLiveSignal } from "./actions";
+import { reportLiveViewers } from "./actions";
 
 export type ViewerVideoState = "idle" | "connecting" | "waiting" | "playing" | "full" | "error";
 export type HostVideoState = "idle" | "preview" | "denied" | "connecting" | "live" | "error";
 
-// La vidéo va directement du téléphone de la boutique à chaque spectateur (WebRTC), sans service de
-// diffusion : c'est gratuit, mais c'est le téléphone qui porte chaque spectateur. On plafonne donc
-// la salle, et on garde une image légère pour tenir sur un réseau mobile.
+// La vidéo va directement du téléphone de la boutique à chaque spectateur (WebRTC, de pair à pair),
+// sans service de diffusion : c'est gratuit, mais c'est le téléphone qui porte chaque spectateur.
+// On plafonne donc la salle et le débit envoyé à chacun.
 export const LIVE_MAX_VIEWERS = 12;
-const VIDEO = { width: { ideal: 480 }, height: { ideal: 854 }, frameRate: { ideal: 24, max: 24 } };
-const MAX_BITRATE = 600_000;
+// 720p à 24 images/s, en portrait : le format d'un téléphone tenu à la main.
+const VIDEO = { width: { ideal: 720 }, height: { ideal: 1280 }, frameRate: { ideal: 24, max: 24 } };
+const AUDIO = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+// Plafond par spectateur ; WebRTC descend tout seul si le réseau ne suit pas.
+const MAX_BITRATE = 1_200_000;
 // Serveurs publics qui aident deux appareils à se trouver ; ils ne voient jamais la vidéo.
-const ICE: RTCConfiguration = { iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }] };
+const STUN: RTCIceServer = { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] };
+const MAX_SDP = 20_000;
 
-const channelName = (liveId: string) => `live-video-${liveId}`;
+// Un canal broadcast par Live, en deux sujets privés (voir la migration de signalisation) :
+// les demandes des spectateurs, et les réponses que seule la boutique peut écrire.
+const requestsTopic = (liveId: string) => `live-video:${liveId}`;
+const shopTopic = (liveId: string) => `live-video:${liveId}:shop`;
 
-// On attend que l'appareil ait listé ses chemins réseau : la description part alors en une fois.
+// Relais TURN : identifiants temporaires donnés par /api/turn à un utilisateur connecté. Sans
+// session ou sans relais configuré, on se contente du STUN public.
+let relay: { servers: RTCIceServer[]; until: number } | null = null;
+
+async function iceConfig(): Promise<RTCConfiguration> {
+  if (!relay || Date.now() > relay.until) {
+    try {
+      const response = await fetch("/api/turn", { cache: "no-store" });
+      const body = response.ok ? ((await response.json()) as { iceServers?: unknown; ttl?: unknown }) : {};
+      const servers = Array.isArray(body.iceServers) ? (body.iceServers as RTCIceServer[]) : [];
+      const ttl = typeof body.ttl === "number" ? body.ttl : 0;
+      // On renouvelle dix minutes avant l'expiration, et au plus souvent toutes les cinq minutes.
+      relay = { servers, until: Date.now() + Math.max(300, ttl - 600) * 1000 };
+    } catch {
+      return { iceServers: [STUN] };
+    }
+  }
+
+  return { iceServers: [STUN, ...relay.servers] };
+}
+
+// Rejoindre un canal privé. Une erreur avant l'arrivée est un refus ; après, une coupure.
+function join(channel: RealtimeChannel, onDrop: () => void) {
+  return new Promise<void>((resolve, reject) => {
+    let joined = false;
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        joined = true;
+        resolve();
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        if (joined) onDrop();
+        else reject(new Error(status));
+      }
+    });
+  });
+}
+
+// On attend que l'appareil ait listé ses chemins réseau (relais compris) : la description part
+// alors en un seul message.
 function gathered(connection: RTCPeerConnection) {
   if (connection.iceGatheringState === "complete") return Promise.resolve();
 
@@ -31,13 +77,13 @@ function gathered(connection: RTCPeerConnection) {
     const check = () => {
       if (connection.iceGatheringState === "complete") done();
     };
-    const timer = window.setTimeout(done, 2500);
+    const timer = window.setTimeout(done, 3000);
     connection.addEventListener("icegatheringstatechange", check);
   });
 }
 
-// Côté client : on demande la vidéo à la boutique et on l'affiche. La demande part par le canal
-// temps réel ; la réponse n'est acceptée que si elle vient de la table écrite par la boutique.
+// Côté client : on demande la vidéo à la boutique et on l'affiche. La demande part sur le sujet
+// ouvert du Live ; la réponse n'est écoutée que sur le sujet que seule la boutique peut écrire.
 export function useLiveViewerVideo(liveId: string, enabled: boolean) {
   const video = useRef<HTMLVideoElement>(null);
   const audio = useRef<HTMLDivElement>(null);
@@ -56,13 +102,37 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
     let retry = 0;
     let failures = 0;
 
-    const channel = supabase.channel(channelName(liveId), { config: { broadcast: { self: false } } });
+    const requests = supabase.channel(requestsTopic(liveId), { config: { private: true, broadcast: { self: false } } });
+    const shop = supabase.channel(shopTopic(liveId), { config: { private: true } });
+    const broken = () => {
+      if (!cancelled) setState("error");
+    };
+
+    // La liaison n'a pas abouti alors que la boutique a répondu. Trois échecs de suite, et on le
+    // dit au lieu de faire patienter sans fin.
+    function fail(current: RTCPeerConnection) {
+      if (cancelled || connection !== current) return;
+      window.clearTimeout(retry);
+      current.close();
+      connection = null;
+      failures += 1;
+      if (failures >= 3) {
+        setState("error");
+        return;
+      }
+      setState("waiting");
+      retry = window.setTimeout(() => void ask().catch(broken), 1500);
+    }
 
     async function ask() {
       if (cancelled) return;
       connection?.close();
 
-      const current = new RTCPeerConnection(ICE);
+      const current = new RTCPeerConnection(await iceConfig());
+      if (cancelled) {
+        current.close();
+        return;
+      }
       connection = current;
       current.addTransceiver("video", { direction: "recvonly" });
       current.addTransceiver("audio", { direction: "recvonly" });
@@ -87,10 +157,7 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
           window.clearTimeout(retry);
           setState("playing");
         } else if (current.connectionState === "failed" || current.connectionState === "disconnected" || current.connectionState === "closed") {
-          failures += 1;
-          // Trois échecs de suite : le réseau ne laisse pas passer la liaison directe.
-          setState(failures >= 3 ? "error" : "waiting");
-          if (failures < 3) retry = window.setTimeout(() => void ask(), 2500);
+          fail(current);
         }
       };
 
@@ -98,45 +165,54 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
       await gathered(current);
       if (cancelled || connection !== current) return;
 
-      await channel.send({ type: "broadcast", event: "offer", payload: { key, sdp: current.localDescription?.sdp } });
-      // La boutique n'a peut-être pas encore ouvert sa caméra : on redemande un peu plus tard.
+      await requests.send({ type: "broadcast", event: "offer", payload: { key, sdp: current.localDescription?.sdp } });
+      // Sans réponse, la boutique n'a peut-être pas encore ouvert sa caméra : on redemande un peu
+      // plus tard. Une fois la réponse reçue, c'est le délai de liaison qui prend le relais.
       retry = window.setTimeout(() => {
-        if (current.connectionState !== "connected") void ask();
+        if (connection === current && current.signalingState === "have-local-offer") void ask().catch(broken);
       }, 8000);
     }
 
-    channel
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_signals", filter: `live_id=eq.${liveId}` }, (change) => {
-        const signal = change.new as { viewer_key: string; kind: string; payload: { sdp?: string } };
-        if (cancelled || signal.viewer_key !== key || !connection) return;
+    shop
+      .on("broadcast", { event: "answer" }, ({ payload }) => {
+        const signal = payload as { key?: unknown; sdp?: unknown };
+        if (cancelled || signal.key !== key || !connection) return;
+        if (typeof signal.sdp !== "string" || signal.sdp.length > MAX_SDP || connection.signalingState !== "have-local-offer") return;
 
-        if (signal.kind === "full") {
-          window.clearTimeout(retry);
-          setState("full");
-        } else if (signal.kind === "answer" && signal.payload.sdp && connection.signalingState === "have-local-offer") {
-          void connection.setRemoteDescription({ type: "answer", sdp: signal.payload.sdp }).catch(() => setState("error"));
-        }
+        const current = connection;
+        window.clearTimeout(retry);
+        void current.setRemoteDescription({ type: "answer", sdp: signal.sdp }).catch(broken);
+        // La boutique a répondu : la liaison doit s'établir en quelques secondes.
+        retry = window.setTimeout(() => {
+          if (current.connectionState !== "connected") fail(current);
+        }, 15_000);
+      })
+      .on("broadcast", { event: "full" }, ({ payload }) => {
+        if (cancelled || (payload as { key?: unknown }).key !== key) return;
+        window.clearTimeout(retry);
+        setState("full");
       })
       // Le nombre de spectateurs, annoncé par la boutique : un simple affichage.
       .on("broadcast", { event: "count" }, ({ payload }) => {
         const count = Number((payload as { count?: number }).count);
         if (Number.isInteger(count) && count >= 0 && count <= LIVE_MAX_VIEWERS) setViewers(count);
-      })
-      .subscribe((status) => {
-        if (cancelled) return;
-        if (status === "SUBSCRIBED") {
-          setState("waiting");
-          void ask().catch(() => setState("error"));
-        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setState("error");
-        }
       });
+
+    (async () => {
+      // Les canaux privés s'ouvrent avec la session du visiteur, ou la clé publique sans session.
+      await supabase.realtime.setAuth();
+      await Promise.all([join(requests, broken), join(shop, broken)]);
+      if (cancelled) return;
+      setState("waiting");
+      await ask();
+    })().catch(broken);
 
     return () => {
       cancelled = true;
       window.clearTimeout(retry);
       connection?.close();
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(requests);
+      void supabase.removeChannel(shop);
     };
   }, [liveId, enabled, attempt]);
 
@@ -157,7 +233,7 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
 }
 
 // Côté boutique : l'aperçu de la caméra avant le direct, puis une liaison vidéo par spectateur dès
-// que le Live démarre.
+// que le Live démarre (`start_live`). `end_live` coupe le direct, et ferme les deux sujets.
 export function useLiveHostVideo(liveId: string, onAir: boolean) {
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -173,7 +249,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
     try {
       const media = await navigator.mediaDevices.getUserMedia({
         video: { ...VIDEO, facingMode: facing.current },
-        audio: { echoCancellation: true, noiseSuppression: true },
+        audio: AUDIO,
       });
       stream.current = media;
       if (video.current) video.current.srcObject = media;
@@ -228,13 +304,18 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
     const connections = peers.current;
     let cancelled = false;
     let reporter = 0;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const requests = supabase.channel(requestsTopic(liveId), { config: { private: true, broadcast: { self: false } } });
+    const shop = supabase.channel(shopTopic(liveId), { config: { private: true, broadcast: { self: false } } });
+
+    const reply = (event: "answer" | "full" | "count", payload: Record<string, unknown>) =>
+      shop.send({ type: "broadcast", event, payload });
 
     const connected = () => [...connections.values()].filter((connection) => connection.connectionState === "connected").length;
     const announce = () => {
       const count = connected();
       setViewers(count);
-      void channel?.send({ type: "broadcast", event: "count", payload: { count } });
+      void reply("count", { count });
     };
 
     function drop(key: string, connection: RTCPeerConnection) {
@@ -252,11 +333,15 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       if (previous) drop(key, previous);
 
       if (connections.size >= LIVE_MAX_VIEWERS) {
-        await sendLiveSignal(liveId, key, "full", "");
+        await reply("full", { key });
         return;
       }
 
-      const connection = new RTCPeerConnection(ICE);
+      const connection = new RTCPeerConnection(await iceConfig());
+      if (cancelled) {
+        connection.close();
+        return;
+      }
       connections.set(key, connection);
       for (const track of media.getTracks()) connection.addTrack(track, media);
 
@@ -268,7 +353,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       await connection.setRemoteDescription({ type: "offer", sdp });
       await connection.setLocalDescription(await connection.createAnswer());
 
-      // Débit plafonné : dix spectateurs doivent tenir sur une connexion mobile.
+      // Débit plafonné : chaque spectateur coûte un envoi complet au téléphone de la boutique.
       for (const sender of connection.getSenders()) {
         if (sender.track?.kind !== "video") continue;
         const parameters = sender.getParameters();
@@ -278,7 +363,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
 
       await gathered(connection);
       if (cancelled || connections.get(key) !== connection || !connection.localDescription) return;
-      await sendLiveSignal(liveId, key, "answer", connection.localDescription.sdp);
+      await reply("answer", { key, sdp: connection.localDescription.sdp });
 
       // Un spectateur qui ne termine pas la liaison libère sa place.
       window.setTimeout(() => {
@@ -286,38 +371,40 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       }, 20_000);
     }
 
+    requests.on("broadcast", { event: "offer" }, ({ payload }) => {
+      const offer = payload as { key?: unknown; sdp?: unknown };
+      if (typeof offer.key !== "string" || typeof offer.sdp !== "string") return;
+      if (offer.key.length < 16 || offer.key.length > 64 || offer.sdp.length > MAX_SDP) return;
+      void answer(offer.key, offer.sdp).catch(() => undefined);
+    });
+
+    const broken = () => {
+      if (!cancelled) setState("error");
+    };
+
     (async () => {
       setState("connecting");
       if (!(await startPreview()) || cancelled) return;
 
-      channel = supabase
-        .channel(channelName(liveId), { config: { broadcast: { self: false } } })
-        .on("broadcast", { event: "offer" }, ({ payload }) => {
-          const offer = payload as { key?: unknown; sdp?: unknown };
-          if (typeof offer.key !== "string" || typeof offer.sdp !== "string") return;
-          if (offer.key.length < 16 || offer.key.length > 64 || offer.sdp.length > 20_000) return;
-          void answer(offer.key, offer.sdp).catch(() => undefined);
-        })
-        .subscribe((status) => {
-          if (cancelled) return;
-          if (status === "SUBSCRIBED") setState("live");
-          else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setState("error");
-        });
+      await supabase.realtime.setAuth();
+      // Le sujet des réponses n'accepte que l'équipe de la boutique : un refus ici est une erreur.
+      await Promise.all([join(shop, broken), join(requests, broken)]);
+      if (cancelled) return;
+      setState("live");
 
       reporter = window.setInterval(() => {
         announce();
         void reportLiveViewers(liveId, connected());
       }, 15_000);
-    })().catch(() => {
-      if (!cancelled) setState("error");
-    });
+    })().catch(broken);
 
     return () => {
       cancelled = true;
       window.clearInterval(reporter);
       for (const connection of connections.values()) connection.close();
       connections.clear();
-      if (channel) void supabase.removeChannel(channel);
+      void supabase.removeChannel(requests);
+      void supabase.removeChannel(shop);
     };
   }, [liveId, onAir, startPreview]);
 

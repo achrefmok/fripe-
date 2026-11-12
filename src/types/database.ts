@@ -1100,41 +1100,6 @@ export type Database = {
           },
         ]
       }
-      live_signals: {
-        Row: {
-          created_at: string
-          id: number
-          kind: string
-          live_id: string
-          payload: Json
-          viewer_key: string
-        }
-        Insert: {
-          created_at?: string
-          id?: never
-          kind: string
-          live_id: string
-          payload?: Json
-          viewer_key: string
-        }
-        Update: {
-          created_at?: string
-          id?: never
-          kind?: string
-          live_id?: string
-          payload?: Json
-          viewer_key?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "live_signals_live_id_fkey"
-            columns: ["live_id"]
-            isOneToOne: false
-            referencedRelation: "lives"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lives: {
         Row: {
           comment_count: number
@@ -3252,15 +3217,6 @@ export type Database = {
       }
       send_listing_message: {
         Args: { p_body: string; p_thread_id: string }
-        Returns: undefined
-      }
-      send_live_signal: {
-        Args: {
-          p_kind: string
-          p_live_id: string
-          p_payload: Json
-          p_viewer_key: string
-        }
         Returns: undefined
       }
       send_message: {

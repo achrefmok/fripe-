@@ -11,6 +11,8 @@ Chaque environnement a ses propres valeurs. **Une valeur ne passe jamais d'un en
 | `SUPABASE_SECRET_KEY` | Générée par `pnpm env:local` | Vercel, Sensitive | Vercel, Sensitive | **Serveur uniquement** | **Oui** |
 | `COURIER_API_TOKEN` | Absente, route `/api/livraison` désactivée | Vercel, Sensitive, et application des livreurs | Autre valeur | **Serveur uniquement** | **Oui** |
 | `MAINTENANCE_TOKEN` | Absente, route désactivée | Vercel, Sensitive, et planificateur | Autre valeur | **Serveur uniquement** | **Oui** |
+| `TURN_URLS` | Absente, vidéo des Lives en STUN seul | Adresses du relais coturn | Idem | **Serveur uniquement** | Non |
+| `TURN_SECRET` | Absente | Vercel, Sensitive, et `static-auth-secret` de coturn | Autre valeur | **Serveur uniquement** | **Oui** |
 
 **Outils, jamais sur Vercel :**
 

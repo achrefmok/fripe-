@@ -1727,7 +1727,7 @@
     "cancelledNotice": "Ce Live a été annulé.",
     "videoConnecting": "Connexion au direct…",
     "videoWaiting": "La boutique arrive. La vidéo démarre dans un instant.",
-    "videoError": "La vidéo ne passe pas sur cette connexion. Le fil et les pièces restent en direct.",
+    "videoError": "La vidéo ne passe pas sur cette connexion. Essaie en Wi-Fi. Le fil et les pièces restent en direct.",
     "retry": "Réessayer",
     "unmute": "Activer le son",
     "productsTitle": "Pièces du Live",

@@ -48,6 +48,18 @@ if (env.MAINTENANCE_TOKEN && env.MAINTENANCE_TOKEN.length < 32) {
   problems.push("MAINTENANCE_TOKEN : 32 caractères au moins");
 }
 
+if (Boolean(env.TURN_URLS) !== Boolean(env.TURN_SECRET)) {
+  problems.push("TURN_URLS et TURN_SECRET vont ensemble");
+}
+
+if (env.TURN_SECRET && env.TURN_SECRET.length < 32) {
+  problems.push("TURN_SECRET : 32 caractères au moins");
+}
+
+if (env.TURN_URLS && env.TURN_URLS.split(",").some((url) => !/^turns?:/.test(url.trim()))) {
+  problems.push("TURN_URLS : chaque adresse commence par turn: ou turns:");
+}
+
 const isLocalUrl = (value) => /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(value ?? "");
 
 if (remote) {
