@@ -45,7 +45,9 @@ export async function GET() {
       .split(",")
       .map((url) => url.trim())
       .filter(Boolean)
-      .map((url) => (/^(stun|turns?):/.test(url) ? url : `turn:${url}`));
+      .map((url) => (/^(stun|turns?):/.test(url) ? url : `turn:${url}`))
+      // Sans transport précisé, on propose UDP et TCP : certains réseaux mobiles bloquent l'UDP.
+      .flatMap((url) => (/^turn:[^?]+$/.test(url) ? [`${url}?transport=udp`, `${url}?transport=tcp`] : [url]));
     const username = process.env.TURN_USERNAME;
     const credential = process.env.TURN_PASSWORD;
     const iceServers = username && credential ? readIceServers([{ urls, username, credential }]) : [];

@@ -4,7 +4,7 @@ import { Eye, ShoppingBag, Volume2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ShopMark } from "@/features/shops/components/shop-mark";
 import { Link } from "@/i18n/navigation";
 import { formatDateTime, localizedName } from "@/lib/utils/format";
@@ -22,7 +22,13 @@ export function LiveRoom({ initialLive, initialComments, signedIn }: { initialLi
   const reduced = useReducedMotion();
   const { live, comments, refresh } = useLiveSync(initialLive, initialComments);
   const onAir = live.status === "live";
-  const { video, audio, state, viewers, needsAudio, startAudio, retry } = useLiveViewerVideo(live.id, onAir);
+  const { video, audio, state, viewers, needsAudio, startAudio, retry, trace } = useLiveViewerVideo(live.id, onAir);
+  // Diagnostic de la liaison vidéo : ajouter ?diag=1 à l'adresse du Live.
+  const diag = useSyncExternalStore(
+    () => () => undefined,
+    () => new URLSearchParams(window.location.search).has("diag"),
+    () => false,
+  );
   const [opened, setOpened] = useState<LiveProduct | null>(null);
   const next = `/lives/${live.id}`;
   const pinned = live.products.find((product) => product.id === live.pinnedProductId) ?? null;
@@ -71,6 +77,12 @@ export function LiveRoom({ initialLive, initialComments, signedIn }: { initialLi
               ) : null}
             </span>
           </div>
+
+          {diag ? (
+            <pre dir="ltr" className="absolute inset-x-2 bottom-2 z-30 max-h-[45%] overflow-auto rounded-md bg-black/80 p-2 text-[10px] leading-snug text-white">
+              {`état : ${state}\n${trace.join("\n")}`}
+            </pre>
+          ) : null}
 
           {notice ? (
             <div className="live-room__notice" role="status">

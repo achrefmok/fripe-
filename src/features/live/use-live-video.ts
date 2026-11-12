@@ -65,7 +65,7 @@ function join(channel: RealtimeChannel, onDrop: () => void) {
 
 // Les chemins réseau (directs, puis relais) partent au fil de leur découverte, par petits paquets,
 // au lieu d'attendre la liste complète : la vidéo démarre plusieurs secondes plus tôt.
-function trickle(connection: RTCPeerConnection, send: (candidates: RTCIceCandidateInit[]) => void) {
+function trickle(connection: RTCPeerConnection, send: (candidates: RTCIceCandidateInit[]) => void, seen?: (type: string) => void) {
   let batch: RTCIceCandidateInit[] = [];
   let timer = 0;
   let ready = false;
@@ -79,6 +79,7 @@ function trickle(connection: RTCPeerConnection, send: (candidates: RTCIceCandida
 
   connection.addEventListener("icecandidate", (event) => {
     if (!event.candidate) return;
+    seen?.(`${event.candidate.type ?? "?"} ${event.candidate.protocol ?? ""}`.trim());
     batch.push(event.candidate.toJSON());
     if (!timer) timer = window.setTimeout(flush, 150);
   });
@@ -98,6 +99,14 @@ function readCandidates(value: unknown): RTCIceCandidateInit[] {
   });
 }
 
+// Type d'un chemin reçu (host, srflx, relay), pour le diagnostic.
+function candidateType(candidate: RTCIceCandidateInit) {
+  return / typ (\w+)/.exec(candidate.candidate ?? "")?.[1] ?? "?";
+}
+
+// Chaque demande porte un numéro : une réponse ou un chemin d'une demande précédente est ignoré.
+const validId = (value: unknown): value is string => typeof value === "string" && value.length >= 4 && value.length <= 16;
+
 function addCandidates(connection: RTCPeerConnection, candidates: RTCIceCandidateInit[]) {
   for (const candidate of candidates) void connection.addIceCandidate(candidate).catch(() => undefined);
 }
@@ -116,14 +125,21 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
   const [viewers, setViewers] = useState(0);
   const [needsAudio, setNeedsAudio] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // Journal des étapes de la liaison, affiché avec ?diag=1 dans l'adresse.
+  const [trace, setTrace] = useState<string[]>([]);
 
   useEffect(() => {
     if (!enabled) return;
 
     const supabase = createClient();
     const key = crypto.randomUUID();
+    const started = Date.now();
+    const note = (text: string) => {
+      if (!cancelled) setTrace((lines) => [...lines.slice(-39), `${((Date.now() - started) / 1000).toFixed(1)}s ${text}`]);
+    };
     let cancelled = false;
     let connection: RTCPeerConnection | null = null;
+    let offerId = "";
     let retry = 0;
     let failures = 0;
     // Chemins de la boutique arrivés avant sa réponse.
@@ -131,7 +147,8 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
 
     const requests = supabase.channel(requestsTopic(liveId), { config: { private: true, broadcast: { self: false } } });
     const shop = supabase.channel(shopTopic(liveId), { config: { private: true } });
-    const broken = () => {
+    const broken = (error?: unknown) => {
+      note(`erreur : ${error instanceof Error ? error.message : String(error ?? "coupure du canal")}`);
       if (!cancelled) setState("error");
     };
 
@@ -143,6 +160,7 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
       current.close();
       connection = null;
       failures += 1;
+      note(`échec de la liaison n°${failures}`);
       if (failures >= 3) {
         setState("error");
         return;
@@ -155,16 +173,25 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
       if (cancelled) return;
       connection?.close();
 
-      const current = new RTCPeerConnection(await iceConfig());
+      const config = await iceConfig();
+      const current = new RTCPeerConnection(config);
       if (cancelled) {
         current.close();
         return;
       }
       connection = current;
       early = [];
-      const openTrickle = trickle(current, (candidates) => {
-        if (connection === current) void requests.send({ type: "broadcast", event: "candidates", payload: { key, candidates } });
-      });
+      const id = crypto.randomUUID().slice(0, 8);
+      offerId = id;
+      note(`demande ${id} : ${(config.iceServers ?? []).filter((server) => server.username).length} relais TURN`);
+      const openTrickle = trickle(
+        current,
+        (candidates) => {
+          if (connection === current) void requests.send({ type: "broadcast", event: "candidates", payload: { key, id, candidates } });
+        },
+        (type) => note(`chemin local : ${type}`),
+      );
+      current.oniceconnectionstatechange = () => note(`ICE : ${current.iceConnectionState}`);
       current.addTransceiver("video", { direction: "recvonly" });
       current.addTransceiver("audio", { direction: "recvonly" });
 
@@ -195,19 +222,28 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
       await current.setLocalDescription(await current.createOffer());
       if (cancelled || connection !== current) return;
 
-      await requests.send({ type: "broadcast", event: "offer", payload: { key, sdp: current.localDescription?.sdp } });
+      const sent = await requests.send({ type: "broadcast", event: "offer", payload: { key, id, sdp: current.localDescription?.sdp } });
+      note(`demande envoyée (${sent})`);
       openTrickle();
       // Sans réponse, la boutique n'a peut-être pas encore ouvert sa caméra : on redemande un peu
       // plus tard. Une fois la réponse reçue, c'est le délai de liaison qui prend le relais.
       retry = window.setTimeout(() => {
-        if (connection === current && current.signalingState === "have-local-offer") void ask().catch(broken);
+        if (connection === current && current.signalingState === "have-local-offer") {
+          note("pas de réponse de la boutique, nouvelle demande");
+          void ask().catch(broken);
+        }
       }, 8000);
     }
 
     shop
       .on("broadcast", { event: "answer" }, ({ payload }) => {
-        const signal = payload as { key?: unknown; sdp?: unknown };
+        const signal = payload as { key?: unknown; id?: unknown; sdp?: unknown };
         if (cancelled || signal.key !== key || !connection) return;
+        if (signal.id !== offerId) {
+          note("ancienne réponse ignorée");
+          return;
+        }
+        note("réponse de la boutique reçue");
         if (typeof signal.sdp !== "string" || signal.sdp.length > MAX_SDP || connection.signalingState !== "have-local-offer") return;
 
         const current = connection;
@@ -225,9 +261,10 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
         }, 12_000);
       })
       .on("broadcast", { event: "candidates" }, ({ payload }) => {
-        const signal = payload as { key?: unknown; candidates?: unknown };
-        if (cancelled || signal.key !== key || !connection) return;
+        const signal = payload as { key?: unknown; id?: unknown; candidates?: unknown };
+        if (cancelled || signal.key !== key || signal.id !== offerId || !connection) return;
         const candidates = readCandidates(signal.candidates);
+        note(`chemins de la boutique : ${candidates.map(candidateType).join(", ")}`);
         if (connection.remoteDescription) addCandidates(connection, candidates);
         else early = [...early, ...candidates].slice(-60);
       })
@@ -247,6 +284,7 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
       await supabase.realtime.setAuth();
       await Promise.all([join(requests, broken), join(shop, broken)]);
       if (cancelled) return;
+      note("canaux ouverts");
       setState("waiting");
       await ask();
     })().catch(broken);
@@ -270,10 +308,11 @@ export function useLiveViewerVideo(liveId: string, enabled: boolean) {
 
   const retry = useCallback(() => {
     setState("connecting");
+    setTrace([]);
     setAttempt((value) => value + 1);
   }, []);
 
-  return { video, audio, state: enabled ? (state === "idle" ? "connecting" : state) : "idle", viewers, needsAudio, startAudio, retry };
+  return { video, audio, state: enabled ? (state === "idle" ? "connecting" : state) : "idle", viewers, needsAudio, startAudio, retry, trace };
 }
 
 // Côté boutique : l'aperçu de la caméra avant le direct, puis une liaison vidéo par spectateur dès
@@ -354,8 +393,10 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
     const requests = supabase.channel(requestsTopic(liveId), { config: { private: true, broadcast: { self: false } } });
     const shop = supabase.channel(shopTopic(liveId), { config: { private: true, broadcast: { self: false } } });
 
-    // Chemins des spectateurs arrivés avant que leur liaison soit prête.
+    // Chemins des spectateurs arrivés avant que leur liaison soit prête, par demande.
     const early = new Map<string, RTCIceCandidateInit[]>();
+    // Numéro de la demande en cours de chaque spectateur.
+    const offers = new Map<string, string>();
 
     const reply = (event: "answer" | "full" | "count" | "candidates", payload: Record<string, unknown>) =>
       shop.send({ type: "broadcast", event, payload });
@@ -373,7 +414,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       announce();
     }
 
-    async function answer(key: string, sdp: string) {
+    async function answer(key: string, id: string, sdp: string) {
       const media = stream.current;
       if (cancelled || !media) return;
 
@@ -381,19 +422,21 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       const previous = connections.get(key);
       if (previous) drop(key, previous);
 
+      offers.set(key, id);
+
       if (connections.size >= LIVE_MAX_VIEWERS) {
-        await reply("full", { key });
+        await reply("full", { key, id });
         return;
       }
 
       const connection = new RTCPeerConnection(await iceConfig());
-      if (cancelled) {
+      if (cancelled || offers.get(key) !== id) {
         connection.close();
         return;
       }
       connections.set(key, connection);
       const openTrickle = trickle(connection, (candidates) => {
-        if (connections.get(key) === connection) void reply("candidates", { key, candidates });
+        if (connections.get(key) === connection) void reply("candidates", { key, id, candidates });
       });
       for (const track of media.getTracks()) connection.addTrack(track, media);
 
@@ -403,8 +446,8 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       };
 
       await connection.setRemoteDescription({ type: "offer", sdp });
-      addCandidates(connection, early.get(key) ?? []);
-      early.delete(key);
+      addCandidates(connection, early.get(`${key}:${id}`) ?? []);
+      early.delete(`${key}:${id}`);
       await connection.setLocalDescription(await connection.createAnswer());
 
       // Débit plafonné : chaque spectateur coûte un envoi complet au téléphone de la boutique.
@@ -416,7 +459,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       }
 
       if (cancelled || connections.get(key) !== connection || !connection.localDescription) return;
-      await reply("answer", { key, sdp: connection.localDescription.sdp });
+      await reply("answer", { key, id, sdp: connection.localDescription.sdp });
       openTrickle();
 
       // Un spectateur qui ne termine pas la liaison libère sa place.
@@ -426,21 +469,22 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
     }
 
     requests.on("broadcast", { event: "offer" }, ({ payload }) => {
-      const offer = payload as { key?: unknown; sdp?: unknown };
-      if (typeof offer.key !== "string" || typeof offer.sdp !== "string") return;
+      const offer = payload as { key?: unknown; id?: unknown; sdp?: unknown };
+      if (typeof offer.key !== "string" || typeof offer.sdp !== "string" || !validId(offer.id)) return;
       if (offer.key.length < 16 || offer.key.length > 64 || offer.sdp.length > MAX_SDP) return;
-      void answer(offer.key, offer.sdp).catch(() => undefined);
+      void answer(offer.key, offer.id, offer.sdp).catch(() => undefined);
     });
 
     requests.on("broadcast", { event: "candidates" }, ({ payload }) => {
-      const signal = payload as { key?: unknown; candidates?: unknown };
-      if (typeof signal.key !== "string" || signal.key.length < 16 || signal.key.length > 64) return;
+      const signal = payload as { key?: unknown; id?: unknown; candidates?: unknown };
+      if (typeof signal.key !== "string" || signal.key.length < 16 || signal.key.length > 64 || !validId(signal.id)) return;
       const candidates = readCandidates(signal.candidates);
       const connection = connections.get(signal.key);
-      if (connection?.remoteDescription) {
+      const slot = `${signal.key}:${signal.id}`;
+      if (connection?.remoteDescription && offers.get(signal.key) === signal.id) {
         addCandidates(connection, candidates);
-      } else if (early.has(signal.key) || early.size < LIVE_MAX_VIEWERS * 3) {
-        early.set(signal.key, [...(early.get(signal.key) ?? []), ...candidates].slice(-60));
+      } else if (early.has(slot) || early.size < LIVE_MAX_VIEWERS * 3) {
+        early.set(slot, [...(early.get(slot) ?? []), ...candidates].slice(-60));
       }
     });
 
@@ -470,6 +514,7 @@ export function useLiveHostVideo(liveId: string, onAir: boolean) {
       for (const connection of connections.values()) connection.close();
       connections.clear();
       early.clear();
+      offers.clear();
       void supabase.removeChannel(requests);
       void supabase.removeChannel(shop);
     };
