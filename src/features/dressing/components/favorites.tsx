@@ -85,6 +85,11 @@ export function DressingFavorites({ next, children }: { next: string; children: 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }
 
+// Pour les écrans qui gardent une pièce autrement que par le cœur (le mode Coup de foudre).
+export function useDressingFavorites() {
+  return useContext(FavoritesContext);
+}
+
 // Le cœur d'une carte : il se remplit d'un petit rebond et lâche un anneau d'or.
 export function DressingHeart({ listingId, title }: { listingId: string; title: string }) {
   const t = useTranslations("dressing");

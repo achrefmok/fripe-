@@ -40,6 +40,8 @@ export type DressingItem = {
   sellerId: string;
   sellerName: string;
   favoriteCount: number;
+  place: { name_fr: string; name_ar: string } | null;
+  publishedAt: string | null;
 };
 
 export type DressingPreview = {
@@ -49,6 +51,8 @@ export type DressingPreview = {
   count: number;
   brands: string[];
   previews: string[];
+  pieces: DressingItem[];
+  latestAt: string | null;
 };
 
 function toItem(row: Row): DressingItem {
@@ -66,6 +70,8 @@ function toItem(row: Row): DressingItem {
     sellerId: row.seller_id,
     sellerName: row.seller_name,
     favoriteCount: row.favorite_count,
+    place: row.governorates,
+    publishedAt: row.published_at,
   };
 }
 
@@ -163,6 +169,8 @@ export async function getDressingOverview() {
       count: list.length,
       brands: topValues(list.map((row) => row.brand), 3).map((brand) => brand.label),
       previews: list.flatMap((row) => toItem(row).imageUrl ?? []).slice(0, 3),
+      pieces: list.map(toItem).filter((item) => item.imageUrl).slice(0, 4),
+      latestAt: list[0].published_at,
     }))
     .filter((dressing) => dressing.previews.length)
     .sort((a, b) => b.count - a.count)
@@ -174,7 +182,7 @@ export async function getDressingOverview() {
     dressings,
     brands: topValues(rows.map((row) => row.brand), 12),
     sizes: topValues(rows.map((row) => row.size), 10),
-    latest: items.slice(0, 3),
+    latest: items.slice(0, 10),
     deals: items
       .filter((item) => FINE_CONDITIONS.includes(item.condition) && item.imageUrl)
       .sort((a, b) => a.priceMillimes - b.priceMillimes)
@@ -184,6 +192,26 @@ export async function getDressingOverview() {
       .sort((a, b) => b.favoriteCount - a.favoriteCount)
       .slice(0, 8),
   };
+}
+
+// Les pièces du jour du mode Coup de foudre : tirées parmi les annonces récentes avec photo, dans
+// un ordre qui change chaque jour mais reste le même pour tout le monde dans la journée.
+export async function getDailyPicks(count = 12) {
+  const { data, error } = await visibleListings(CARD_COLUMNS).order("published_at", { ascending: false }).limit(80);
+  if (error) throw error;
+
+  const day = new Date().toISOString().slice(0, 10);
+  const weight = (id: string) => {
+    let hash = 0;
+    for (const character of day + id) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+    return hash;
+  };
+
+  return (data as unknown as Row[])
+    .map(toItem)
+    .filter((item) => item.imageUrl && !item.reserved)
+    .sort((a, b) => weight(a.id) - weight(b.id))
+    .slice(0, count);
 }
 
 // Le dressing d'une personne : toutes ses pièces en vente.

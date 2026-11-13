@@ -134,7 +134,7 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
             </span>
           </div>
 
-          <div className="mt-5 grid gap-3">
+          <div id="contact" className="mt-5 grid scroll-mt-28 gap-3">
             {own ? (
               <div className="grid gap-3 rounded-[18px] border bg-surface p-4">
                 <p className="font-display text-lg font-extrabold">{t("ownListing")}</p>

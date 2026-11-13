@@ -1,13 +1,13 @@
-import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
-import { DressingGrid } from "@/features/dressing/components/dressing-card";
+import { DressingCloset } from "@/features/dressing/components/dressing-closet";
 import { DressingFavorites } from "@/features/dressing/components/favorites";
 import { getDressing } from "@/features/dressing/queries";
 import { dressingFirstName, dressingMonogram, dressingTone } from "@/features/dressing/tone";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
+import { formatPrice } from "@/lib/utils/price";
 
 export const revalidate = 60;
 
@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/vide-dre
   return { title: dressing ? t("dressingOf", { name: dressingFirstName(dressing.sellerName) }) : t("backToAll") };
 }
 
-// Le dressing d'une personne : sa teinte, son monogramme, les marques qu'on y trouve, et toutes
-// ses pièces en vente.
+// Le dressing d'une personne : sa teinte, son monogramme, quatre chiffres vrais, puis son portant,
+// où l'on compose un lot à lui proposer.
 export default async function DressingPage({ params }: PageProps<"/[locale]/vide-dressing/dressing/[sellerId]">) {
   const { locale, sellerId } = await params;
   setRequestLocale(locale);
@@ -31,42 +31,69 @@ export default async function DressingPage({ params }: PageProps<"/[locale]/vide
 
   const tone = dressingTone(dressing.sellerId);
   const name = dressingFirstName(dressing.sellerName);
+  const place = dressing.place ? localizedName(dressing.place, locale) : null;
+  const likes = dressing.items.reduce((sum, item) => sum + item.favoriteCount, 0);
+  const cheapest = Math.min(...dressing.items.map((item) => item.priceMillimes));
+
+  const stats = [
+    { key: "pieces", value: String(dressing.items.length), label: t("statPieces", { count: dressing.items.length }) },
+    { key: "brands", value: String(dressing.brands.length), label: t("statBrands", { count: dressing.brands.length }) },
+    { key: "likes", value: String(likes), label: t("statLikes", { count: likes }) },
+    { key: "from", value: formatPrice(cheapest, locale), label: t("statFrom") },
+  ];
 
   return (
     <DressingFavorites next={`/vide-dressing/dressing/${dressing.sellerId}`}>
       <div className="vd-page">
-        <Link href="/vide-dressing" className="vd-back">
-          <ArrowLeft className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-          {t("backToAll")}
-        </Link>
+        <nav className="vd-crumbs" aria-label={t("backToAll")}>
+          <Link href="/vide-dressing">{t("crumb")}</Link>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page" dir="auto">{t("dressingOf", { name })}</span>
+        </nav>
 
         <header className="vd-closet" style={{ "--tone": tone.surface, "--tone-ink": tone.ink } as CSSProperties}>
           <span className="vd-closet__rod" aria-hidden="true" />
-          <span className="vd-avatar vd-avatar--lg" aria-hidden="true">{dressingMonogram(dressing.sellerName)}</span>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="vd-hero__kicker">{t("dressingKicker")}</p>
-            <h1 className="vd-closet__title" dir="auto">{t("dressingOf", { name })}</h1>
-            <p className="text-sm opacity-85">
-              {[dressing.place ? localizedName(dressing.place, locale) : null, t("dressingLead", { count: dressing.items.length })].filter(Boolean).join(" · ")}
+          <span className="vd-avatar vd-avatar--xl vd-reveal" style={{ "--d": 0 } as CSSProperties} aria-hidden="true">
+            {dressingMonogram(dressing.sellerName)}
+          </span>
+          <div className="vd-closet__text">
+            <p className="vd-hero__kicker vd-reveal" style={{ "--d": 1 } as CSSProperties}>
+              <span className="vd-live-dot" aria-hidden="true" />
+              {[t("openKicker"), place].filter(Boolean).join(" · ")}
             </p>
-          </div>
-          {dressing.brands.length ? (
-            <div className="vd-closet__brands">
-              <p className="vd-hero__kicker">{t("dressingBrands")}</p>
-              <ul className="flex flex-wrap gap-1.5">
+            <h1 className="vd-closet__title vd-reveal" style={{ "--d": 2 } as CSSProperties} dir="auto">
+              {t.rich("titleRich", { name, em: (chunks) => <em>{chunks}</em> })}
+            </h1>
+            {dressing.brands.length ? (
+              <ul className="vd-closet__brands vd-reveal" style={{ "--d": 3 } as CSSProperties} aria-label={t("dressingBrands")}>
                 {dressing.brands.map((brand) => (
                   <li key={brand}>
-                    <Link href={{ pathname: "/vide-dressing", query: { marque: brand } }} className="vd-closet__brand" dir="auto">{brand}</Link>
+                    <Link href={{ pathname: "/vide-dressing", query: { marque: brand } }} className="vd-closet__brand" dir="auto">
+                      {brand}
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
+          <div className="vd-closet__actions vd-reveal" style={{ "--d": 3 } as CSSProperties}>
+            <a href="#vd-rack-title" className="vd-hero__cta">{t("perkLot")}</a>
+            <Link href={`/annonce/${dressing.items[0].id}#contact`} className="vd-hero__ghost">
+              {t("write", { name })}
+            </Link>
+          </div>
         </header>
 
-        <section className="vd-section" aria-label={t("allTitle")}>
-          <DressingGrid items={dressing.items} showSeller={false} />
-        </section>
+        <dl className="vd-stats">
+          {stats.map((stat, index) => (
+            <div key={stat.key} className="vd-stat" style={{ "--i": index } as CSSProperties}>
+              <dt>{stat.label}</dt>
+              <dd>{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <DressingCloset sellerId={dressing.sellerId} name={name} items={dressing.items} />
       </div>
     </DressingFavorites>
   );

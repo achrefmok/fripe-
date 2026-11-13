@@ -68,7 +68,13 @@ Chaque catégorie racine garde sa matière (`src/features/home/universes.ts`). `
 
 ## Vide-Dressing
 
-La garance (`--vd`) est son identité : héros en dégradé, puces actives, bandeau de résultats. Chaque dressing reçoit une teinte stable tirée de l'identifiant de la personne (`src/features/dressing/tone.ts`), reprise sur sa vitrine, son monogramme et sa page. Une carte montre d'abord la photo, puis la marque en petites capitales d'or, la taille, l'état en pastille (dorée pour le neuf) et le prénom du vendeur. Les cartes entrent en décalé ; au survol, la carte se soulève et les pièces d'une vitrine s'écartent. L'éventail du héros est le seul objet 3D : trois photos qui se tournent vers la souris.
+La garance (`--vd`) est son identité, l'or (`--vd-gold`) ce qui pend et ce qui brille, le crème (`--vd-paper`) les fiches de lot. Chaque dressing reçoit une teinte stable tirée de l'identifiant de la personne (`src/features/dressing/tone.ts`), reprise sur son cercle, ses photos manquantes (rayées, avec un cintre) et sa page.
+
+- Accueil : bandeau d'or qui défile (dernières pièces), héros dont le rideau se lève et dont l'armoire s'ouvre sur le portant du dressing le plus garni (pièces qui se balancent, prix agrafés, armoire qui suit la souris) ; dressings du jour en cercles, l'anneau d'or tourne autour de ceux qui ont du nouveau depuis la dernière visite (`localStorage`) ; « Chiner par envie » en quatre tuiles ; toutes les pièces en grille ou sur portant (choix mémorisé, transition de vue) ; Lot malin ; « Ton dressing déborde ? ».
+- Carte : photo, état, cœur, marque en petites capitales d'or, taille en pastille, prix en Bodoni, prénom et ville, « Faire une offre » (mène au formulaire de contact de l'annonce, `#contact`).
+- Page d'un dressing : bandeau dans sa teinte, quatre chiffres réels (pièces, marques, coups de cœur, plus petit prix), portant où l'on touche les pièces pour composer un lot ; la fiche du lot propose un prix et part en un seul message par `contact_listing`. Aucune remise n'est inventée : c'est l'acheteur qui propose.
+- Coup de foudre (`/vide-dressing/coup-de-foudre`) : cinq pièces du jour en pile, glisser à droite garde (favori), à gauche passe ; boutons et flèches font le même geste.
+- Mouvement : seuls `transform`, `rotate`, `translate`, `opacity` et `clip-path` s'animent ; les sections entrent au défilement (`animation-timeline: view()`, sinon au chargement). `prefers-reduced-motion` ouvre l'armoire d'emblée, arrête le bandeau, les balancements et l'anneau.
 
 ## Live Shopping
 
