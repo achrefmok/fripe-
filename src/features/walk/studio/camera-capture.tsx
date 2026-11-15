@@ -2,7 +2,7 @@
 
 import { Camera, Circle, Pause, Play, RefreshCcw, Square, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { MAX_VIDEO_SECONDS, recorderType } from "../video-file";
 
@@ -16,6 +16,9 @@ function cameraError(error: unknown) {
 }
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+
+const noSubscribe = () => () => {};
+const canRecord = () => Boolean(navigator.mediaDevices?.getUserMedia) && recorderType() !== null;
 
 // Filmer sans quitter FRIPE. Si la caméra intégrée n'est pas disponible (navigateur ancien, page non
 // sécurisée, refus), l'appareil photo du téléphone et l'import restent toujours proposés.
@@ -31,9 +34,8 @@ export function CameraCapture({ onDone }: { onDone: (file: File) => void }) {
   const [state, setState] = useState<RecorderState>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [supported] = useState(
-    () => typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia) && recorderType() !== null,
-  );
+  // Lu après hydratation : le serveur ne sait pas si le navigateur peut filmer.
+  const supported = useSyncExternalStore(noSubscribe, canRecord, () => false);
 
   useEffect(() => {
     if (preview.current) preview.current.srcObject = stream;

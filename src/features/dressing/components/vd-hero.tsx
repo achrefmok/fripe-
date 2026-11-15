@@ -111,7 +111,7 @@ export function VdHero({
               <span className="vd-wardrobe__rod" aria-hidden="true" />
               <span className="vd-wardrobe__light" aria-hidden="true" />
               <span className="vd-wardrobe__rail" aria-hidden="true">
-                {closet.pieces.map((piece, index) => (
+                {closet.pieces.slice(0, 3).map((piece, index) => (
                   <span key={piece.id} className="vd-wardrobe__piece" style={{ "--k": index } as CSSProperties}>
                     <Hanger className="vd-wardrobe__hanger" />
                     <span className="vd-wardrobe__photo">

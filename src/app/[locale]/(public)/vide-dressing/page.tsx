@@ -14,7 +14,7 @@ import { MARKET_PAGE_SIZE, parseMarketFilters } from "@/features/marketplace/sch
 import { getLocations } from "@/features/shops/queries";
 import { getPathname, Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
-import { formatPrice } from "@/lib/utils/price";
+import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
 
 const ROUTE = "/vide-dressing";
 const SELL = "/compte/annonces/nouvelle?rubrique=vide_dressing";
@@ -89,7 +89,12 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
     filters.prixMin || filters.prixMax
       ? {
           key: "prix",
-          label: [filters.prixMin && `≥ ${filters.prixMin} DT`, filters.prixMax && `≤ ${filters.prixMax} DT`].filter(Boolean).join(" · "),
+          label: [
+            filters.prixMin && `≥ ${formatPrice(parsePriceToMillimes(filters.prixMin) ?? 0, locale)}`,
+            filters.prixMax && `≤ ${formatPrice(parsePriceToMillimes(filters.prixMax) ?? 0, locale)}`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
           changes: { prixMin: "", prixMax: "" },
         }
       : null,

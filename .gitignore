@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/rapports/
 
 # next.js
 /.next/
@@ -51,3 +52,6 @@ next-env.d.ts
 # stack de test isolé
 /.test-stack/
 /.staging-accounts.local.json
+
+# Contentsquare wizard (generated)
+.cs-wizard/

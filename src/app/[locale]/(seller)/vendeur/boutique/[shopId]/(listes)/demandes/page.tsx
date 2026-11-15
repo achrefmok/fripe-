@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { colorLabel } from "@/features/catalog/product-options";
 import { listOfferableProducts } from "@/features/catalog/queries";
 import { BlockClientButton } from "@/features/messaging/components/block-buttons";
 import { ContactButton } from "@/features/messaging/components/contact-button";
@@ -51,7 +52,7 @@ export default async function ShopRequestsPage({
             {[
               request.categories && localizedName(request.categories, locale),
               request.size,
-              request.color,
+              colorLabel(request.color, locale),
               request.brand,
               request.budget_millimes &&
                 labels("budgetValue", { amount: formatPrice(request.budget_millimes, locale) }),

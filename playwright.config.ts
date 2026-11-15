@@ -20,6 +20,11 @@ export default defineConfig({
     actionTimeout: 15_000,
     trace: "retain-on-failure",
     locale: "fr-FR",
+    // Le cookie de la page Découvrir (src/features/landing/intro.ts) : sans lui, « / » y redirige.
+    storageState: {
+      cookies: [{ name: "fripe_decouvert", value: "1", domain: "localhost", path: "/", expires: -1, httpOnly: true, secure: false, sameSite: "Lax" }],
+      origins: [],
+    },
   },
   projects: [{ name: "mobile", use: { ...devices["Pixel 7"] } }],
   webServer: {

@@ -30,7 +30,7 @@ export default async function QuickPublishPage({
 
       <section className="border-t pt-5">
         <h3 className="font-display text-xl font-bold">{t("quickCsvTitle")}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t("quickCsvBody")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t.rich("quickCsvBody", { cols: (chunks) => <code dir="ltr" className="font-mono text-xs">{chunks}</code> })}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t("quickPhotoNote")}</p>
         <div className="mt-3">
           <CsvImporter shopId={shopId} categories={categories} />

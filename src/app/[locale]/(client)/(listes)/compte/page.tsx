@@ -67,7 +67,7 @@ export default async function AccountPage() {
         <span className="luxe-kicker text-gold">{t("sellerKicker")}</span>
         <span className="font-display text-[28px] leading-tight">{t("sellLink")}</span>
         <span className="text-sm opacity-80">{viewer.shopCount ? t("sellHint", { count: viewer.shopCount }) : t("sellHintNone")}</span>
-        <span className="mt-3 font-semibold text-gold">{t("open")} →</span>
+        <span className="mt-3 font-semibold text-gold">{t("open")} <span aria-hidden="true" className="inline-block rtl:-scale-x-100">→</span></span>
       </Link>
 
       <ul className="mt-6 border-t">

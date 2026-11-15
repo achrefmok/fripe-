@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
+import { cloneElement, isValidElement } from "react";
 import { Label } from "@/components/ui/label";
 
 type FieldProps = {
@@ -26,6 +27,17 @@ export function Field({ id, label, hint, optional, error, children }: FieldProps
         ? errors(error)
         : errors("unexpected");
 
+  // Le champ annonce son erreur (ou son aide) aux lecteurs d'écran, et se déclare invalide.
+  const described = message ? `${id}-error` : hint ? `${id}-hint` : null;
+  const control =
+    isValidElement(children) && (children.props as { id?: string }).id === id
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+          "aria-invalid": message ? true : (children.props as Record<string, unknown>)["aria-invalid"],
+          "aria-describedby":
+            [(children.props as Record<string, unknown>)["aria-describedby"], described].filter(Boolean).join(" ") || undefined,
+        })
+      : children;
+
   return (
     <div className="grid gap-0.5">
       <Label htmlFor={id} className="text-[0.8rem] font-semibold">
@@ -34,7 +46,7 @@ export function Field({ id, label, hint, optional, error, children }: FieldProps
           <span className="font-normal text-muted-foreground"> · {common("optional")}</span>
         ) : null}
       </Label>
-      {children}
+      {control}
       {message ? (
         <p id={`${id}-error`} role="alert" className="pt-1 text-[0.8rem] font-medium text-destructive">
           {message}

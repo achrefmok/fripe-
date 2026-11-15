@@ -2,7 +2,7 @@
 
 import { Check, Mic, Music, Play, RotateCcw, Sparkles, Square, Trash2, Type } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
@@ -23,6 +23,7 @@ type Step = "capture" | "review" | "edit" | "publish";
 export type StudioProduct = { id: string; title: string; priceMillimes: number | null };
 
 const STEPS: Step[] = ["capture", "review", "edit", "publish"];
+const noSubscribe = () => () => {};
 
 // Une adresse locale par fichier, libérée quand le fichier change ou que le studio se ferme.
 function useObjectUrl(file: File | null) {
@@ -46,7 +47,8 @@ export function VideoStudio({ shopId, products }: { shopId: string; products: St
   const clipUrl = useObjectUrl(clip);
   const finalUrl = useObjectUrl(final);
   const [clipError, setClipError] = useState<string | null>(null);
-  const [canEdit] = useState(() => studioSupported());
+  // Lu après hydratation : le serveur ne connaît ni MediaRecorder ni AudioContext.
+  const canEdit = useSyncExternalStore(noSubscribe, studioSupported, () => false);
 
   const video = useRef<HTMLVideoElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);

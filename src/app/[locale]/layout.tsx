@@ -8,6 +8,7 @@ import { Providers } from "@/components/layout/providers";
 import { StagingBanner } from "@/components/layout/staging-banner";
 import { directionOf, routing } from "@/i18n/routing";
 import { getSiteUrl } from "@/lib/env";
+import { Contentsquare } from "./contentsquare";
 import "../globals.css";
 
 // Friptex Luxe : un didone à contraste pour les titres, une géométrique douce pour le texte.
@@ -76,6 +77,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={`${display.variable} ${body.variable} ${arabic.variable}`}
     >
       <body className="flex min-h-svh flex-col">
+        <Contentsquare />
         <NextIntlClientProvider>
           <Providers dir={dir}>
             <StagingBanner />

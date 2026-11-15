@@ -86,8 +86,8 @@ export function ProfileForm({ defaults, locations }: { defaults: ProfileDefaults
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="ar">العربية</SelectItem>
+                <SelectItem value="fr"><span lang="fr" dir="ltr">Français</span></SelectItem>
+                <SelectItem value="ar"><span lang="ar" dir="rtl">العربية</span></SelectItem>
               </SelectContent>
             </Select>
           )}

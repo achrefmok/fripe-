@@ -35,7 +35,7 @@ export default async function SellPage() {
                 <span className="lx-sell__eyelet" aria-hidden="true" />
                 <span className="lx-sell__name">{path.name}</span>
                 <span className="lx-sell__body">{path.body}</span>
-                <span className="lx-sell__cta">{path.cta} →</span>
+                <span className="lx-sell__cta">{path.cta} <span aria-hidden="true" className="inline-block rtl:-scale-x-100">→</span></span>
               </span>
             </Link>
           </li>

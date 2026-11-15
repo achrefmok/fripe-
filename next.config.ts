@@ -10,14 +10,21 @@ const isStaging = process.env.NEXT_PUBLIC_FRIPE_ENV === "staging";
 
 // 'unsafe-inline' reste nécessaire tant que les pages sont statiques : voir docs/securite-phase-5.md.
 // script-src-attr bloque tout de même les gestionnaires en ligne (onclick=…), que Next n'utilise pas.
+// Contentsquare (analyse des parcours) : son script, ses envois et ses pixels.
+const contentsquare = {
+  script: "*.contentsquare.net app.contentsquare.com",
+  connect: "*.contentsquare.net *.contentsquare.com",
+  img: "*.contentsquare.net",
+};
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${contentsquare.script}`,
   "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabase}`,
+  `img-src 'self' data: blob: ${supabase} ${contentsquare.img}`,
   `media-src 'self' blob: ${supabase}`,
-  `connect-src 'self' ${supabase} ${supabase.replace(/^http/, "ws")}${isDev ? " ws:" : ""}`,
+  `connect-src 'self' ${supabase} ${supabase.replace(/^http/, "ws")}${isDev ? " ws:" : ""} ${contentsquare.connect}`,
   "font-src 'self'",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
