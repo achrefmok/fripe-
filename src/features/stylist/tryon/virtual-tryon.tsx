@@ -1,16 +1,17 @@
 "use client";
 
-import { Camera, Download, ImageUp, LoaderCircle, RotateCcw, ShieldCheck } from "lucide-react";
+import { Camera, Download, ImageUp, LoaderCircle, PersonStanding, RotateCcw, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { productImageUrl } from "@/lib/utils/storage";
 import { SLOTS, type Slot, type StyleItem } from "../engine";
 import { type Adjust, hitTest, maskCanvas, render } from "./compositor";
 import { detectPose, fitFrames, type Frame, placeGarments } from "./pose";
+import { renderMannequin } from "./mannequin";
 import { garmentCutout } from "./segment";
 import "./tryon.css";
 
-type Status = "loading" | "ready" | "manual" | "error";
+type Status = "loading" | "ready" | "manual" | "error" | "mannequin" | "mannequinError";
 const MAX_SIDE = 1080;
 const NONE: Adjust = { dx: 0, dy: 0, scale: 1 };
 
@@ -33,6 +34,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
   const [status, setStatus] = useState<Status | null>(null);
   const [garments, setGarments] = useState<Partial<Record<Slot, HTMLCanvasElement>>>({});
   const [weak, setWeak] = useState<Slot[]>([]);
+  const [failed, setFailed] = useState<Slot[]>([]);
   const [frames, setFrames] = useState<Partial<Record<Slot, Frame>>>({});
   const [adjusts, setAdjusts] = useState<Partial<Record<Slot, Adjust>>>({});
   const [selected, setSelected] = useState<Slot | null>(null);
@@ -40,6 +42,8 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
   const canvas = useRef<HTMLCanvasElement>(null);
   const photo = useRef<HTMLCanvasElement | null>(null);
   const body = useRef<HTMLCanvasElement | null>(null);
+  const regions = useRef<Partial<Record<Slot, HTMLCanvasElement>>>({});
+  const [onMannequin, setOnMannequin] = useState(true);
   const drag = useRef<{ slot: Slot; x: number; y: number; dx: number; dy: number } | null>(null);
   const worn = SLOTS.filter((slot) => pieces[slot]?.imagePath);
 
@@ -49,7 +53,12 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
     void (async () => {
       for (const slot of worn) {
         const result = await garmentCutout(productImageUrl(pieces[slot]!.imagePath!)).catch(() => null);
-        if (cancelled || !result) continue;
+        if (cancelled) return;
+        if (!result) {
+          // Photo introuvable : la pièce est laissée de côté, la préparation ne reste pas bloquée.
+          setFailed((current) => [...current, slot]);
+          continue;
+        }
         setGarments((current) => ({ ...current, [slot]: result.canvas }));
         if (result.quality === "photo") setWeak((current) => [...current, slot]);
       }
@@ -61,17 +70,50 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Par défaut, la tenue est posée sur le mannequin 3D de la cabine.
+  useEffect(() => {
+    void showMannequin();
+  }, []);
+
   // Le rendu suit chaque changement : pièces détourées, cadres, réglages, pièce choisie.
   useEffect(() => {
-    if (!canvas.current || !photo.current || status === "loading") return;
-    render(canvas.current, photo.current, body.current, garments, frames, adjusts, selected);
-  }, [garments, frames, adjusts, selected, status]);
+    const target = canvas.current;
+    if (!target || !photo.current || status === "loading") return;
+    if (target.width !== photo.current.width || target.height !== photo.current.height) {
+      target.width = photo.current.width;
+      target.height = photo.current.height;
+    }
+    render(target, photo.current, body.current, garments, frames, adjusts, selected, regions.current, onMannequin ? "multiply" : "soft-light");
+  }, [garments, frames, adjusts, selected, status, onMannequin]);
+
+  async function showMannequin() {
+    setStatus("loading");
+    setHasPhoto(true);
+    setOnMannequin(true);
+    setSelected(null);
+    setAdjusts({});
+    try {
+      const mannequin = await renderMannequin();
+      photo.current = mannequin.photo;
+      body.current = mannequin.body;
+      regions.current = mannequin.regions;
+      setFrames(mannequin.frames);
+      setStatus("mannequin");
+    } catch {
+      // Pas de WebGL sur cet appareil : on propose directement la photo.
+      photo.current = null;
+      setHasPhoto(false);
+      setStatus("mannequinError");
+    }
+  }
 
   async function choose(file: File | undefined) {
     if (!file || !file.type.startsWith("image/")) return;
     const url = URL.createObjectURL(file);
     setStatus("loading");
     setHasPhoto(true);
+    setOnMannequin(false);
+    regions.current = {};
     setSelected(null);
     setAdjusts({});
     try {
@@ -139,7 +181,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
   }
 
   const busy = status === "loading";
-  const preparing = worn.some((slot) => !garments[slot]);
+  const preparing = worn.some((slot) => !garments[slot] && !failed.includes(slot));
 
   return (
     <div className="vt">
@@ -148,7 +190,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
         <span>{t("privacy")}</span>
       </p>
 
-      {!hasPhoto ? (
+      {!hasPhoto || onMannequin ? (
         <div className="vt-intro">
           <p>{t("intro")}</p>
           <ul className="vt-tips">
@@ -162,7 +204,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
       <div className="vt-actions">
         <label className="vt-btn vt-btn--primary">
           <ImageUp className="size-4" aria-hidden="true" />
-          {hasPhoto ? t("changePhoto") : t("choosePhoto")}
+          {hasPhoto && !onMannequin ? t("changePhoto") : t("choosePhoto")}
           <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
         </label>
         <label className="vt-btn">
@@ -170,7 +212,14 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
           {t("takePhoto")}
           <input type="file" accept="image/*" capture="user" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
         </label>
+        {!onMannequin && status !== "mannequinError" ? (
+          <button type="button" className="vt-btn" disabled={busy} onClick={() => void showMannequin()}>
+            <PersonStanding className="size-4" aria-hidden="true" />
+            {t("useMannequin")}
+          </button>
+        ) : null}
       </div>
+      {status === "mannequinError" ? <p className="vt-status">{t("status.mannequinError")}</p> : null}
 
       {preparing ? (
         <p className="vt-status">
@@ -191,7 +240,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
             ref={canvas}
             className="vt-canvas"
             role="img"
-            aria-label={t("photoAlt")}
+            aria-label={onMannequin ? t("mannequinAlt") : t("photoAlt")}
             onPointerDown={down}
             onPointerMove={move}
             onPointerUp={() => (drag.current = null)}

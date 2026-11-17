@@ -2129,7 +2129,7 @@
     "toolLivesBody": "Les boutiques présentent leurs pièces en direct, tu poses tes questions."
   },
   "tryon": {
-    "open": "Essayer sur ma photo",
+    "open": "Essayer la tenue",
     "title": "Essayage virtuel",
     "description": "Aperçu de la tenue sur ta photo, calculé par une IA de détection de pose.",
     "privacy": "Ta photo reste sur ton appareil : elle n’est jamais envoyée ni enregistrée.",
@@ -2145,13 +2145,17 @@
       "loading": "Analyse de la pose et de la silhouette…",
       "ready": "Tenue ajustée à ta silhouette. Touche une pièce pour la déplacer ou régler sa taille.",
       "manual": "Aucune silhouette détectée : les pièces sont posées au centre, place-les à la main.",
-      "error": "L’analyse n’est pas disponible sur cet appareil : place les pièces à la main."
+      "error": "L’analyse n’est pas disponible sur cet appareil : place les pièces à la main.",
+      "mannequin": "La tenue sur le mannequin. Touche une pièce pour la déplacer ou régler sa taille, ou essaie-la sur ta photo.",
+      "mannequinError": "Le mannequin 3D n’est pas disponible sur cet appareil : essaie la tenue sur ta photo."
     },
     "size": "Taille de {piece} sur la photo",
     "reset": "Replacer automatiquement",
     "warning": "Aperçu indicatif : il ne garantit ni la taille réelle ni le rendu porté. Vérifie les mesures et l’état dans chaque annonce.",
     "preparing": "L’IA détoure les pièces de la tenue…",
     "weakCutout": "Certaines photos de pièces n’ont pas pu être détourées : elles apparaissent avec leur fond.",
-    "save": "Enregistrer l’image"
+    "save": "Enregistrer l’image",
+    "useMannequin": "Revenir au mannequin",
+    "mannequinAlt": "La tenue sur le mannequin de la cabine"
   }
 }

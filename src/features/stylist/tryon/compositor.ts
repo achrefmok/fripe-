@@ -59,6 +59,8 @@ export function render(
   frames: Partial<Record<Slot, Frame>>,
   adjusts: Partial<Record<Slot, Adjust>>,
   selected: Slot | null,
+  regions: Partial<Record<Slot, HTMLCanvasElement>> = {},
+  shading: "soft-light" | "multiply" = "soft-light",
 ) {
   const { width, height } = canvas;
   const context = canvas.getContext("2d")!;
@@ -68,7 +70,8 @@ export function render(
   // Les ombres et les plis de la photo, en niveaux de gris : ils passent sur le tissu.
   const shade = layer(width, height);
   const shadeContext = shade.getContext("2d")!;
-  shadeContext.filter = "grayscale(1) contrast(1.25)";
+  // Sur le mannequin, gris clair et uni, le gris moyen devient blanc : seules les ombres teintent le tissu.
+  shadeContext.filter = shading === "multiply" ? "grayscale(1) brightness(1.32) contrast(1.15)" : "grayscale(1) contrast(1.25)";
   shadeContext.drawImage(photo, 0, 0, width, height);
 
   for (const slot of LAYERS) {
@@ -85,10 +88,11 @@ export function render(
     pieceContext.drawImage(garment, -place.width / 2, 0, place.width, place.height);
     pieceContext.restore();
 
-    // Le haut et le bas épousent la silhouette : rien ne déborde sur le décor.
-    if (place.clip && body) {
+    // Le haut et le bas épousent la silhouette (ou, sur le mannequin, leur zone du corps) : rien ne déborde.
+    const outline = regions[slot] ?? body;
+    if (place.clip && outline) {
       pieceContext.globalCompositeOperation = "destination-in";
-      pieceContext.drawImage(body, 0, 0);
+      pieceContext.drawImage(outline, 0, 0, width, height);
     }
 
     // L'ombrage, limité à la pièce, puis fondu en lumière douce.
@@ -98,8 +102,8 @@ export function render(
       lightContext.drawImage(shade, 0, 0);
       lightContext.globalCompositeOperation = "destination-in";
       lightContext.drawImage(piece, 0, 0);
-      pieceContext.globalCompositeOperation = "soft-light";
-      pieceContext.globalAlpha = 0.85;
+      pieceContext.globalCompositeOperation = shading;
+      pieceContext.globalAlpha = shading === "multiply" ? 1 : 0.85;
       pieceContext.drawImage(light, 0, 0);
       pieceContext.globalAlpha = 1;
     }
