@@ -62,47 +62,23 @@
   font-size: 0.88rem;
   color: var(--muted-foreground);
 }
-.vt-stage {
-  position: relative;
+/* La toile de l'essayage : la photo et les pièces, rendues ensemble (compositor.ts). */
+.vt-canvas {
+  display: block;
   width: min(100%, 26rem);
+  height: auto;
   margin-inline: auto;
   border-radius: 18px;
-  overflow: hidden;
   background: var(--secondary);
   touch-action: none;
-}
-.vt-photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  user-select: none;
-}
-.vt-garment {
-  position: absolute;
-  padding: 0;
-  border: 0;
-  background: none;
   cursor: grab;
-  transform-origin: 50% 0;
-  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.25));
 }
-.vt-garment img {
-  display: block;
-  width: 100%;
-  height: auto;
-  pointer-events: none;
-}
-.vt-garment:active {
+.vt-canvas:active {
   cursor: grabbing;
 }
-.vt-garment[data-selected] {
-  outline: 2px dashed var(--gold);
-  outline-offset: 2px;
-}
-.vt-garment:focus-visible {
-  outline: 2px solid var(--gold);
+.vt-note {
+  font-size: 0.82rem;
+  color: var(--harissa);
 }
 .vt-adjust {
   display: grid;

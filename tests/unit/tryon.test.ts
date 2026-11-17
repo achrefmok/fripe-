@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { placeGarments, type Pose } from "@/features/stylist/tryon/pose";
+import { fitFrames, placeGarments, type Pose } from "@/features/stylist/tryon/pose";
 
 // Une silhouette synthétique de face : 33 points MediaPipe, en fractions de la photo.
 function pose(points: Record<number, [number, number]>): Pose {
@@ -49,5 +49,41 @@ describe("placement des pièces sur la photo", () => {
     const fallback = placeGarments(null, 1.5);
     expect(fallback.top.left + fallback.top.width / 2).toBeCloseTo(0.5, 5);
     expect(fallback.shoes.top).toBeGreaterThan(fallback.bottom.top);
+  });
+});
+
+describe("cadres d'ajustement en pixels (fitFrames)", () => {
+  const frames = fitFrames(standing, 600, 900);
+
+  it("le haut couvre des épaules jusque sous les hanches, centré", () => {
+    const top = frames.top!;
+    expect(top.x + top.width / 2).toBeCloseTo(300, 0);
+    expect(top.y).toBeLessThan(0.3 * 900);
+    expect(top.y + top.height).toBeGreaterThan(0.55 * 900);
+    expect(top.fit && top.clip).toBe(true);
+    expect(Math.abs(top.rotate)).toBeLessThan(1);
+  });
+
+  it("le bas couvre des hanches jusqu'aux chevilles", () => {
+    const bottom = frames.bottom!;
+    expect(bottom.y).toBeLessThan(0.55 * 900);
+    expect(bottom.y + bottom.height).toBeGreaterThan(0.92 * 900);
+    expect(bottom.clip).toBe(true);
+  });
+
+  it("les chaussures sont aux chevilles et gardent leurs proportions", () => {
+    const shoes = frames.shoes!;
+    expect(shoes.y).toBeLessThan(0.92 * 900);
+    expect(shoes.y + shoes.height).toBeGreaterThan(0.92 * 900);
+    expect(shoes.fit || shoes.clip).toBe(false);
+  });
+
+  it("une photo en miroir (épaules inversées) ne retourne pas le haut", () => {
+    const mirrored = fitFrames(pose({ 11: [0.4, 0.3], 12: [0.6, 0.3], 23: [0.43, 0.55], 24: [0.57, 0.55] }), 600, 900);
+    expect(Math.abs(mirrored.top!.rotate)).toBeLessThan(1);
+  });
+
+  it("sans silhouette, aucun cadre : l'interface passe en placement manuel", () => {
+    expect(fitFrames(null, 600, 900)).toEqual({});
   });
 });

@@ -2142,15 +2142,16 @@
     "takePhoto": "Prendre une photo",
     "photoAlt": "Ta photo",
     "status": {
-      "intro": "",
-      "loading": "Analyse de la pose…",
-      "ready": "Pièces posées. Touche une pièce pour la déplacer ou ajuster sa taille.",
+      "loading": "Analyse de la pose et de la silhouette…",
+      "ready": "Tenue ajustée à ta silhouette. Touche une pièce pour la déplacer ou régler sa taille.",
       "manual": "Aucune silhouette détectée : les pièces sont posées au centre, place-les à la main.",
       "error": "L’analyse n’est pas disponible sur cet appareil : place les pièces à la main."
     },
-    "movePiece": "Déplacer {piece}",
     "size": "Taille de {piece} sur la photo",
     "reset": "Replacer automatiquement",
-    "warning": "Aperçu indicatif : il ne garantit ni la taille réelle ni le rendu porté. Vérifie les mesures et l’état dans chaque annonce."
+    "warning": "Aperçu indicatif : il ne garantit ni la taille réelle ni le rendu porté. Vérifie les mesures et l’état dans chaque annonce.",
+    "preparing": "L’IA détoure les pièces de la tenue…",
+    "weakCutout": "Certaines photos de pièces n’ont pas pu être détourées : elles apparaissent avec leur fond.",
+    "save": "Enregistrer l’image"
   }
 }

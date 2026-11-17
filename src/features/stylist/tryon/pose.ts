@@ -1,21 +1,35 @@
-// Détection de pose pour l'essayage virtuel, entièrement dans le navigateur : la photo ne quitte
-// jamais l'appareil. MediaPipe Pose Landmarker (code et modèle BlazePose sous licence Apache 2.0),
-// servi par le site depuis /mediapipe (scripts/mediapipe-assets.mjs). Chargé seulement à la demande.
+// Essayage virtuel, entièrement dans le navigateur : la photo ne quitte jamais l'appareil.
+// MediaPipe (code Apache 2.0) avec deux modèles sous licence Apache 2.0 : BlazePose pour la pose et la
+// silhouette, MagicTouch pour détourer les photos de pièces (segment.ts). Servis par le site depuis
+// /mediapipe (scripts/mediapipe-assets.mjs) et chargés seulement à l'ouverture de l'essayage.
 import type { Slot } from "../engine";
 
 type Point = { x: number; y: number; visibility?: number };
 export type Pose = Point[];
+export type BodyMask = { data: Float32Array; width: number; height: number };
 
-type Landmarker = { detect: (image: HTMLImageElement) => { landmarks: Point[][] }; close: () => void };
+type Mask = { width: number; height: number; getAsFloat32Array: () => Float32Array; close: () => void };
+type Landmarker = { detect: (image: TexImageSource) => { landmarks: Point[][]; segmentationMasks?: Mask[] }; close: () => void };
+
+// Le moteur WebAssembly, partagé par la pose et le détourage.
+let fileset: Promise<unknown> | null = null;
+export async function visionFileset() {
+  fileset ??= import("@mediapipe/tasks-vision").then(({ FilesetResolver }) => FilesetResolver.forVisionTasks("/mediapipe/wasm"));
+  fileset.catch(() => {
+    fileset = null;
+  });
+  return fileset;
+}
+
 let landmarker: Promise<Landmarker> | null = null;
-
 async function create(delegate: "GPU" | "CPU") {
-  const { FilesetResolver, PoseLandmarker } = await import("@mediapipe/tasks-vision");
-  const files = await FilesetResolver.forVisionTasks("/mediapipe/wasm");
-  return PoseLandmarker.createFromOptions(files, {
+  const [{ PoseLandmarker }, files] = await Promise.all([import("@mediapipe/tasks-vision"), visionFileset()]);
+  return PoseLandmarker.createFromOptions(files as never, {
     baseOptions: { modelAssetPath: "/mediapipe/pose_landmarker_lite.task", delegate },
     runningMode: "IMAGE",
     numPoses: 1,
+    // La silhouette de la personne : les vêtements sont découpés selon elle.
+    outputSegmentationMasks: true,
   }) as Promise<Landmarker>;
 }
 
@@ -28,19 +42,22 @@ function getLandmarker() {
   return landmarker;
 }
 
-export async function detectPose(image: HTMLImageElement): Promise<Pose | null> {
+export async function detectPose(image: TexImageSource): Promise<{ pose: Pose | null; mask: BodyMask | null }> {
   const model = await getLandmarker();
-  return model.detect(image).landmarks[0] ?? null;
+  const result = model.detect(image);
+  const raw = result.segmentationMasks?.[0];
+  // Le masque n'est valable que jusqu'au prochain appel : on en garde une copie.
+  const mask = raw ? { data: raw.getAsFloat32Array().slice(), width: raw.width, height: raw.height } : null;
+  raw?.close();
+  return { pose: result.landmarks[0] ?? null, mask };
 }
 
-// Où poser chaque pièce, en fractions de la photo : left et top du coin haut-gauche, largeur en
-// fraction de la largeur, rotation en degrés. La hauteur suit la photo de la pièce.
+// Où poser chaque pièce, en fractions de la photo (repli sans silhouette, et tests unitaires).
 export type Placement = { left: number; top: number; width: number; rotate: number };
 
-const L = { shoulderL: 11, shoulderR: 12, wristL: 15, hipL: 23, hipR: 24, kneeL: 25, kneeR: 26, ankleL: 27, ankleR: 28 } as const;
+const L = { shoulderL: 11, shoulderR: 12, wristL: 15, wristR: 16, hipL: 23, hipR: 24, ankleL: 27, ankleR: 28 } as const;
 
 export function placeGarments(pose: Pose | null, aspect: number): Record<Slot, Placement> {
-  // Sans pose détectée : des positions par défaut, que l'on ajuste à la main.
   const fallback: Record<Slot, Placement> = {
     top: { left: 0.3, top: 0.18, width: 0.4, rotate: 0 },
     bottom: { left: 0.33, top: 0.48, width: 0.34, rotate: 0 },
@@ -51,11 +68,9 @@ export function placeGarments(pose: Pose | null, aspect: number): Record<Slot, P
 
   const seen = (index: number) => (pose[index]?.visibility ?? 1) > 0.4;
   const mid = (a: number, b: number) => ({ x: (pose[a].x + pose[b].x) / 2, y: (pose[a].y + pose[b].y) / 2 });
-  // Distance en fractions de largeur : les y sont ramenés à l'échelle des x (aspect = hauteur / largeur).
   const distance = (a: number, b: number) => Math.hypot(pose[a].x - pose[b].x, (pose[a].y - pose[b].y) * aspect);
   const angle = (a: number, b: number) => {
     const degrees = (Math.atan2((pose[b].y - pose[a].y) * aspect, pose[b].x - pose[a].x) * 180) / Math.PI;
-    // L'épaule gauche de la personne est à droite de l'image : on ramène l'angle autour de 0.
     return Math.abs(degrees) > 90 ? degrees - Math.sign(degrees) * 180 : degrees;
   };
 
@@ -80,4 +95,52 @@ export function placeGarments(pose: Pose | null, aspect: number): Record<Slot, P
     placements.shoes = { left: ankles.x - width / 2, top: ankles.y - (hipSpan * 0.25) / aspect, width, rotate: 0 };
   }
   return placements;
+}
+
+// Le cadre d'ajustement de chaque pièce, en pixels de la photo : le vêtement est étiré pour couvrir
+// ce cadre (des épaules aux hanches, des hanches aux chevilles), puis découpé selon la silhouette.
+// « fit » : la pièce remplit le cadre ; sinon elle garde ses proportions (chaussures, accessoire).
+export type Frame = { x: number; y: number; width: number; height: number; rotate: number; fit: boolean; clip: boolean };
+
+export function fitFrames(pose: Pose | null, width: number, height: number): Partial<Record<Slot, Frame>> {
+  if (!pose) return {};
+  const p = (index: number) => ({ x: pose[index].x * width, y: pose[index].y * height, ok: (pose[index]?.visibility ?? 1) > 0.4 });
+  const [sl, sr, hl, hr, al, ar, wl, wr] = [L.shoulderL, L.shoulderR, L.hipL, L.hipR, L.ankleL, L.ankleR, L.wristL, L.wristR].map(p);
+  const frames: Partial<Record<Slot, Frame>> = {};
+
+  if (sl.ok && sr.ok) {
+    const shoulders = { x: (sl.x + sr.x) / 2, y: (sl.y + sr.y) / 2 };
+    const span = Math.hypot(sl.x - sr.x, sl.y - sr.y);
+    // Sans hanches visibles, le torse fait environ 1,5 fois la carrure.
+    const hipY = hl.ok && hr.ok ? (hl.y + hr.y) / 2 : shoulders.y + span * 1.5;
+    const torso = hipY - shoulders.y;
+    const top = shoulders.y - span * 0.2;
+    const frameWidth = span * 1.8;
+    frames.top = {
+      x: shoulders.x - frameWidth / 2,
+      y: top,
+      width: frameWidth,
+      height: hipY + torso * 0.18 - top,
+      rotate: (Math.atan2(sl.y - sr.y, sl.x - sr.x) * 180) / Math.PI - (sl.x >= sr.x ? 0 : 180),
+      fit: true,
+      clip: true,
+    };
+    const wrist = wl.ok && (!wr.ok || wl.y >= wr.y) ? wl : wr.ok ? wr : null;
+    const size = span * 0.5;
+    frames.accessory = { x: (wrist?.x ?? shoulders.x + span) - size / 2, y: (wrist?.y ?? hipY) - size * 0.2, width: size, height: size, rotate: 0, fit: false, clip: false };
+  }
+  if (hl.ok && hr.ok) {
+    const hips = { x: (hl.x + hr.x) / 2, y: (hl.y + hr.y) / 2 };
+    const hipSpan = Math.hypot(hl.x - hr.x, hl.y - hr.y);
+    const ankles = al.ok && ar.ok ? { x: (al.x + ar.x) / 2, y: (al.y + ar.y) / 2 } : { x: hips.x, y: hips.y + hipSpan * 4 };
+    const legs = ankles.y - hips.y;
+    const spread = al.ok && ar.ok ? Math.abs(al.x - ar.x) : 0;
+    const frameWidth = Math.max(hipSpan * 2.1, spread + hipSpan * 1.3);
+    frames.bottom = { x: (hips.x + ankles.x) / 2 - frameWidth / 2, y: hips.y - legs * 0.07, width: frameWidth, height: legs * 1.1, rotate: 0, fit: true, clip: true };
+    if (al.ok && ar.ok) {
+      const shoeWidth = spread + hipSpan * 1.2;
+      frames.shoes = { x: ankles.x - shoeWidth / 2, y: ankles.y - hipSpan * 0.35, width: shoeWidth, height: hipSpan * 0.9, rotate: 0, fit: false, clip: false };
+    }
+  }
+  return frames;
 }

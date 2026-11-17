@@ -1,44 +1,59 @@
 "use client";
 
-import { Camera, ImageUp, LoaderCircle, RotateCcw, ShieldCheck } from "lucide-react";
+import { Camera, Download, ImageUp, LoaderCircle, RotateCcw, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from "react";
-import { cutoutUrl } from "@/lib/ui/cutout";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { productImageUrl } from "@/lib/utils/storage";
 import { SLOTS, type Slot, type StyleItem } from "../engine";
-import { detectPose, placeGarments, type Placement } from "./pose";
+import { type Adjust, hitTest, maskCanvas, render } from "./compositor";
+import { detectPose, fitFrames, type Frame, placeGarments } from "./pose";
+import { garmentCutout } from "./segment";
 import "./tryon.css";
 
-// Ordre des calques : le bas, puis les chaussures, puis le haut qui retombe dessus, puis l'accessoire.
-const LAYERS: Slot[] = ["bottom", "shoes", "top", "accessory"];
+type Status = "loading" | "ready" | "manual" | "error";
+const MAX_SIDE = 1080;
+const NONE: Adjust = { dx: 0, dy: 0, scale: 1 };
 
-type Status = "intro" | "loading" | "ready" | "manual" | "error";
+// Sans silhouette détectée : les positions par défaut, en pixels, que l'on ajuste à la main.
+function fallbackFrames(width: number, height: number): Partial<Record<Slot, Frame>> {
+  const placed = placeGarments(null, height / width);
+  return Object.fromEntries(
+    SLOTS.map((slot) => {
+      const place = placed[slot];
+      return [slot, { x: place.left * width, y: place.top * height, width: place.width * width, height: place.width * width * 1.3, rotate: 0, fit: false, clip: false }];
+    }),
+  );
+}
 
-// L'essayage virtuel : la personne choisit une photo d'elle, l'IA repère ses épaules, ses hanches et
-// ses chevilles, et y pose les pièces détourées de la tenue. Tout se passe sur l'appareil : la photo
-// n'est jamais envoyée. C'est un aperçu, pas une simulation de taille : la page le dit clairement.
+// L'essayage virtuel : l'IA détoure chaque pièce, repère la pose et la silhouette de la personne,
+// étire chaque vêtement entre épaules, hanches et chevilles, le découpe selon le corps et y reporte
+// la lumière de la photo. Tout se passe sur l'appareil : la photo n'est jamais envoyée.
 export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleItem>> }) {
   const t = useTranslations("tryon");
-  const [status, setStatus] = useState<Status>("intro");
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [aspect, setAspect] = useState(4 / 3);
-  const [garments, setGarments] = useState<Partial<Record<Slot, string>>>({});
-  const [placements, setPlacements] = useState<Record<Slot, Placement> | null>(null);
+  const [status, setStatus] = useState<Status | null>(null);
+  const [garments, setGarments] = useState<Partial<Record<Slot, HTMLCanvasElement>>>({});
+  const [weak, setWeak] = useState<Slot[]>([]);
+  const [frames, setFrames] = useState<Partial<Record<Slot, Frame>>>({});
+  const [adjusts, setAdjusts] = useState<Partial<Record<Slot, Adjust>>>({});
   const [selected, setSelected] = useState<Slot | null>(null);
-  const [scales, setScales] = useState<Partial<Record<Slot, number>>>({});
-  const stage = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ slot: Slot; x: number; y: number; left: number; top: number } | null>(null);
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const photo = useRef<HTMLCanvasElement | null>(null);
+  const body = useRef<HTMLCanvasElement | null>(null);
+  const drag = useRef<{ slot: Slot; x: number; y: number; dx: number; dy: number } | null>(null);
   const worn = SLOTS.filter((slot) => pieces[slot]?.imagePath);
 
-  // Les pièces détourées sont préparées pendant que la personne choisit sa photo.
+  // Les pièces sont détourées une à une (un seul modèle) pendant que la personne choisit sa photo.
   useEffect(() => {
     let cancelled = false;
-    for (const slot of worn) {
-      const source = productImageUrl(pieces[slot]!.imagePath!);
-      void cutoutUrl(source).then((cut) => {
-        if (!cancelled) setGarments((current) => ({ ...current, [slot]: cut ?? source }));
-      });
-    }
+    void (async () => {
+      for (const slot of worn) {
+        const result = await garmentCutout(productImageUrl(pieces[slot]!.imagePath!)).catch(() => null);
+        if (cancelled || !result) continue;
+        setGarments((current) => ({ ...current, [slot]: result.canvas }));
+        if (result.quality === "photo") setWeak((current) => [...current, slot]);
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -46,51 +61,85 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // La photo locale est libérée quand on en change ou qu'on ferme la fenêtre.
-  useEffect(() => () => {
-    if (photo) URL.revokeObjectURL(photo);
-  }, [photo]);
+  // Le rendu suit chaque changement : pièces détourées, cadres, réglages, pièce choisie.
+  useEffect(() => {
+    if (!canvas.current || !photo.current || status === "loading") return;
+    render(canvas.current, photo.current, body.current, garments, frames, adjusts, selected);
+  }, [garments, frames, adjusts, selected, status]);
 
   async function choose(file: File | undefined) {
     if (!file || !file.type.startsWith("image/")) return;
     const url = URL.createObjectURL(file);
-    setPhoto(url);
-    setSelected(null);
-    setScales({});
     setStatus("loading");
-    const image = new Image();
-    image.src = url;
+    setHasPhoto(true);
+    setSelected(null);
+    setAdjusts({});
     try {
+      const image = new Image();
+      image.src = url;
       await image.decode();
-      const ratio = image.naturalHeight / image.naturalWidth;
-      setAspect(ratio);
-      const pose = await detectPose(image);
-      setPlacements(placeGarments(pose, ratio));
-      setStatus(pose ? "ready" : "manual");
-    } catch {
-      // Modèle indisponible ou appareil trop ancien : on garde la photo, placement à la main.
-      setPlacements(placeGarments(null, image.naturalHeight / (image.naturalWidth || 1)));
-      setStatus("error");
+      const scale = Math.min(1, MAX_SIDE / Math.max(image.naturalWidth, image.naturalHeight));
+      const source = document.createElement("canvas");
+      source.width = Math.round(image.naturalWidth * scale);
+      source.height = Math.round(image.naturalHeight * scale);
+      source.getContext("2d")!.drawImage(image, 0, 0, source.width, source.height);
+      photo.current = source;
+      if (canvas.current) {
+        canvas.current.width = source.width;
+        canvas.current.height = source.height;
+      }
+      try {
+        const { pose, mask } = await detectPose(source);
+        body.current = mask ? maskCanvas(mask, source.width, source.height) : null;
+        const fitted = fitFrames(pose, source.width, source.height);
+        setFrames({ ...fallbackFrames(source.width, source.height), ...fitted });
+        setStatus(pose ? "ready" : "manual");
+      } catch {
+        // IA indisponible sur cet appareil : la photo reste, placement à la main.
+        body.current = null;
+        setFrames(fallbackFrames(source.width, source.height));
+        setStatus("error");
+      }
+    } finally {
+      URL.revokeObjectURL(url);
     }
   }
 
-  function startDrag(event: PointerEvent<HTMLButtonElement>, slot: Slot) {
-    if (!placements) return;
-    setSelected(slot);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { slot, x: event.clientX, y: event.clientY, left: placements[slot].left, top: placements[slot].top };
+  function point(event: PointerEvent<HTMLCanvasElement>) {
+    const box = event.currentTarget.getBoundingClientRect();
+    return { x: ((event.clientX - box.left) / box.width) * event.currentTarget.width, y: ((event.clientY - box.top) / box.height) * event.currentTarget.height };
   }
 
-  function moveDrag(event: PointerEvent<HTMLButtonElement>) {
+  function down(event: PointerEvent<HTMLCanvasElement>) {
+    const { x, y } = point(event);
+    const slot = hitTest(x, y, garments, frames, adjusts);
+    setSelected(slot);
+    if (!slot) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const adjust = adjusts[slot] ?? NONE;
+    drag.current = { slot, x, y, dx: adjust.dx, dy: adjust.dy };
+  }
+
+  function move(event: PointerEvent<HTMLCanvasElement>) {
     const current = drag.current;
-    const box = stage.current?.getBoundingClientRect();
-    if (!current || !box || !placements) return;
-    const left = current.left + (event.clientX - current.x) / box.width;
-    const top = current.top + (event.clientY - current.y) / box.height;
-    setPlacements({ ...placements, [current.slot]: { ...placements[current.slot], left, top } });
+    if (!current) return;
+    const { x, y } = point(event);
+    setAdjusts((all) => ({ ...all, [current.slot]: { ...(all[current.slot] ?? NONE), dx: current.dx + x - current.x, dy: current.dy + y - current.y } }));
+  }
+
+  function save() {
+    canvas.current?.toBlob((blob) => {
+      if (!blob) return;
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "essayage-fripe.png";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }, "image/png");
   }
 
   const busy = status === "loading";
+  const preparing = worn.some((slot) => !garments[slot]);
 
   return (
     <div className="vt">
@@ -99,7 +148,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
         <span>{t("privacy")}</span>
       </p>
 
-      {!photo ? (
+      {!hasPhoto ? (
         <div className="vt-intro">
           <p>{t("intro")}</p>
           <ul className="vt-tips">
@@ -113,7 +162,7 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
       <div className="vt-actions">
         <label className="vt-btn vt-btn--primary">
           <ImageUp className="size-4" aria-hidden="true" />
-          {photo ? t("changePhoto") : t("choosePhoto")}
+          {hasPhoto ? t("changePhoto") : t("choosePhoto")}
           <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
         </label>
         <label className="vt-btn">
@@ -123,46 +172,35 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
         </label>
       </div>
 
-      {photo ? (
-        <>
-          <p role="status" className="vt-status">
-            {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {t(`status.${status}`)}
-          </p>
-          <div ref={stage} className="vt-stage" style={{ aspectRatio: `1 / ${aspect}` } as CSSProperties}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- photo locale (blob:), jamais envoyée ni optimisée */}
-            <img src={photo} alt={t("photoAlt")} className="vt-photo" />
-            {placements && !busy
-              ? LAYERS.filter((slot) => garments[slot]).map((slot) => {
-                  const place = placements[slot];
-                  const scale = scales[slot] ?? 1;
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      className="vt-garment"
-                      data-selected={selected === slot ? "" : undefined}
-                      aria-label={t("movePiece", { piece: pieces[slot]!.title })}
-                      style={{
-                        left: `${(place.left + (place.width * (1 - scale)) / 2) * 100}%`,
-                        top: `${place.top * 100}%`,
-                        width: `${place.width * scale * 100}%`,
-                        transform: `rotate(${place.rotate}deg)`,
-                      }}
-                      onPointerDown={(event) => startDrag(event, slot)}
-                      onPointerMove={moveDrag}
-                      onPointerUp={() => (drag.current = null)}
-                      onClick={() => setSelected(slot)}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- pièce détourée dans le navigateur (data:) */}
-                      <img src={garments[slot]} alt="" draggable={false} />
-                    </button>
-                  );
-                })
-              : null}
-          </div>
+      {preparing ? (
+        <p className="vt-status">
+          <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+          {t("preparing")}
+        </p>
+      ) : null}
 
-          {selected && placements ? (
+      {hasPhoto ? (
+        <>
+          {status ? (
+            <p role="status" className="vt-status">
+              {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
+              {t(`status.${status}`)}
+            </p>
+          ) : null}
+          <canvas
+            ref={canvas}
+            className="vt-canvas"
+            role="img"
+            aria-label={t("photoAlt")}
+            onPointerDown={down}
+            onPointerMove={move}
+            onPointerUp={() => (drag.current = null)}
+            onPointerCancel={() => (drag.current = null)}
+          />
+
+          {weak.length ? <p className="vt-note">{t("weakCutout")}</p> : null}
+
+          {selected ? (
             <div className="vt-adjust">
               <label htmlFor="vt-size" className="text-sm font-medium">
                 {t("size", { piece: pieces[selected]!.title })}
@@ -172,32 +210,24 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
                 type="range"
                 min={0.6}
                 max={1.6}
-                step={0.05}
-                value={scales[selected] ?? 1}
-                onChange={(event) => setScales({ ...scales, [selected]: Number(event.target.value) })}
+                step={0.02}
+                value={adjusts[selected]?.scale ?? 1}
+                onChange={(event) => setAdjusts({ ...adjusts, [selected]: { ...(adjusts[selected] ?? NONE), scale: Number(event.target.value) } })}
               />
             </div>
           ) : null}
 
-          {photo && status !== "loading" ? (
-            <button
-              type="button"
-              className="vt-btn vt-btn--ghost"
-              onClick={async () => {
-                const image = new Image();
-                image.src = photo;
-                await image.decode().catch(() => undefined);
-                setScales({});
-                setSelected(null);
-                setStatus("loading");
-                const pose = await detectPose(image).catch(() => null);
-                setPlacements(placeGarments(pose, aspect));
-                setStatus(pose ? "ready" : "manual");
-              }}
-            >
-              <RotateCcw className="size-4" aria-hidden="true" />
-              {t("reset")}
-            </button>
+          {!busy ? (
+            <div className="vt-actions">
+              <button type="button" className="vt-btn" onClick={() => setAdjusts({})}>
+                <RotateCcw className="size-4" aria-hidden="true" />
+                {t("reset")}
+              </button>
+              <button type="button" className="vt-btn" onClick={save}>
+                <Download className="size-4" aria-hidden="true" />
+                {t("save")}
+              </button>
+            </div>
           ) : null}
         </>
       ) : null}
