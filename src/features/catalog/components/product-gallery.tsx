@@ -29,7 +29,6 @@ export function ProductGallery({
             src={imageUrl(current.path)}
             alt={t("photoAlt", { number: active + 1, title })}
             fill
-            unoptimized
             priority
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover"
@@ -54,7 +53,7 @@ export function ProductGallery({
                 index === active ? "border-gold" : "border-transparent",
               )}
             >
-              <Image src={imageUrl(image.path)} alt="" fill unoptimized sizes="64px" className="object-cover" />
+              <Image src={imageUrl(image.path)} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
         </div>

@@ -168,7 +168,7 @@ export function LiveProductRow({
   const body = (
     <>
       <span className="live-piece__photo">
-        {product.imageUrl ? <Image src={product.imageUrl} alt="" fill unoptimized sizes="4rem" className="object-cover" /> : null}
+        {product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="4rem" className="object-cover" /> : null}
       </span>
       <span className="flex min-w-0 flex-1 flex-col text-start">
         {pinned ? <span className="live-piece__flag">{pinnedLabel}</span> : null}
@@ -243,7 +243,7 @@ export function LiveProductSheet({
             </SheetHeader>
             <div className="live-sheet__body">
               <span className="live-sheet__photo">
-                {product.imageUrl ? <Image src={product.imageUrl} alt={product.title} fill unoptimized sizes="12rem" className="object-cover" /> : null}
+                {product.imageUrl ? <Image src={product.imageUrl} alt={product.title} fill sizes="12rem" className="object-cover" /> : null}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 {product.brand ? <p className="luxe-kicker" dir="auto">{product.brand}</p> : null}

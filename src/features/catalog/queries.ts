@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { parsePriceToMillimes } from "@/lib/utils/price";
 import { CATALOG_PAGE_SIZE } from "./constants";
 import type { CategoryOption } from "./csv-import";
+import { categoryScope } from "./category-scope";
 import type { CatalogFilters } from "./schemas";
 
 const CARD_COLUMNS =
@@ -127,13 +128,9 @@ export async function searchProducts(filters: CatalogFilters) {
   }
 
   if (filters.categorie) {
-    const categories = await getCategories();
-    const parent = categories.find((category) => category.slug === filters.categorie);
-    const ids = categories
-      .filter((category) => category.id === parent?.id || category.parentId === parent?.id)
-      .map((category) => category.id);
-
-    query = query.in("category_id", parent ? ids : []);
+    // « Chaussures » englobe aussi l'univers Sneakers : voir category-scope.ts.
+    const scope = categoryScope(await getCategories(), filters.categorie);
+    query = query.in("category_id", scope?.ids ?? []);
   }
 
   if (filters.taille) query = query.ilike("size", escapeLike(filters.taille));
@@ -152,7 +149,10 @@ export async function searchProducts(filters: CatalogFilters) {
   query =
     filters.tri === "recent"
       ? query.order("published_at", { ascending: false })
-      : query.order("price_millimes", { ascending: filters.tri === "price_asc" });
+      : filters.tri === "popular"
+        ? // Les pièces les plus mises en favoris, puis les plus récentes à égalité.
+          query.order("favorite_count", { ascending: false }).order("published_at", { ascending: false })
+        : query.order("price_millimes", { ascending: filters.tri === "price_asc" });
 
   const { data, count, error } = await query
     .order("id")
@@ -264,6 +264,24 @@ export async function getProduct(productId: string) {
   if (error) throw error;
 
   return data;
+}
+
+// Les autres pièces en vente de la même boutique, pour la fiche produit.
+export async function getShopOtherProducts(shopId: string, excludeId: string, limit = 8) {
+  const { data, error } = await createPublicClient()
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("publication_status", "published")
+    .in("status", ["available", "reserved"])
+    .eq("shop_id", shopId)
+    .neq("id", excludeId)
+    .order("position", { referencedTable: "product_images" })
+    .limit(1, { referencedTable: "product_images" })
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data as unknown as RawCard[]).map(toCard);
 }
 
 export async function getSimilarProducts(product: {

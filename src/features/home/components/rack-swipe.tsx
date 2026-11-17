@@ -184,7 +184,7 @@ export function RackSwipe({ products }: { products: ProductCardData[] }) {
                 <div className="lx-rackswipe__body">
                   <HangerHook className="lx-rackswipe__hook" />
                   <span className="lx-rackswipe__photo">
-                    <Image src={productImageUrl(product.imagePath!)} alt={offset === 0 ? product.title : ""} fill unoptimized draggable={false} sizes="20rem" className="pointer-events-none object-cover" />
+                    <Image src={productImageUrl(product.imagePath!)} alt={offset === 0 ? product.title : ""} fill draggable={false} sizes="20rem" className="pointer-events-none object-cover" />
                   </span>
                   <span className="lx-rackswipe__tag">
                     <span className="lx-rackswipe__thread" aria-hidden="true" />
@@ -231,7 +231,7 @@ export function RackSwipe({ products }: { products: ProductCardData[] }) {
               <Link href={`/produit/${product.id}`} className="lx-kept__item" aria-label={product.title}>
                 <HangerHook className="lx-kept__hook" />
                 <span className="lx-kept__photo">
-                  <Image src={productImageUrl(product.imagePath!)} alt="" fill unoptimized sizes="2.25rem" className="object-cover" />
+                  <Image src={productImageUrl(product.imagePath!)} alt="" fill sizes="2.25rem" className="object-cover" />
                 </span>
               </Link>
             </li>

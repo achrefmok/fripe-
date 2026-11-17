@@ -90,7 +90,7 @@ export function ArrivalForm({ shopId, candidates }: { shopId: string; candidates
                     />
                     <span className="arrival-pick__photo">
                       {candidate.imagePath ? (
-                        <Image src={productImageUrl(candidate.imagePath)} alt="" fill unoptimized sizes="8rem" className="object-cover" />
+                        <Image src={productImageUrl(candidate.imagePath)} alt="" fill sizes="8rem" className="object-cover" />
                       ) : null}
                       {checked ? (
                         <span className="arrival-pick__check" aria-hidden="true">

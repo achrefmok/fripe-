@@ -25,7 +25,7 @@ export function LiveCard({ live, href }: { live: Live; href?: string }) {
   return (
     <Link href={href ?? `/lives/${live.id}`} className="live-card" data-status={live.status}>
       <span className="live-card__media">
-        {live.coverUrl ? <Image src={live.coverUrl} alt="" fill unoptimized sizes="(min-width: 768px) 18rem, 60vw" className="live-card__photo" /> : null}
+        {live.coverUrl ? <Image src={live.coverUrl} alt="" fill sizes="(min-width: 768px) 18rem, 60vw" className="live-card__photo" /> : null}
         <span className="live-card__veil" aria-hidden="true" />
         <span className="live-card__state">{live.status === "live" ? <LiveBadge label={t("liveNow")} /> : <span className="live-count">{state}</span>}</span>
         <span className="live-card__foot">

@@ -114,7 +114,7 @@ export function LiveForm({ shopId, live, candidates }: { shopId: string; live?: 
                   <label className="live-picker__label">
                     <input type="checkbox" className="sr-only" checked={checked} onChange={() => toggle(product.id)} />
                     <span className="live-picker__photo">
-                      {product.imageUrl ? <Image src={product.imageUrl} alt="" fill unoptimized sizes="8rem" className="object-cover" /> : null}
+                      {product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="8rem" className="object-cover" /> : null}
                       <span className="live-picker__check" aria-hidden="true">
                         <Check className="size-3.5" />
                       </span>

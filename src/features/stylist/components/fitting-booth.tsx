@@ -113,7 +113,7 @@ export function FittingBooth({
                             exit={{ opacity: 0, y: 14, scale: 0.94 }}
                             transition={spring}
                           >
-                            <Image src={productImageUrl(piece.imagePath)} alt={piece.title} fill unoptimized sizes="10rem" className="object-cover" />
+                            <Image src={productImageUrl(piece.imagePath)} alt={piece.title} fill sizes="10rem" className="object-cover" />
                           </motion.span>
                         ) : null}
                       </AnimatePresence>

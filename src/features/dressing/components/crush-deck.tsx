@@ -58,7 +58,7 @@ function CrushCard({ item, onDecide }: { item: DressingItem; onDecide: (like: bo
     >
       <div className="vd-crush__media">
         {item.imageUrl ? (
-          <Image src={item.imageUrl} alt="" fill unoptimized priority sizes="(min-width: 640px) 26rem, 92vw" className="pointer-events-none object-cover" draggable={false} />
+          <Image src={item.imageUrl} alt="" fill priority sizes="(min-width: 640px) 26rem, 92vw" className="pointer-events-none object-cover" draggable={false} />
         ) : (
           <PhotoPlaceholder label={market("noPhoto")} />
         )}

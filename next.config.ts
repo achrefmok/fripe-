@@ -19,7 +19,9 @@ const contentsquare = {
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${contentsquare.script}`,
+  // 'wasm-unsafe-eval' : compiler le WebAssembly de l'essayage virtuel (MediaPipe, servi par le site).
+  // Il n'autorise ni eval() ni new Function().
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} ${contentsquare.script}`,
   "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabase} ${contentsquare.img}`,
@@ -34,8 +36,42 @@ const contentSecurityPolicy = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+// Images : l'optimiseur de Next redimensionne les photos du Storage et les sert en WebP depuis le site.
+// Le Storage de Supabase Free ne sait pas redimensionner, et chaque photo envoyée fait jusqu'à 1 600 px.
+// Peu de largeurs et une seule qualité : chaque couple (photo, largeur) compte comme une transformation
+// dans le quota Vercel. NEXT_PUBLIC_IMAGES_UNOPTIMIZED=1 revient aux fichiers bruts sans redéploiement de code.
+const supabaseUrl = supabase ? new URL(supabase) : null;
+const localSupabase = supabaseUrl ? ["localhost", "127.0.0.1"].includes(supabaseUrl.hostname) : false;
+const images: NextConfig["images"] = {
+  unoptimized: process.env.NEXT_PUBLIC_IMAGES_UNOPTIMIZED === "1",
+  remotePatterns: supabaseUrl
+    ? [
+        {
+          protocol: supabaseUrl.protocol.replace(":", "") as "http" | "https",
+          hostname: supabaseUrl.hostname,
+          port: supabaseUrl.port,
+          pathname: "/storage/v1/object/public/**",
+        },
+      ]
+    : [],
+  deviceSizes: [640, 828, 1200, 1920],
+  imageSizes: [96, 256, 384],
+  qualities: [70],
+  formats: ["image/webp"],
+  // Les chemins contiennent un UUID : un fichier ne change jamais, on peut le garder un mois.
+  minimumCacheTTL: 2_592_000,
+  // Seulement quand le Supabase lui-même tourne sur le poste (développement, tests) : en ligne, l'hôte est public.
+  dangerouslyAllowLocalIP: localSupabase,
+};
+
+// Banc de test (`pnpm test:app`) : son propre dossier de build et son propre tsconfig. Next n'accepte
+// qu'un `next dev` par dossier de build ; le banc peut ainsi tourner à côté du `pnpm dev` habituel.
+const testDistDir = process.env.FRIPE_DIST_DIR;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  ...(testDistDir ? { distDir: testDistDir, typescript: { tsconfigPath: "tsconfig.test.json" } } : {}),
+  images,
   turbopack: {
     rules: {
       "*.css": {

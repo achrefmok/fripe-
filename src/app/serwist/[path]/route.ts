@@ -8,5 +8,8 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
     { url: "/ar/hors-ligne", revision },
   ],
   swSrc: "src/app/sw.ts",
+  // L'essayage virtuel (20 Mo de modèle et de WebAssembly) ne se charge qu'à la demande : jamais
+  // dans le cache hors ligne de tous les visiteurs.
+  globIgnores: ["**/node_modules/**/*", "public/mediapipe/**/*"],
   useNativeEsbuild: true,
 });

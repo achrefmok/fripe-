@@ -8,7 +8,8 @@ const CLOTHING_ROOTS = new Set(["hauts", "bas", "vestes-manteaux", "robes"]);
 export function productKind(rootSlug: string | null | undefined): ProductKind {
   if (!rootSlug) return "other";
   if (CLOTHING_ROOTS.has(rootSlug)) return "clothing";
-  if (rootSlug === "chaussures") return "shoes";
+  // Sneakers regroupe les baskets depuis la migration 20261116000001 : mêmes pointures que Chaussures.
+  if (rootSlug === "chaussures" || rootSlug === "sneakers") return "shoes";
   if (rootSlug === "accessoires") return "accessories";
   return "other";
 }

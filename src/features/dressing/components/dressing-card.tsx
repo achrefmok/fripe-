@@ -29,7 +29,7 @@ export function DressingCard({ item, index = 0, showSeller = true, className }: 
   const conditions = useTranslations("conditions");
   const locale = useLocale();
   const tone = dressingTone(item.sellerId);
-  const fine = item.condition === "new_with_tags" || item.condition === "like_new";
+  const fine = item.condition === "new_with_tags" || item.condition === "new_without_tags" || item.condition === "like_new";
   const name = dressingFirstName(item.sellerName);
 
   return (
@@ -38,7 +38,7 @@ export function DressingCard({ item, index = 0, showSeller = true, className }: 
       <div className="vd-card__media">
         <Link href={`/annonce/${item.id}`} className="vd-card__link" aria-label={`${item.brand ? `${item.brand} · ` : ""}${item.title} · ${formatPrice(item.priceMillimes, locale)}`}>
           {item.imageUrl ? (
-            <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 1024px) 22vw, (min-width: 640px) 33vw, 50vw" className="vd-card__photo" />
+            <Image src={item.imageUrl} alt="" fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 33vw, 50vw" className="vd-card__photo" />
           ) : (
             <PhotoPlaceholder label={market("noPhoto")} />
           )}

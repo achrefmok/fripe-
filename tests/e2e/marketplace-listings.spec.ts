@@ -55,6 +55,10 @@ test("un particulier publie une annonce avec photo, visible dans la Marketplace 
   await page.getByLabel("État").selectOption("good");
   await page.getByLabel("Prix (DT)").fill("180");
   await page.getByLabel("Gouvernorat").selectOption({ label: "Tunis" });
+  // Les défauts se déclarent toujours : sans description ni « aucun défaut », l'annonce est refusée.
+  await page.getByRole("button", { name: "Publier et ajouter les photos" }).click();
+  await expect(page.getByText("Décris les défauts, ou coche « Aucun défaut à signaler ».")).toBeVisible();
+  await page.getByLabel("Aucun défaut à signaler").check();
   await page.getByRole("button", { name: "Publier et ajouter les photos" }).click();
 
   await expect(page).toHaveURL(/\/compte\/annonces\/[0-9a-f-]{36}/);

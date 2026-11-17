@@ -47,7 +47,7 @@ export function OutfitPieces({ items }: { items: StyleItem[] }) {
           <Link href={`/produit/${item.id}`} className="flex items-center gap-3 py-2.5">
             <span className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-cream">
               {item.imagePath ? (
-                <Image src={productImageUrl(item.imagePath)} alt="" fill unoptimized sizes="48px" className="object-cover" />
+                <Image src={productImageUrl(item.imagePath)} alt="" fill sizes="48px" className="object-cover" />
               ) : null}
             </span>
             <span className="min-w-0 flex-1">

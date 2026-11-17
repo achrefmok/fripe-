@@ -136,7 +136,7 @@ export function MfaEnroll({ next, defaultName }: { next: string; defaultName: st
     >
       <p className="text-sm">{t("scan")}</p>
       <div className="justify-self-center bg-white p-2">
-        <Image src={enrollment.qrCode} alt={t("qrAlt")} width={180} height={180} unoptimized />
+        <Image src={enrollment.qrCode} alt={t("qrAlt")} width={180} height={180} />
       </div>
       <div>
         <p className="text-sm text-muted-foreground">{t("manual")}</p>

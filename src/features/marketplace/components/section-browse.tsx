@@ -7,6 +7,7 @@ import { getCategoryAttributes, searchMarketplace, searchVideDressing } from "..
 import { MARKET_PAGE_SIZE, parseMarketFilters, type ListingSection } from "../schemas";
 import { MarketFiltersBar } from "./market-filters";
 import { MarketGrid } from "./market-card";
+import { subcategoriesOf } from "@/features/catalog/category-scope";
 
 // Chaque rubrique a sa matière, comme les univers de la mode : denim pour la Marketplace,
 // garance pour le Vide-Dressing.
@@ -37,7 +38,7 @@ export async function SectionBrowse({
 
   const root = scope?.root ?? null;
   const subcategories = root
-    ? [root, ...categories.filter((category) => category.parentId === root.id)].map((category) => ({
+    ? [root, ...subcategoriesOf(categories, root)].map((category) => ({
         value: category.slug,
         nameFr: category.id === root.id ? `${category.nameFr} · ${t("allCategories")}` : category.nameFr,
         nameAr: category.id === root.id ? `${category.nameAr} · ${t("allCategories")}` : category.nameAr,

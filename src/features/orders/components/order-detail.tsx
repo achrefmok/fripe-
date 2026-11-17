@@ -41,7 +41,7 @@ export function OrderDetail({
             <Link href={`/produit/${item.product_id}`} className="flex items-center gap-3 py-3">
               <span className="relative size-16 shrink-0 overflow-hidden bg-secondary">
                 {item.image_path ? (
-                  <Image src={productImageUrl(item.image_path)} alt="" fill unoptimized sizes="64px" className="object-cover" />
+                  <Image src={productImageUrl(item.image_path)} alt="" fill sizes="64px" className="object-cover" />
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">

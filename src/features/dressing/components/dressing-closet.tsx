@@ -94,7 +94,7 @@ export function DressingCloset({ sellerId, name, items }: { sellerId: string; na
                   >
                     <span className="vd-hang__media">
                       {item.imageUrl ? (
-                        <Image src={item.imageUrl} alt="" fill unoptimized sizes="(min-width: 1024px) 18vw, 45vw" className="object-cover" />
+                        <Image src={item.imageUrl} alt="" fill sizes="(min-width: 1024px) 18vw, 45vw" className="object-cover" />
                       ) : (
                         <PhotoPlaceholder label={market("noPhoto")} />
                       )}

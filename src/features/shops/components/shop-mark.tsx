@@ -47,7 +47,7 @@ export function ShopMark({
   if (logoPath) {
     return (
       <span className={cn("shop-mark", className)} data-size={size}>
-        <Image src={shopAssetUrl(logoPath)} alt="" fill unoptimized sizes="64px" className="object-cover" />
+        <Image src={shopAssetUrl(logoPath)} alt="" fill sizes="64px" className="object-cover" />
       </span>
     );
   }

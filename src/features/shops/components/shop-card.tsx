@@ -33,7 +33,7 @@ export function ShopCard({
       <span className="lx-shop__mosaic" aria-hidden="true" data-count={photos.length}>
         {[0, 1, 2].map((slot) => (
           <span key={slot} className="lx-shop__photo">
-            {photos[slot] ? <Image src={photos[slot]} alt="" fill unoptimized sizes="(min-width: 768px) 20rem, 80vw" className="object-cover" /> : null}
+            {photos[slot] ? <Image src={photos[slot]} alt="" fill sizes="(min-width: 768px) 20rem, 80vw" className="object-cover" /> : null}
           </span>
         ))}
       </span>

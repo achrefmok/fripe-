@@ -32,7 +32,7 @@ export default async function NewListingPage({ searchParams }: PageProps<"/[loca
         categories={categories}
         attributes={attributes}
         governorates={locations}
-        initial={{ categoryId: "", title: "", description: "", brand: "", size: "", condition: "", price: "", governorateId: "", cityId: "", attributes: {} }}
+        initial={{ categoryId: "", title: "", description: "", brand: "", size: "", condition: "", price: "", governorateId: "", cityId: "", attributes: {}, defects: "", noDefects: false }}
       />
     </>
   );

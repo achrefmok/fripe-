@@ -26,6 +26,7 @@ import { useFormAction } from "@/hooks/use-form-action";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice, millimesToInput } from "@/lib/utils/price";
+import { subcategoriesOf } from "../category-scope";
 
 export type ProductValues = {
   title: string;
@@ -72,9 +73,12 @@ function Chips({
   value,
   onChange,
   name,
+  latin = false,
 }: {
   label: string;
   name: string;
+  // Tailles et marques : toujours en caractères latins, isolées pour garder leur ordre en arabe (« Levi's », « 3XL »).
+  latin?: boolean;
   options: { value: string; label: string; swatch?: string }[];
   value: string;
   onChange: (value: string) => void;
@@ -97,7 +101,7 @@ function Chips({
               className="sr-only"
             />
             {option.swatch ? <span className="chip__swatch" style={{ background: option.swatch }} aria-hidden="true" /> : null}
-            {option.label}
+            {latin ? <bdi dir="ltr">{option.label}</bdi> : option.label}
             {checked ? <Check className="size-3.5" aria-hidden="true" /> : null}
           </label>
         );
@@ -142,7 +146,8 @@ export function ProductForm({
   const root = selected?.parentId ? categories.find((category) => category.id === selected.parentId) : selected;
   const kind = productKind(root?.slug);
   const roots = categories.filter((category) => !category.parentId);
-  const children = root ? categories.filter((category) => category.parentId === root.id) : [];
+  // Comme dans les filtres : sous « Chaussures », la précision propose aussi Sneakers, Baskets, Running…
+  const children = root ? subcategoriesOf(categories, root) : [];
   // Le compilateur React mémorise ce calcul : pas de useMemo manuel.
   const relevant = selected
     ? attributes.filter((attribute) => attribute.categoryId === selected.id || attribute.categoryId === selected.parentId)
@@ -306,6 +311,7 @@ export function ProductForm({
           <Chips
             label={p(kind === "shoes" ? "shoeSizes" : "sizes")}
             name="size-chips"
+            latin
             value={values.size}
             onChange={(value) => set("size", value)}
             options={sizeOptions.map((size) => ({ value: size, label: size }))}
@@ -345,6 +351,7 @@ export function ProductForm({
             <Chips
               label={p("brands")}
               name="brand-chips"
+              latin
               value={values.brand}
               onChange={(value) => set("brand", value)}
               options={brands.slice(0, 8).map((brand) => ({ value: brand, label: brand }))}

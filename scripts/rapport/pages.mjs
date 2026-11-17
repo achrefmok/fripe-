@@ -6,6 +6,7 @@ export const PAGES = [
   // Public
   { path: "/", name: "Accueil" },
   { path: "/decouvrir", name: "Découvrir (landing)" },
+  { path: "/accueil-preview", name: "Accueil (aperçu)" },
   { path: "/catalogue", name: "Catalogue" },
   { path: `/produit/${ID}`, name: "Fiche produit" },
   { path: "/boutiques", name: "Boutiques" },

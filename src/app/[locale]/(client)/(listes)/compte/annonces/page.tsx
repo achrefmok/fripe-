@@ -43,7 +43,7 @@ export default async function MyListingsPage() {
           {listings.map((listing) => (
             <li key={listing.id} className="flex gap-3 py-4">
               <Link href={`/compte/annonces/${listing.id}`} className="relative aspect-[3/4] w-20 shrink-0 overflow-hidden bg-secondary">
-                {listing.imageUrl ? <Image src={listing.imageUrl} alt="" fill unoptimized sizes="80px" className="object-cover" /> : null}
+                {listing.imageUrl ? <Image src={listing.imageUrl} alt="" fill sizes="80px" className="object-cover" /> : null}
               </Link>
               <div className="grid min-w-0 flex-1 content-start gap-1.5">
                 <Link href={`/compte/annonces/${listing.id}`} className="truncate font-semibold hover:underline">

@@ -261,7 +261,7 @@ export function ProductsManager({
               />
               <div className="relative size-14 shrink-0 overflow-hidden bg-secondary">
                 {image ? (
-                  <Image src={productImageUrl(image.path)} alt="" fill unoptimized sizes="56px" className="object-cover" />
+                  <Image src={productImageUrl(image.path)} alt="" fill sizes="56px" className="object-cover" />
                 ) : null}
               </div>
 

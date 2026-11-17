@@ -15,6 +15,7 @@ import { getLocations } from "@/features/shops/queries";
 import { getPathname, Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
 import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
+import { subcategoriesOf } from "@/features/catalog/category-scope";
 
 const ROUTE = "/vide-dressing";
 const SELL = "/compte/annonces/nouvelle?rubrique=vide_dressing";
@@ -70,7 +71,7 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
 
   const root = scope?.root ?? null;
   const subcategories = root
-    ? [root, ...categories.filter((category) => category.parentId === root.id)].map((category) => ({
+    ? [root, ...subcategoriesOf(categories, root)].map((category) => ({
         value: category.slug,
         nameFr: category.id === root.id ? `${category.nameFr} · ${market("allCategories")}` : category.nameFr,
         nameAr: category.id === root.id ? `${category.nameAr} · ${market("allCategories")}` : category.nameAr,

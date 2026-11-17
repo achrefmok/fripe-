@@ -13,7 +13,7 @@ export function ArrivalCard({ arrival, piecesLabel, dateLabel }: { arrival: Arri
     <Link href={`/boutique/${arrival.shop.slug}/arrivage/${arrival.id}`} className="lx-arrival group">
       <span className="lx-arrival__photo">
         {cover ? (
-          <Image src={productImageUrl(cover)} alt="" fill unoptimized sizes="(min-width: 768px) 17rem, 78vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+          <Image src={productImageUrl(cover)} alt="" fill sizes="(min-width: 768px) 17rem, 78vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
         ) : null}
         <span className="lx-arrival__count">{piecesLabel}</span>
       </span>

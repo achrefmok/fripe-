@@ -23,7 +23,21 @@ const SHOTS = join(OUT, `app-${stamp}`);
 mkdirSync(SHOTS, { recursive: true });
 
 let site;
+// Le serveur de test réécrit next-env.d.ts pour pointer vers ses propres types (.next-test) ; ce
+// fichier est partagé avec `pnpm dev` et l'éditeur : on le remet tel quel à l'arrêt.
+const NEXT_ENV = join(ROOT, "next-env.d.ts");
+let nextEnv = null;
+try {
+  nextEnv = readFileSync(NEXT_ENV, "utf8");
+} catch {
+  // Pas encore généré : Next le créera.
+}
+function restoreNextEnv() {
+  if (nextEnv !== null) writeFileSync(NEXT_ENV, nextEnv);
+}
+process.on("exit", restoreNextEnv);
 function stop() {
+  restoreNextEnv();
   if (!site || site.exitCode !== null) return;
   if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(site.pid), "/T", "/F"], { stdio: "ignore" });
   else site.kill("SIGTERM");
@@ -146,7 +160,13 @@ try {
 
   console.log(`2/4  Site en mode dev sur ${SITE} (chaque page compile au premier passage)…`);
   const windows = process.platform === "win32";
-  const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: MOCK, NEXT_PUBLIC_SITE_URL: SITE };
+  // Un dossier de build à part (.next-test) : le banc tourne même si `pnpm dev` est lancé à côté.
+  // Next complète le tsconfig de ce dossier ; il reste hors de git, le tsconfig.json du projet ne bouge pas.
+  writeFileSync(
+    join(ROOT, "tsconfig.test.json"),
+    `${JSON.stringify({ extends: "./tsconfig.json", include: ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next-test/types/**/*.ts", ".next-test/dev/types/**/*.ts"], exclude: ["node_modules"] }, null, 2)}\n`,
+  );
+  const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: MOCK, NEXT_PUBLIC_SITE_URL: SITE, FRIPE_DIST_DIR: ".next-test" };
   const launch = async () => {
     site = windows
       ? spawn(`pnpm exec next dev -p ${SITE_PORT}`, { cwd: ROOT, env, shell: true })

@@ -31,7 +31,7 @@ export function CartList({ items }: { items: CartItem[] }) {
         <li key={item.id} className="flex items-center gap-3.5 rounded-[20px] border bg-surface p-2.5">
           <Link href={`/produit/${item.id}`} className="relative aspect-[4/5] w-[78px] shrink-0 overflow-hidden rounded-[14px] bg-secondary">
             {item.imagePath ? (
-              <Image src={productImageUrl(item.imagePath)} alt="" fill unoptimized sizes="80px" className="object-cover" />
+              <Image src={productImageUrl(item.imagePath)} alt="" fill sizes="80px" className="object-cover" />
             ) : null}
           </Link>
           <div className="min-w-0 flex-1">

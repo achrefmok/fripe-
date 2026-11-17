@@ -68,7 +68,7 @@ export default async function PublicShopPage({
       {/* Friptex Luxe : la couverture de la boutique, son médaillon cerclé d'or et le bouton suivre. */}
       <section className="lx-shophero">
         {shop.cover_path ? (
-          <Image src={shopAssetUrl(shop.cover_path)} alt="" fill unoptimized priority sizes="100vw" className="lx-shophero__cover" />
+          <Image src={shopAssetUrl(shop.cover_path)} alt="" fill priority sizes="100vw" className="lx-shophero__cover" />
         ) : null}
         <span className="lx-shophero__veil" aria-hidden="true" />
         <div className="lx-shophero__body">

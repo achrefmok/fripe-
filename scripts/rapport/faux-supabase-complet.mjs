@@ -72,6 +72,8 @@ function valueFor(table, column, spec, index) {
   // Texte
   if (name === "id") return uuid(`${table}:${index}`);
   if (name === "user_id" || name === "buyer_id" || name === "client_id" || name === "owner_id" || name === "author_id") return USER.id;
+  if (name === "category_id" && table === "products") return MODE_LEAVES[(index * 3) % MODE_LEAVES.length].id;
+  if (name === "category_id" && table === "listings") return LEAVES[(index * 7 + 23) % LEAVES.length].id;
   if (name.endsWith("_id")) return uuid(`${name.replace(/_id$/, "")}:${index}`);
   if (name.endsWith("_at") || name.endsWith("_on") || name === "date" || name.endsWith("_date") || name.includes("expires")) return ago(index * 6 + 2);
   if (name.includes("email")) return `client${index + 1}@exemple.tn`;
@@ -91,6 +93,63 @@ function valueFor(table, column, spec, index) {
   if (name.includes("brand")) return "ماركة";
   if (name.includes("name") || name.includes("title") || name.includes("label")) return `${table === "profiles" || name.includes("display") ? "سلمى" : "قطعة"} ${index + 1}`;
   return `نص تجريبي ${index + 1}`;
+}
+
+// --- Catégories : le vrai arbre, relu dans les migrations ---------------------------------------
+// Les univers de l'accueil reposent sur les vrais slugs (hauts, mobilier, sneakers…) : un arbre inventé
+// les masquerait tous. On lit les insertions de `public.categories`, puis les déplacements de la
+// migration des univers (Baskets sous Sneakers, Livres en racine, Puériculture sous Enfants).
+function loadCategories() {
+  const dir = new URL("../../supabase/migrations/", import.meta.url);
+  const sql = readdirSync(dir)
+    .filter((file) => file.endsWith(".sql"))
+    .sort()
+    .map((file) => readFileSync(new URL(file, dir), "utf8"))
+    .join("\n");
+  const blocks = [...sql.matchAll(/insert into public\.categories[\s\S]*?;/g)].map((match) => match[0]);
+  const text = (value) => value.replace(/''/g, "'");
+  const tree = new Map();
+  for (const block of blocks) {
+    for (const [, slug, fr, ar, position, section] of block.matchAll(/^\s*\('([a-z0-9-]+)', '((?:[^']|'')+)', '((?:[^']|'')+)', (\d+)(?:, '(mode|marketplace)')?\)/gm)) {
+      if (!tree.has(slug)) tree.set(slug, { slug, parent: null, name_fr: text(fr), name_ar: text(ar), position: Number(position), section: section ?? "mode" });
+    }
+    for (const [, parent, slug, fr, ar, position] of block.matchAll(/^\s*\('([a-z0-9-]+)', '([a-z0-9-]+)', '((?:[^']|'')+)', '((?:[^']|'')+)', (\d+)\)/gm)) {
+      if (!tree.has(slug)) tree.set(slug, { slug, parent, name_fr: text(fr), name_ar: text(ar), position: Number(position), section: null });
+    }
+  }
+  const moves = { baskets: "sneakers", livres: null, puericulture: "enfants" };
+  for (const [slug, parent] of Object.entries(moves)) {
+    if (tree.has(slug) && (parent === null || tree.has(parent))) tree.get(slug).parent = parent;
+  }
+  if (tree.get("livres")?.parent === null) tree.get("livres").section = "marketplace";
+  return [...tree.values()].map((entry) => ({
+    id: uuid(`category:${entry.slug}`),
+    parent_id: entry.parent ? uuid(`category:${entry.parent}`) : null,
+    slug: entry.slug,
+    name_fr: entry.name_fr,
+    name_ar: entry.name_ar,
+    position: entry.position,
+    is_active: true,
+    section: entry.section ?? tree.get(entry.parent)?.section ?? "mode",
+    created_at: ago(400),
+    updated_at: ago(400),
+  }));
+}
+const CATEGORIES = loadCategories();
+const LEAVES = CATEGORIES.filter((category) => category.parent_id);
+// Les produits de boutique sont toujours de la mode, comme en vrai ; les annonces vont partout.
+const MODE_LEAVES = LEAVES.filter((category) => category.section === "mode");
+
+function categoryRows(params) {
+  return CATEGORIES.filter((row) => {
+    for (const [key, raw] of params) {
+      if (!(key in row) || !raw) continue;
+      if (raw.startsWith("eq.") && String(row[key]) !== raw.slice(3)) return false;
+      if (raw === "is.null" && row[key] !== null) return false;
+      if (raw === "not.is.null" && row[key] === null) return false;
+    }
+    return true;
+  }).sort((a, b) => a.position - b.position);
 }
 
 function makeRow(table, columns, index) {
@@ -228,6 +287,10 @@ function rowsFor(table, url, accept) {
   const select = parseSelect(params.get("select"));
   const single = accept.includes("vnd.pgrst.object");
   const limit = Number(params.get("limit") ?? 0);
+  if (table === "categories") {
+    const tree = categoryRows(params);
+    return (single ? tree.slice(0, 1) : tree).map((row, index) => project(table, row, select, index));
+  }
   const count = single || targetsOne(params) ? 1 : Math.max(1, Math.min(limit || 3, 3));
   return Array.from({ length: count }, (_, index) => project(table, applyFilters(table, makeRow(table, columns, index), params), select, index));
 }
@@ -323,7 +386,8 @@ export function startMock(port = PORT) {
         const name = path.split("/").pop();
         const file = join(PHOTOS, photos.includes(name) ? name : photos[parseInt(hash(path).slice(0, 4), 16) % photos.length]);
         if (/\.(mp4|webm)$/.test(path)) return send(404, {});
-        response.writeHead(200, { "content-type": "image/jpeg", "cache-control": "max-age=3600" });
+        // Comme le Storage public de Supabase : lisible par un canvas (texture 3D de la page Découvrir).
+        response.writeHead(200, { "content-type": "image/jpeg", "cache-control": "max-age=3600", "access-control-allow-origin": "*" });
         return response.end(readFileSync(file));
       }
       if (path.startsWith("/storage/v1/")) return send(200, request.method === "GET" ? [] : { Key: "demo/upload.jpg", Id: uuid("upload") });

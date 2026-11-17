@@ -6,7 +6,9 @@ import { ReportDialog } from "@/features/moderation/components/report-dialog";
 import { ProductGallery } from "@/features/catalog/components/product-gallery";
 import { ProductRail } from "@/features/catalog/components/product-card";
 import {
+  getCategories,
   getProduct,
+  getShopOtherProducts,
   getReservationTtlMinutes,
   getSimilarProducts,
   getViewerProductState,
@@ -18,6 +20,8 @@ import { formatPrice } from "@/lib/utils/price";
 import { colorLabel } from "@/features/catalog/product-options";
 import { FlipTag } from "@/features/catalog/components/flip-tag";
 import { ShopMark } from "@/features/shops/components/shop-mark";
+import { DoorOpen } from "lucide-react";
+import { slotOfCategory } from "@/features/stylist/engine";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/produit/[productId]">) {
   const { productId } = await params;
@@ -38,14 +42,22 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
     notFound();
   }
 
-  const [viewer, t, conditions, locale, similar, ttlMinutes] = await Promise.all([
+  const [viewer, t, conditions, locale, similar, ttlMinutes, sameShop, categories] = await Promise.all([
     getViewer(),
     getTranslations("product"),
     getTranslations("conditions"),
     getLocale(),
     getSimilarProducts(product),
     getReservationTtlMinutes(),
+    // Une section secondaire : si elle échoue, la fiche s'affiche sans elle.
+    getShopOtherProducts(product.shops.id, product.id).catch(() => []),
+    getCategories().catch(() => []),
   ]);
+
+  // La cabine accepte les hauts, bas, chaussures et accessoires : le bouton n'apparaît que pour eux.
+  const ownCategory = categories.find((entry) => entry.id === product.category_id);
+  const rootSlug = ownCategory?.parentId ? categories.find((entry) => entry.id === ownCategory.parentId)?.slug : ownCategory?.slug;
+  const outfitSlot = product.status === "available" ? slotOfCategory(rootSlug) : null;
 
   const state = viewer
     ? await getViewerProductState(product.id, viewer.id)
@@ -122,6 +134,19 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
             ttlMinutes={ttlMinutes}
           />
 
+          {outfitSlot ? (
+            <div className="grid gap-1">
+              <Link
+                href={{ pathname: "/tenues/nouvelle", query: { pieces: product.id } }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-foreground/80 px-5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+              >
+                <DoorOpen className="size-4" aria-hidden="true" />
+                {t("composeOutfit")}
+              </Link>
+              <p className="text-center text-xs text-muted-foreground">{t("composeOutfitNote")}</p>
+            </div>
+          ) : null}
+
           <dl className="flex flex-col border-t">
             <div className="flex justify-between gap-3 border-b py-3 text-sm">
               <dt className="text-muted-foreground">{t("deliveryLabel")}</dt>
@@ -148,6 +173,20 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
           ) : null}
         </div>
       </div>
+
+      {sameShop.length ? (
+        <section className="mt-11" aria-labelledby="meme-boutique">
+          <div className="mb-3.5 flex items-baseline justify-between gap-3">
+            <h2 id="meme-boutique" className="font-display text-[clamp(22px,3vw,30px)]" dir="auto">
+              {t("sameShop", { shop: product.shops.name })}
+            </h2>
+            <Link href={`/boutique/${product.shops.slug}`} className="shrink-0 text-[13px] font-medium text-goldink hover:text-harissa">
+              {t("sameShopAll")}
+            </Link>
+          </div>
+          <ProductRail products={sameShop} />
+        </section>
+      ) : null}
 
       {similar.length ? (
         <section className="mt-11">

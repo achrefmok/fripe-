@@ -52,6 +52,7 @@ const ROOT_TO_SLOT: Record<string, Slot> = {
   robes: "top",
   bas: "bottom",
   chaussures: "shoes",
+  sneakers: "shoes",
   accessoires: "accessory",
 };
 

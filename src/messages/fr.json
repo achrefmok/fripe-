@@ -186,6 +186,7 @@
     "panelTitle": "Chaque pièce a déjà une <em>histoire.</em>"
   },
   "validation": {
+    "defectsRequired": "Décris les défauts, ou coche « Aucun défaut à signaler ».",
     "emailInvalid": "Cette adresse e-mail n'est pas valide.",
     "passwordTooShort": "Utilise au moins 8 caractères.",
     "passwordTooLong": "Utilise 72 caractères au maximum.",
@@ -453,6 +454,13 @@
     "retry": "Réessayer"
   },
   "catalog": {
+    "suggestCategories": "Catégories",
+    "suggestBrands": "Marques",
+    "suggestPieces": "Pièces",
+    "recentSearches": "Recherches récentes",
+    "clearRecent": "Effacer",
+    "sortPopular": "Les plus aimées",
+    "sortPopularShort": "Populaires",
     "title": "Catalogue",
     "searchLabel": "Rechercher une pièce",
     "searchPlaceholder": "Veste Nike noire, jean…",
@@ -488,12 +496,17 @@
   },
   "conditions": {
     "new_with_tags": "Neuf avec étiquette",
+    "new_without_tags": "Neuf sans étiquette",
     "like_new": "Comme neuf",
     "very_good": "Très bon état",
     "good": "Bon état",
     "fair": "État correct"
   },
   "product": {
+    "composeOutfit": "Composer une tenue avec cette pièce",
+    "composeOutfitNote": "Composition visuelle : elle ne garantit ni la taille ni le rendu porté.",
+    "sameShop": "Chez {shop}, aussi",
+    "sameShopAll": "Toute la boutique",
     "reserved": "Réservée",
     "sold": "Vendue",
     "available": "Disponible",
@@ -1274,6 +1287,11 @@
     "banner": "Version de test. Les données sont fictives et peuvent être effacées."
   },
   "market": {
+    "fieldDefects": "Défauts",
+    "defectsHint": "Taches, accrocs, pièce manquante, usure : décris ce que l’acheteur verra en recevant la pièce.",
+    "noDefects": "Aucun défaut à signaler",
+    "defectsTitle": "Défauts déclarés",
+    "defectsNone": "Le vendeur déclare n’avoir constaté aucun défaut.",
     "marketplaceTitle": "Marketplace",
     "marketplaceBody": "Électroménager, high-tech, maison, sport… Tout ce qui n'est pas vêtement, vendu par des particuliers et des boutiques.",
     "videDressingTitle": "Vide-Dressing",
@@ -1654,6 +1672,27 @@
     "empty": "Le portant est vide pour l'instant."
   },
   "dressing": {
+    "otherWardrobeCount": "{count, plural, one {# pièce} other {# pièces}}",
+    "wardrobeTitle": "L’armoire de {name}",
+    "wardrobeBody": "Les vêtements sur la tringle, les chaussures et les accessoires sur l’étagère. Touche une pièce pour la voir de près.",
+    "wardrobeOpenPiece": "{title}, {price}",
+    "wardrobeEmpty": "Rien dans ce rayon pour l’instant.",
+    "wardrobePanelKicker": "Dans l’armoire",
+    "wardrobeClose": "Fermer la fiche",
+    "wardrobeSee": "Voir l’annonce",
+    "wardrobeOffer": "Faire une offre",
+    "wardrobeOthers": "Aussi chez {name}",
+    "wardrobeRayons": "Rayons de l’armoire",
+    "wardrobeSize": "T. {size}",
+    "wardrobeReserved": "Réservée",
+    "otherWardrobes": "D’autres armoires à visiter",
+    "rayon": {
+      "tout": "Tout",
+      "vetements": "Vêtements",
+      "chaussures": "Chaussures",
+      "accessoires": "Accessoires",
+      "autres": "Autres"
+    },
     "kicker": "Entre particuliers · en direct",
     "heroTitle": "Les dressings <em>s'ouvrent.</em>",
     "heroLead": "Des pièces de marque, de belles occasions, parfois jamais portées. Entre dans le dressing des autres, chine, négocie — et vide le tien.",
@@ -2003,5 +2042,115 @@
     "footTagline": "La seconde main tunisienne. Friperies, Vide-Dressing et pièces uniques, partout en Tunisie.",
     "footBuy": "Chiner",
     "madeIn": "Fait à Gafsa ✦"
+  },
+  "homePreview": {
+    "metaTitle": "Accueil (aperçu)",
+    "heroKicker": "Seconde main · partout en Tunisie",
+    "heroTitle": "Chaque objet mérite une <em>seconde vie.</em>",
+    "heroLead": "Mode, sneakers, maison, tech : des pièces uniques vendues par des friperies et des particuliers près de chez toi.",
+    "ctaDiscover": "Découvrir",
+    "ctaSell": "Vendre",
+    "searchPlaceholder": "Une pièce, une marque, une taille…",
+    "searchLabel": "Rechercher dans le catalogue",
+    "searchSubmit": "Chercher",
+    "heroWallLabel": "Quelques pièces publiées récemment",
+    "universesKicker": "Les univers",
+    "universesTitle": "Par où <em>commencer ?</em>",
+    "universe": {
+      "mode": "Mode",
+      "sneakers": "Sneakers",
+      "maison": "Maison",
+      "tech": "Tech",
+      "sport": "Sport",
+      "loisirs": "Loisirs",
+      "enfants": "Enfants",
+      "accessoires": "Accessoires"
+    },
+    "collectionsKicker": "Les collections",
+    "collectionsTitle": "À voir <em>en ce moment</em>",
+    "collection": {
+      "new": "Nouveautés",
+      "loved": "Les plus aimées",
+      "daily": "Trouvailles du jour",
+      "deals": "Bonnes affaires",
+      "brands": "Pièces de marque",
+      "objects": "Maison, tech et loisirs"
+    },
+    "collectionHint": {
+      "new": "Les dernières pièces publiées par les friperies.",
+      "loved": "Les pièces les plus ajoutées aux favoris.",
+      "daily": "Une sélection du Vide-Dressing, renouvelée chaque jour.",
+      "deals": "Très bon état ou mieux, au plus petit prix, dans le Vide-Dressing.",
+      "brands": "Des pièces de marque mises en vente par des particuliers.",
+      "objects": "Les dernières annonces de la Marketplace."
+    },
+    "walkTitle": "Les arrivages, <em>en vidéo</em>",
+    "walkBody": "Les boutiques présentent leurs pièces en quelques secondes. Touche une vidéo pour la regarder.",
+    "walkAll": "Ouvrir Fripe Walk",
+    "from": "dès {price}",
+    "wardrobesKicker": "Vide-Dressing",
+    "wardrobesTitle": "Des armoires <em>à visiter</em>",
+    "wardrobesAll": "Tous les dressings",
+    "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+    "latestKicker": "À découvrir",
+    "latestTitle": "Les dernières <em>pièces</em>",
+    "latestBody": "Publiées par les boutiques et les particuliers, des plus récentes aux plus anciennes.",
+    "latestAll": "Tout le catalogue",
+    "emptyTitle": "Les premières pièces arrivent",
+    "emptyBody": "Le catalogue se remplit au fil des publications. Reviens bientôt, ou publie la tienne.",
+    "sellKicker": "Vendre sur FRIPE",
+    "sellTitle": "Ton armoire déborde ? <em>Fais-la respirer.</em>",
+    "sellBody": "Que tu vides ton dressing ou que tu tiennes une friperie, tu publies depuis ton téléphone.",
+    "sell": {
+      "person": {
+        "title": "Je suis un particulier",
+        "step1": "Prends quelques photos et indique l’état, sans cacher les défauts.",
+        "step2": "Ton annonce rejoint le Vide-Dressing ou la Marketplace.",
+        "step3": "Tu échanges avec l’acheteur par message, puis tu remets la pièce.",
+        "cta": "Publier une annonce"
+      },
+      "shop": {
+        "title": "Je tiens une friperie",
+        "step1": "Crée ta boutique : elle est vérifiée par l’équipe FRIPE.",
+        "step2": "Publie tes pièces, ou déclare ton stock en magasin sans photo.",
+        "step3": "Présente tes arrivages en vidéo sur Fripe Walk et reçois des commandes.",
+        "cta": "Ouvrir ma boutique"
+      }
+    },
+    "sellMore": "Tout savoir pour vendre",
+    "size": "T. {size}",
+    "noPhoto": "Photo à venir",
+    "reserved": "Réservée",
+    "person": "Particulier",
+    "arrivalsKicker": "Arrivages",
+    "shopsKicker": "Les friperies",
+    "atelierTitle": "Les outils <em>de FRIPE</em>",
+    "toolStylistBody": "Dis ton style et ton budget, reçois des tenues composées avec de vraies pièces.",
+    "toolLivesBody": "Les boutiques présentent leurs pièces en direct, tu poses tes questions."
+  },
+  "tryon": {
+    "open": "Essayer sur ma photo",
+    "title": "Essayage virtuel",
+    "description": "Aperçu de la tenue sur ta photo, calculé par une IA de détection de pose.",
+    "privacy": "Ta photo reste sur ton appareil : elle n’est jamais envoyée ni enregistrée.",
+    "intro": "Choisis une photo de toi : l’IA repère tes épaules, tes hanches et tes chevilles, puis y pose les pièces de la tenue. Tu peux ensuite les déplacer du doigt et ajuster leur taille.",
+    "tipFull": "En pied, de face, debout.",
+    "tipLight": "Bien éclairée, sur un fond simple.",
+    "tipAlone": "Une seule personne sur la photo.",
+    "choosePhoto": "Choisir une photo",
+    "changePhoto": "Changer de photo",
+    "takePhoto": "Prendre une photo",
+    "photoAlt": "Ta photo",
+    "status": {
+      "intro": "",
+      "loading": "Analyse de la pose…",
+      "ready": "Pièces posées. Touche une pièce pour la déplacer ou ajuster sa taille.",
+      "manual": "Aucune silhouette détectée : les pièces sont posées au centre, place-les à la main.",
+      "error": "L’analyse n’est pas disponible sur cet appareil : place les pièces à la main."
+    },
+    "movePiece": "Déplacer {piece}",
+    "size": "Taille de {piece} sur la photo",
+    "reset": "Replacer automatiquement",
+    "warning": "Aperçu indicatif : il ne garantit ni la taille réelle ni le rendu porté. Vérifie les mesures et l’état dans chaque annonce."
   }
 }

@@ -85,7 +85,6 @@ export function LogoUploader({
               alt={t("logoAlt", { name: shopName })}
               width={80}
               height={80}
-              unoptimized
               className="size-full object-cover"
             />
           ) : (

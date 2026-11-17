@@ -1,5 +1,6 @@
 import "server-only";
 import { getCategories, searchTokens } from "@/features/catalog/queries";
+import { categoryScope } from "@/features/catalog/category-scope";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { parsePriceToMillimes } from "@/lib/utils/price";
@@ -63,17 +64,7 @@ export async function getCategoryAttributes(categoryIds: string[]): Promise<Cate
 }
 
 // Une catégorie racine englobe ses sous-catégories, comme dans le catalogue mode.
-function categoryScope(categories: Awaited<ReturnType<typeof getCategories>>, slug: string) {
-  const selected = categories.find((category) => category.slug === slug);
-  if (!selected) return null;
-
-  const root = categories.find((category) => category.id === selected.parentId) ?? selected;
-  const ids = categories
-    .filter((category) => category.id === selected.id || category.parentId === selected.id)
-    .map((category) => category.id);
-
-  return { selected, root, ids };
-}
+// La portée d'un filtre de catégorie est partagée avec le catalogue : voir category-scope.ts.
 
 export async function searchMarketplace(filters: MarketFilters) {
   const categories = await getCategories("marketplace");
@@ -220,7 +211,7 @@ export async function getListing(listingId: string) {
   const { data, error } = await supabase
     .from("listings")
     .select(
-      "id, seller_id, seller_name, section, category_id, title, description, brand, size, condition, price_millimes, status, publication_status, published_at, moderated_at, attributes, favorite_count, created_at, categories (slug, name_fr, name_ar, parent_id), governorates (name_fr, name_ar), cities (name_fr, name_ar), listing_images (id, path, position)",
+      "id, seller_id, seller_name, section, category_id, title, description, brand, size, condition, defects, price_millimes, status, publication_status, published_at, moderated_at, attributes, favorite_count, created_at, categories (slug, name_fr, name_ar, parent_id), governorates (name_fr, name_ar), cities (name_fr, name_ar), listing_images (id, path, position)",
     )
     .eq("id", listingId)
     .maybeSingle();
@@ -269,7 +260,7 @@ export async function getListingForEdit(listingId: string, viewerId: string) {
   const { data, error } = await supabase
     .from("listings")
     .select(
-      "id, section, category_id, title, description, brand, size, condition, price_millimes, governorate_id, city_id, attributes, status, publication_status, moderated_at, listing_images (id, path, position)",
+      "id, section, category_id, title, description, brand, size, condition, defects, price_millimes, governorate_id, city_id, attributes, status, publication_status, moderated_at, listing_images (id, path, position)",
     )
     .eq("id", listingId)
     .eq("seller_id", viewerId)

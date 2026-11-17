@@ -62,7 +62,7 @@ export function VideoRow({
       <div className="flex gap-3">
         <div className="relative h-24 w-16 shrink-0 overflow-hidden bg-secondary">
           {video.thumbnail_path ? (
-            <Image src={publicVideoUrl(video.thumbnail_path)} alt="" fill unoptimized sizes="64px" className="object-cover" />
+            <Image src={publicVideoUrl(video.thumbnail_path)} alt="" fill sizes="64px" className="object-cover" />
           ) : null}
         </div>
         <div className="min-w-0 flex-1">

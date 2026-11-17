@@ -129,7 +129,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   <span key={product.id} className="lx-rack__piece" data-slot={index}>
                     <HangerHook />
                     <span className="lx-rack__photo">
-                      <Image src={productImageUrl(product.imagePath!)} alt="" fill unoptimized sizes="11rem" className="object-cover" />
+                      <Image src={productImageUrl(product.imagePath!)} alt="" fill sizes="11rem" className="object-cover" />
                     </span>
                   </span>
                 ))}
@@ -145,7 +145,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <span className="lx-feature__go mt-auto">{t("cabinGo")}</span>
             </span>
             <span className="lx-cabin" aria-hidden="true">
-              {cabinPhoto ? <Image src={productImageUrl(cabinPhoto)} alt="" fill unoptimized sizes="8rem" className="object-cover" /> : null}
+              {cabinPhoto ? <Image src={productImageUrl(cabinPhoto)} alt="" fill sizes="8rem" className="object-cover" /> : null}
               <span className="lx-cabin__curtain lx-cabin__curtain--left" />
               <span className="lx-cabin__curtain lx-cabin__curtain--right" />
             </span>
@@ -161,7 +161,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   <Link href={{ pathname: "/walk", query: { v: item.id } }} className="lx-story">
                     <span className="lx-story__ring">
                       <span className="lx-story__frame">
-                        <Image src={publicVideoUrl(item.thumbnailPath)} alt="" fill unoptimized sizes="4.5rem" className="object-cover" />
+                        <Image src={publicVideoUrl(item.thumbnailPath)} alt="" fill sizes="4.5rem" className="object-cover" />
                       </span>
                     </span>
                     <span className="lx-story__label" dir="auto">{item.shop.name.split(" ")[0]}{item.description ? ` · ${item.description.split(" ")[0]}` : ""}</span>
@@ -228,7 +228,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {sections.map((section) => (
             <Link key={section.href} href={section.href} className={`lx-section ${section.tone} group`}>
               {section.image ? (
-                <Image src={section.image} alt="" fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="lx-section__photo" />
+                <Image src={section.image} alt="" fill sizes="(min-width: 768px) 50vw, 100vw" className="lx-section__photo" />
               ) : null}
               <span className="lx-section__veil" aria-hidden="true" />
               <span className="lx-section__kicker">{section.kicker}</span>

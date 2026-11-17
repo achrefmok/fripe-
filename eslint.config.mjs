@@ -9,6 +9,10 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // Dossier de build du banc de test (pnpm test:app).
+    ".next-test/**",
+    // Code tiers de MediaPipe, copié par scripts/mediapipe-assets.mjs (essayage virtuel).
+    "public/mediapipe/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

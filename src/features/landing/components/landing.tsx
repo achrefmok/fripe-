@@ -63,7 +63,7 @@ function Garment({ shape, color, hook, className, width }: { shape: GarmentShape
 // La photo de la pièce, ou sa silhouette sur un aplat de la même famille.
 function PieceVisual({ piece, sizes }: { piece: LandingPiece; sizes: string }) {
   return piece.imageUrl ? (
-    <Image src={piece.imageUrl} alt="" fill unoptimized sizes={sizes} className="object-cover" />
+    <Image src={piece.imageUrl} alt="" fill sizes={sizes} className="object-cover" />
   ) : (
     <span className="ld-ph" style={{ background: piece.tone.ground }}>
       <Garment shape={piece.garment} color={piece.tone.cloth} />
@@ -536,8 +536,8 @@ export function Landing({ data }: { data: LandingData }) {
                         </div>
                         <div className="ld-follow">{t("phoneFollow")}</div>
                         <div className="ld-grid3">
-                          {data.shop.previews.map((url) => (
-                            <span key={url} className="ld-tile"><Image src={url} alt="" fill unoptimized sizes="90px" className="object-cover" /></span>
+                          {data.shop.previews.map((url, index) => (
+                            <span key={`${index}-${url}`} className="ld-tile"><Image src={url} alt="" fill sizes="90px" className="object-cover" /></span>
                           ))}
                           {tiles(phonePieces.slice(0, Math.max(0, 6 - data.shop.previews.length)))}
                         </div>
@@ -599,10 +599,10 @@ export function Landing({ data }: { data: LandingData }) {
                 <span className="ld-shine" />
                 <span className="ld-minirack" aria-hidden="true">
                   {data.rackPhotos.length >= 2
-                    ? data.rackPhotos.map((url) => (
-                        <span key={url} className="ld-minirack__piece">
+                    ? data.rackPhotos.map((url, index) => (
+                        <span key={`${index}-${url}`} className="ld-minirack__piece">
                           <svg viewBox="0 0 158 50" className="ld-minirack__hook"><use href="#ld-g-hook" /></svg>
-                          <span className="ld-minirack__photo"><Image src={url} alt="" fill unoptimized sizes="110px" className="object-cover" /></span>
+                          <span className="ld-minirack__photo"><Image src={url} alt="" fill sizes="110px" className="object-cover" /></span>
                         </span>
                       ))
                     : (["jacket", "dress", "tee", "sweat"] as const).map((shape, index) => (
@@ -620,8 +620,8 @@ export function Landing({ data }: { data: LandingData }) {
                 <span className="ld-cabin" aria-hidden="true">
                   <span className="ld-cabin__look">
                     {data.cabinPhotos.length === 2 ? (
-                      data.cabinPhotos.map((url) => (
-                        <span key={url} className="ld-cabin__photo"><Image src={url} alt="" fill unoptimized sizes="110px" className="object-cover" /></span>
+                      data.cabinPhotos.map((url, index) => (
+                        <span key={`${index}-${url}`} className="ld-cabin__photo"><Image src={url} alt="" fill sizes="110px" className="object-cover" /></span>
                       ))
                     ) : (
                       <>
@@ -641,7 +641,7 @@ export function Landing({ data }: { data: LandingData }) {
               <Link href="/walk" className="ld-card ld-c3 ld-rv" data-cur={t("c3Cur")}>
                 <span className="ld-shine" />
                 {data.walkThumb ? (
-                  <span className="ld-c3__thumb" aria-hidden="true"><Image src={data.walkThumb} alt="" fill unoptimized sizes="(min-width: 960px) 33vw, 100vw" className="object-cover" /></span>
+                  <span className="ld-c3__thumb" aria-hidden="true"><Image src={data.walkThumb} alt="" fill sizes="(min-width: 960px) 33vw, 100vw" className="object-cover" /></span>
                 ) : null}
                 <span className="ld-play" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 20 20" className="rtl:-scale-x-100"><path d="M6 3l11 7-11 7z" fill="#f6f1e7" /></svg>
@@ -664,7 +664,7 @@ export function Landing({ data }: { data: LandingData }) {
                 <span className="ld-stores" aria-hidden="true">
                   {data.shops.map((shop, index) => (
                     <i key={shop.slug} style={{ background: ["#b25634", "#120f0c", "#835a20", "#6b7b5e"][index % 4] }}>
-                      {shop.logoUrl ? <Image src={shop.logoUrl} alt="" fill unoptimized sizes="44px" className="object-cover" /> : shop.initial}
+                      {shop.logoUrl ? <Image src={shop.logoUrl} alt="" fill sizes="44px" className="object-cover" /> : shop.initial}
                     </i>
                   ))}
                   <i style={{ background: "#3d5a80" }}>+</i>

@@ -59,7 +59,7 @@ export function ProductImages({
       <ul className="flex flex-wrap gap-2">
         {images.map((image) => (
           <li key={image.id} className="relative size-24 overflow-hidden bg-secondary">
-            <Image src={productImageUrl(image.path)} alt="" fill unoptimized sizes="96px" className="object-cover" />
+            <Image src={productImageUrl(image.path)} alt="" fill sizes="96px" className="object-cover" />
             <button
               type="button"
               aria-label={t("deletePhoto")}

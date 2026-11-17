@@ -54,7 +54,7 @@ export function LiveRoom({ initialLive, initialComments, signedIn }: { initialLi
     <div className="live-room">
       <div className="live-room__stage">
         <div className="live-room__screen">
-          {live.coverUrl && state !== "playing" ? <Image src={live.coverUrl} alt="" fill unoptimized priority sizes="28rem" className="live-room__cover" /> : null}
+          {live.coverUrl && state !== "playing" ? <Image src={live.coverUrl} alt="" fill priority sizes="28rem" className="live-room__cover" /> : null}
           <video ref={video} className="live-room__video" playsInline autoPlay muted={false} data-playing={state === "playing" ? "" : undefined} aria-label={live.title} />
           <div ref={audio} hidden />
           <span className="live-room__veil" aria-hidden="true" />
@@ -112,7 +112,7 @@ export function LiveRoom({ initialLive, initialComments, signedIn }: { initialLi
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
               >
                 <span className="live-pin__photo">
-                  {pinned.imageUrl ? <Image src={pinned.imageUrl} alt="" fill unoptimized sizes="4rem" className="object-cover" /> : null}
+                  {pinned.imageUrl ? <Image src={pinned.imageUrl} alt="" fill sizes="4rem" className="object-cover" /> : null}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col text-start">
                   <span className="live-piece__flag">{t("pinned")}</span>

@@ -16,6 +16,10 @@
 
 # next.js
 /.next/
+/.next-test/
+/.next-prod/
+/tsconfig.test.json
+/public/mediapipe/
 /out/
 
 # production

@@ -916,6 +916,7 @@ export type Database = {
           city_id: number | null
           condition: Database["public"]["Enums"]["product_condition"]
           created_at: string
+          defects: string | null
           description: string
           favorite_count: number
           governorate_id: number
@@ -941,6 +942,7 @@ export type Database = {
           city_id?: number | null
           condition: Database["public"]["Enums"]["product_condition"]
           created_at?: string
+          defects?: string | null
           description?: string
           favorite_count?: number
           governorate_id: number
@@ -966,6 +968,7 @@ export type Database = {
           city_id?: number | null
           condition?: Database["public"]["Enums"]["product_condition"]
           created_at?: string
+          defects?: string | null
           description?: string
           favorite_count?: number
           governorate_id?: number
@@ -3334,6 +3337,7 @@ export type Database = {
       outfit_slot: "top" | "bottom" | "shoes" | "accessory"
       product_condition:
         | "new_with_tags"
+        | "new_without_tags"
         | "like_new"
         | "very_good"
         | "good"
@@ -3505,6 +3509,7 @@ export const Constants = {
       outfit_slot: ["top", "bottom", "shoes", "accessory"],
       product_condition: [
         "new_with_tags",
+        "new_without_tags",
         "like_new",
         "very_good",
         "good",

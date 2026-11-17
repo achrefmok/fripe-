@@ -38,6 +38,8 @@ function toRow(data: z.output<typeof listingSchema>) {
     governorate_id: data.governorateId,
     city_id: data.cityId,
     attributes: data.section === "marketplace" ? data.attributes : {},
+    // Chaîne vide : « aucun défaut » déclaré. Null reste réservé aux annonces antérieures, jamais déclarées.
+    defects: data.noDefects ? "" : data.defects,
   };
 }
 

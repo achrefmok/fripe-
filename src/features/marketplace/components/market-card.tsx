@@ -23,7 +23,6 @@ export function MarketCard({ item, className }: { item: MarketItem; className?: 
               src={item.imageUrl}
               alt={item.title}
               fill
-              unoptimized
               sizes="(min-width: 1024px) 25vw, 50vw"
               className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
             />

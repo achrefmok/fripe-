@@ -139,7 +139,7 @@ export function LiveStudio({
           {over ? null : (
             <div className="studio__monitor">
               <video ref={video} className="studio__video" playsInline autoPlay muted aria-label={t("studioCamera")} data-on={hasCamera ? "" : undefined} />
-              {live.coverUrl && !hasCamera ? <Image src={live.coverUrl} alt="" fill unoptimized sizes="24rem" className="studio__cover" /> : null}
+              {live.coverUrl && !hasCamera ? <Image src={live.coverUrl} alt="" fill sizes="24rem" className="studio__cover" /> : null}
               <span className="live-room__veil" aria-hidden="true" />
 
               <div className="live-room__top">

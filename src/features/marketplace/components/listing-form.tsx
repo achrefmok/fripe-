@@ -28,6 +28,9 @@ export type ListingFormValues = {
   governorateId: string;
   cityId: string;
   attributes: Record<string, string>;
+  // Description des défauts, ou « aucun défaut » coché : l'un des deux est obligatoire.
+  defects: string;
+  noDefects: boolean;
 };
 
 export function ListingForm({
@@ -218,6 +221,26 @@ export function ListingForm({
       <Field id="l-description" label={t("fieldDescription")} hint={t("descriptionHint")} optional error={fields.description}>
         <Textarea id="l-description" rows={6} maxLength={3000} value={values.description} onChange={(event) => set("description", event.target.value)} />
       </Field>
+
+      <Field id="l-defects" label={t("fieldDefects")} hint={t("defectsHint")} error={fields.defects}>
+        <Textarea
+          id="l-defects"
+          rows={3}
+          maxLength={500}
+          value={values.noDefects ? "" : values.defects}
+          disabled={values.noDefects}
+          onChange={(event) => set("defects", event.target.value)}
+        />
+      </Field>
+      <label className="-mt-2 flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="size-4 accent-foreground"
+          checked={values.noDefects}
+          onChange={(event) => set("noDefects", event.target.checked)}
+        />
+        {t("noDefects")}
+      </label>
 
       <FormError error={error} />
 

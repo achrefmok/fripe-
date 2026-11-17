@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 import { EmptyState } from "@/components/layout/empty-state";
 import { Pagination } from "@/features/admin/components/pagination";
 import { CatalogFiltersForm } from "@/features/catalog/components/catalog-filters";
-import { ProductGrid } from "@/features/catalog/components/product-card";
 import { CATALOG_PAGE_SIZE } from "@/features/catalog/constants";
 import { getCategories, searchProducts } from "@/features/catalog/queries";
 import { catalogFiltersSchema } from "@/features/catalog/schemas";
@@ -11,6 +10,9 @@ import { Garment } from "@/features/home/components/garment";
 import { universeFor } from "@/features/home/universes";
 import { getLocations } from "@/features/shops/queries";
 import { Link } from "@/i18n/navigation";
+import { subcategoriesOf } from "@/features/catalog/category-scope";
+import { PieceCard } from "@/features/home/preview/piece-card";
+import { fromProduct } from "@/features/home/preview/queries";
 
 export async function generateMetadata() {
   const t = await getTranslations("catalog");
@@ -41,7 +43,8 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
 
   const roots = categories.filter((category) => !category.parentId);
   const name = (category: { nameFr: string; nameAr: string }) => (locale === "ar" ? category.nameAr : category.nameFr);
-  const subs = root ? categories.filter((category) => category.parentId === root.id).map(name) : [];
+  // Sous « Chaussures », le bandeau annonce aussi Sneakers : les baskets y sont incluses.
+  const subs = root ? subcategoriesOf(categories, root).map(name) : [];
   const chipHref = (slug: string | null) => ({ pathname: "/catalogue" as const, query: { ...params, categorie: slug ?? undefined, page: undefined } });
 
   return (
@@ -85,14 +88,14 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
         ))}
         <span className="ms-auto flex flex-wrap items-center gap-3">
           <span className="text-muted-foreground">{t("sort")}</span>
-          {(["recent", "price_asc", "price_desc"] as const).map((sort) => (
+          {(["recent", "popular", "price_asc", "price_desc"] as const).map((sort) => (
             <Link
               key={sort}
               href={{ pathname: "/catalogue", query: { ...params, tri: sort, page: undefined } }}
               aria-current={filters.tri === sort ? "true" : undefined}
               className="lx-quick__link"
             >
-              {t(sort === "recent" ? "sortRecentShort" : sort === "price_asc" ? "sortAscShort" : "sortDescShort")}
+              {t(sort === "recent" ? "sortRecentShort" : sort === "popular" ? "sortPopularShort" : sort === "price_asc" ? "sortAscShort" : "sortDescShort")}
             </Link>
           ))}
         </span>
@@ -116,7 +119,14 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
 
       <div className="mt-3">
         {products.length ? (
-          <ProductGrid products={products} />
+          // La carte unique : état, taille, boutique, favori et disponibilité sur chaque pièce.
+          <ul className="luxe-grid">
+            {products.map((product) => (
+              <li key={product.id}>
+                <PieceCard piece={fromProduct(product)} />
+              </li>
+            ))}
+          </ul>
         ) : (
           <EmptyState
             title={hasCriteria ? t("emptyTitle") : t("emptyCatalogTitle")}

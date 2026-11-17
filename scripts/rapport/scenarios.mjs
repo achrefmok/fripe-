@@ -214,7 +214,8 @@ export const SCENARIOS = [
       check("Le formulaire produit s'affiche", await submit.isVisible().catch(() => false));
       if (await submit.isVisible().catch(() => false)) {
         // Un produit peut rester en brouillon : l'enregistrer vide mène à sa fiche d'édition.
-        await page.locator("main form input:not([type=hidden]):not([type=file])").first().fill("قميص كتان");
+        // Le premier champ à remplir : les puces de catégorie sont des boutons radio, pas du texte.
+        await page.locator("main form input:not([type=hidden]):not([type=file]):not([type=radio]):not([type=checkbox])").first().fill("قميص كتان");
         await submit.click();
         await page.waitForURL((url) => !url.pathname.endsWith("/nouveau"), { timeout: 20_000 }).catch(() => {});
         check("Le brouillon s'enregistre et ouvre sa fiche", !page.url().endsWith("/nouveau"), page.url());

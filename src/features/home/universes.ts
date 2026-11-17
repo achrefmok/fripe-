@@ -20,6 +20,7 @@ const UNIVERSES: Record<string, Universe> = {
   "vestes-manteaux": { garment: "coat", surface: "oklch(0.74 0.085 72)", ink: INK, cloth: "oklch(0.6 0.09 66)", seam: "oklch(0.42 0.07 62)" },
   robes: { garment: "dress", surface: "oklch(0.47 0.135 5)", ink: PAPER, cloth: "oklch(0.62 0.14 8)", seam: "oklch(0.42 0.12 5)" },
   chaussures: { garment: "shoes", surface: "oklch(0.4 0.06 125)", ink: PAPER, cloth: "oklch(0.93 0.02 88)", seam: "oklch(0.5 0.07 125)" },
+  sneakers: { garment: "shoes", surface: "oklch(0.3 0.02 250)", ink: PAPER, cloth: "oklch(0.95 0.01 90)", seam: "oklch(0.62 0.16 30)" },
   accessoires: { garment: "accessory", surface: "oklch(0.76 0.125 82)", ink: INK, cloth: "oklch(0.58 0.12 60)", seam: "oklch(0.42 0.09 55)" },
 };
 

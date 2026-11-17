@@ -92,6 +92,7 @@ export type CatalogFilters = z.infer<typeof catalogFiltersSchema>;
 // Colonnes CSV en français : le fichier est rempli par les vendeurs, souvent dans Excel.
 const CONDITION_ALIASES: Record<string, (typeof CONDITIONS)[number]> = {
   "neuf avec etiquette": "new_with_tags",
+  "neuf sans etiquette": "new_without_tags",
   neuf: "new_with_tags",
   "comme neuf": "like_new",
   "tres bon": "very_good",

@@ -10,6 +10,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { CONDITIONS } from "@/features/catalog/constants";
 import type { CatalogFilters } from "@/features/catalog/schemas";
 import { Link } from "@/i18n/navigation";
+import { rememberSearch, SearchSuggest } from "./search-suggest";
 
 type Option = { value: string; nameFr: string; nameAr: string };
 
@@ -39,19 +40,14 @@ export function CatalogFiltersForm({
   const label = (option: Option) => (locale === "ar" ? option.nameAr : option.nameFr);
 
   return (
-    <form action="" method="get">
+    <form
+      action=""
+      method="get"
+      onSubmit={(event) => rememberSearch(String(new FormData(event.currentTarget).get("q") ?? ""))}
+    >
       <div className="flex items-end gap-2">
         <div className="flex-1">
-          <Label htmlFor="q" className="sr-only">
-            {t("searchLabel")}
-          </Label>
-          <Input
-            id="q"
-            name="q"
-            type="search"
-            defaultValue={filters.q}
-            placeholder={t("searchPlaceholder")}
-          />
+          <SearchSuggest defaultValue={filters.q ?? ""} placeholder={t("searchPlaceholder")} label={t("searchLabel")} />
         </div>
         <Button type="submit">{t("search")}</Button>
         <Button
@@ -119,6 +115,7 @@ export function CatalogFiltersForm({
           <Label htmlFor="tri" className="text-[0.8rem] font-semibold">{t("sort")}</Label>
           <NativeSelect id="tri" name="tri" defaultValue={filters.tri}>
             <option value="recent">{t("sortRecent")}</option>
+            <option value="popular">{t("sortPopular")}</option>
             <option value="price_asc">{t("sortPriceAsc")}</option>
             <option value="price_desc">{t("sortPriceDesc")}</option>
           </NativeSelect>

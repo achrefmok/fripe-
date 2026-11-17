@@ -54,7 +54,7 @@ export default async function ShopLivesPage({ params }: PageProps<"/[locale]/ven
             {lives.map((live) => (
               <li key={live.id} className="flex flex-wrap items-center gap-3 py-3">
                 <span className="relative h-[72px] w-[54px] shrink-0 overflow-hidden rounded-xl bg-cream">
-                  {live.coverUrl ? <Image src={live.coverUrl} alt="" fill unoptimized sizes="54px" className="object-cover" /> : null}
+                  {live.coverUrl ? <Image src={live.coverUrl} alt="" fill sizes="54px" className="object-cover" /> : null}
                 </span>
                 <span className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
                   <span className="truncate font-medium" dir="auto">{live.title}</span>

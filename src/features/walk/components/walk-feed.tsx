@@ -41,6 +41,7 @@ function HangerHook() {
 function WalkSlide({
   item,
   active,
+  upcoming,
   loaded,
   signedIn,
   isFavorite,
@@ -50,6 +51,8 @@ function WalkSlide({
 }: {
   item: WalkItem;
   active: boolean;
+  // La vidéo suivante se charge déjà en entier : elle démarre sans attente au défilement.
+  upcoming: boolean;
   loaded: boolean;
   signedIn: boolean;
   isFavorite: boolean;
@@ -143,7 +146,7 @@ function WalkSlide({
           ref={video}
           src={loaded ? publicVideoUrl(item.videoPath) : undefined}
           poster={publicVideoUrl(item.thumbnailPath)}
-          preload={active ? "auto" : "metadata"}
+          preload={active || upcoming ? "auto" : "metadata"}
           loop
           muted={muted}
           playsInline
@@ -292,7 +295,7 @@ function WalkAside({
                   <HangerHook />
                   <Link href={`/produit/${product.id}`} className="walk-piece__photo" aria-label={product.title}>
                     {product.imagePath ? (
-                      <Image src={productImageUrl(product.imagePath)} alt="" fill unoptimized sizes="10rem" className="object-cover" />
+                      <Image src={productImageUrl(product.imagePath)} alt="" fill sizes="10rem" className="object-cover" />
                     ) : null}
                   </Link>
                   <span className="mt-2 line-clamp-1 text-center text-[13px] font-medium" dir="auto">{product.title}</span>
@@ -324,7 +327,7 @@ function WalkAside({
               <li key={next.id}>
                 <button type="button" className="walk-next" onClick={() => onGo(index)}>
                   <span className="walk-next__thumb">
-                    <Image src={publicVideoUrl(next.thumbnailPath)} alt="" fill unoptimized sizes="2.75rem" className="object-cover" />
+                    <Image src={publicVideoUrl(next.thumbnailPath)} alt="" fill sizes="2.75rem" className="object-cover" />
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col text-start">
                     <span className="truncate text-sm font-medium" dir="auto">{next.shop.name}</span>
@@ -419,6 +422,7 @@ export function WalkFeed({
               key={item.id}
               item={item}
               active={index === activeIndex}
+              upcoming={index === activeIndex + 1}
               loaded={Math.abs(index - activeIndex) <= LOADED_RADIUS}
               signedIn={signedIn}
               isFavorite={favoriteIds.includes(item.id)}

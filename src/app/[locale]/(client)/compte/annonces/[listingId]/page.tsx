@@ -59,6 +59,8 @@ export default async function EditListingPage({ params }: PageProps<"/[locale]/c
               governorateId: String(listing.governorate_id),
               cityId: listing.city_id ? String(listing.city_id) : "",
               attributes: listing.attributes as Record<string, string>,
+              defects: listing.defects ?? "",
+              noDefects: listing.defects === "",
             }}
           />
         )}

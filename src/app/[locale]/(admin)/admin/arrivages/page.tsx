@@ -49,7 +49,7 @@ export default async function AdminArrivalsPage() {
                     <Link href={`/produit/${product.id}`} className="block">
                       <span className="relative block aspect-[3/4] overflow-hidden rounded-[2px] bg-secondary">
                         {product.imagePath ? (
-                          <Image src={productImageUrl(product.imagePath)} alt="" fill unoptimized sizes="8rem" className="object-cover" />
+                          <Image src={productImageUrl(product.imagePath)} alt="" fill sizes="8rem" className="object-cover" />
                         ) : null}
                       </span>
                       <span className="mt-1 block truncate text-xs" dir="auto">{product.title}</span>

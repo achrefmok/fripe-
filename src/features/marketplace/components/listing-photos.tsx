@@ -65,7 +65,7 @@ export function ListingPhotos({
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {images.map((image, index) => (
             <li key={image.id} className="relative aspect-[3/4] overflow-hidden bg-secondary">
-              <Image src={listingImageUrl(image.path)} alt="" fill unoptimized sizes="160px" className="object-cover" />
+              <Image src={listingImageUrl(image.path)} alt="" fill sizes="160px" className="object-cover" />
               {index === 0 ? <span className="status-tag absolute bottom-1.5 start-1.5 bg-paper text-[oklch(0.2_0.014_55)]">1</span> : null}
               <button
                 type="button"

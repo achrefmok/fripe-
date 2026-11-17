@@ -1,0 +1,674 @@
+/* Accueil d'essai (/accueil-preview). Les jetons du site (DESIGN.md) : papier, encre, nuit, or,
+   or lisible sur papier, terre cuite. Cartes à filet sans ombre, pilules pour les commandes,
+   propriétés logiques pour le RTL, seuls transform et opacity s'animent. */
+
+.hp {
+  padding-bottom: 3rem;
+}
+.hp-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 18px;
+}
+.hp em {
+  font-style: italic;
+  color: var(--goldink);
+}
+html[dir="rtl"] .hp em {
+  font-style: normal;
+}
+
+/* Boutons */
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding-inline: 1.4rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+.hp-btn:hover {
+  transform: translateY(-2px);
+}
+.hp-btn--gold {
+  background: var(--gold);
+  color: oklch(0.17 0.008 60);
+}
+.hp-btn--ghost {
+  border: 1px solid color-mix(in oklch, var(--night-ink) 30%, transparent);
+  color: var(--night-ink);
+}
+.hp-btn--ghost:hover {
+  background: color-mix(in oklch, var(--night-ink) 10%, transparent);
+}
+.hp-btn--ink {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* 1. Héros de nuit */
+.hp-hero {
+  position: relative;
+  display: grid;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 18px auto 0;
+  padding: clamp(28px, 5vw, 64px) clamp(20px, 4vw, 56px);
+  border-radius: 28px;
+  background-color: var(--night);
+  background-image: radial-gradient(ellipse at 85% 10%, color-mix(in oklch, var(--harissa) 30%, var(--night)), var(--night) 60%);
+  color: var(--night-ink);
+  overflow: hidden;
+}
+@media (min-width: 900px) {
+  .hp-hero {
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    min-height: 520px;
+  }
+}
+@media (max-width: 1236px) {
+  .hp-hero {
+    margin-inline: 18px;
+  }
+}
+.hp-hero__kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+html[dir="rtl"] .hp-hero__kicker {
+  letter-spacing: 0;
+  font-size: 0.85rem;
+}
+.hp-hero__title {
+  margin-top: 1rem;
+  font-family: var(--font-title), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 5.6vw, 4.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+}
+html[dir="rtl"] .hp-hero__title {
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+.hp-hero__title em {
+  color: var(--gold);
+}
+.hp-hero__lead {
+  margin-top: 1.1rem;
+  max-width: 32rem;
+  font-size: 1.05rem;
+  color: color-mix(in oklch, var(--night-ink) 78%, transparent);
+}
+.hp-hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.6rem;
+}
+.hp-hero__text > * {
+  animation: hp-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hp-hero__text > :nth-child(2) { animation-delay: 0.08s; }
+.hp-hero__text > :nth-child(3) { animation-delay: 0.16s; }
+.hp-hero__text > :nth-child(4) { animation-delay: 0.24s; }
+.hp-hero__text > :nth-child(5) { animation-delay: 0.32s; }
+@keyframes hp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+.hp-search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 30rem;
+  margin-top: 1.4rem;
+  padding: 0.35rem 0.35rem 0.35rem 1rem;
+  padding-inline: 1rem 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--night-ink) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--night-ink) 18%, transparent);
+  color: color-mix(in oklch, var(--night-ink) 70%, transparent);
+}
+.hp-search:focus-within {
+  border-color: var(--gold);
+}
+.hp-search__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--night-ink);
+  font-size: 1rem;
+}
+.hp-search__input::placeholder {
+  color: color-mix(in oklch, var(--night-ink) 62%, transparent);
+}
+.hp-search__go {
+  min-height: 40px;
+  padding-inline: 1.1rem;
+  border-radius: 999px;
+  background: var(--night-ink);
+  color: var(--night);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Vitrine de vraies pièces, en mosaïque légèrement décalée */
+.hp-hero__wall {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.hp-hero__frame {
+  animation: hp-rise 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hp-hero__frame[data-slot="1"] { animation-delay: 0.12s; transform: translateY(28px); }
+.hp-hero__frame[data-slot="2"] { animation-delay: 0.2s; }
+.hp-hero__frame[data-slot="3"] { animation-delay: 0.28s; transform: translateY(28px); }
+.hp-hero__photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in oklch, var(--night-ink) 8%, transparent);
+  outline: 1px solid color-mix(in oklch, var(--gold) 35%, transparent);
+  outline-offset: -1px;
+}
+.hp-hero__photo img {
+  transition: transform 0.7s ease;
+}
+.hp-hero__photo:hover img {
+  transform: scale(1.04);
+}
+@media (max-width: 899px) {
+  .hp-hero__wall {
+    grid-template-columns: repeat(4, minmax(7.5rem, 1fr));
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -4px;
+    padding-bottom: 28px;
+  }
+}
+
+/* Têtes de section */
+.hp-section {
+  margin-top: clamp(2.6rem, 6vw, 4.5rem);
+}
+.hp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.hp-head__title {
+  margin-top: 0.35rem;
+  font-family: var(--font-title), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  line-height: 1.1;
+}
+html[dir="rtl"] .hp-head__title {
+  font-weight: 600;
+  line-height: 1.35;
+}
+.hp-head__body {
+  margin-top: 0.4rem;
+  max-width: 36rem;
+  color: var(--muted-foreground);
+}
+.hp-head__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--goldink);
+}
+.hp-head__link:hover {
+  color: var(--harissa);
+}
+
+/* 2. Univers */
+.hp-universes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .hp-universes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+.hp-universe {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  overflow: hidden;
+}
+.hp-universe__main {
+  position: relative;
+  display: block;
+}
+.hp-universe__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: radial-gradient(circle at 50% 35%, color-mix(in oklch, var(--gold) 22%, var(--night)), var(--night) 70%);
+  overflow: hidden;
+}
+.hp-universe__media img {
+  transition: transform 0.7s ease;
+}
+.hp-universe__main:hover .hp-universe__media img {
+  transform: scale(1.05);
+}
+.hp-universe__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, color-mix(in oklch, var(--night) 82%, transparent), transparent 55%);
+}
+.hp-universe__icon {
+  width: 38%;
+  height: auto;
+  color: var(--gold);
+  transition: transform 0.5s ease;
+}
+.hp-universe__main:hover .hp-universe__icon {
+  transform: translateY(-4px) rotate(-4deg);
+}
+.hp-universe__name {
+  position: absolute;
+  inset-inline-start: 14px;
+  bottom: 12px;
+  z-index: 1;
+  font-family: var(--font-title), Georgia, serif;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  color: var(--night-ink);
+}
+.hp-universe__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 12px;
+}
+.hp-universe__links a {
+  display: inline-block;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: var(--cream);
+  font-size: 0.78rem;
+  color: var(--foreground);
+  transition: background-color 0.2s ease;
+}
+.hp-universe__links a:hover {
+  background: color-mix(in oklch, var(--gold) 40%, var(--cream));
+}
+
+/* 3. Collections */
+.hp-tabs {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+.hp-tab {
+  flex: none;
+  min-height: 40px;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--foreground);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.hp-tab[aria-selected="true"] {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+.hp-panel__hint {
+  margin: 0.9rem 0 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+.hp-panel:not([hidden]) {
+  animation: hp-rise 0.45s ease both;
+}
+.hp-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(10.5rem, 44%);
+  gap: 14px;
+  padding-bottom: 6px;
+}
+@media (min-width: 900px) {
+  .hp-rail {
+    grid-auto-columns: 15.5rem;
+  }
+}
+
+/* 4. Fripe Walk, sur fond de nuit */
+.hp-walk {
+  margin-top: clamp(2.6rem, 6vw, 4.5rem);
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  background: var(--night);
+  color: var(--night-ink);
+}
+.hp-walk .hp-head__body {
+  color: color-mix(in oklch, var(--night-ink) 70%, transparent);
+}
+.hp-walk .hp-head__link {
+  color: var(--gold);
+}
+.hp-reels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 9.5rem;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .hp-reels {
+    grid-auto-columns: 11rem;
+  }
+}
+.hp-reel {
+  position: relative;
+  display: block;
+  aspect-ratio: 9 / 16;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in oklch, var(--night-ink) 8%, transparent);
+  outline: 1px solid color-mix(in oklch, var(--gold) 30%, transparent);
+  outline-offset: -1px;
+}
+.hp-reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, color-mix(in oklch, var(--night) 88%, transparent), transparent 50%);
+}
+.hp-reel img {
+  transition: transform 0.7s ease;
+}
+.hp-reel:hover img {
+  transform: scale(1.05);
+}
+.hp-reel__play {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--night) 55%, transparent);
+  color: var(--night-ink);
+}
+.hp-reel__text {
+  position: absolute;
+  inset-inline: 10px;
+  bottom: 10px;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+}
+.hp-reel__shop {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.hp-reel__price {
+  font-size: 0.78rem;
+  color: var(--gold);
+}
+
+/* 5. Armoires du Vide-Dressing */
+.hp-wardrobes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 14px;
+}
+.hp-wardrobe {
+  display: grid;
+  gap: 0.2rem;
+  padding: 14px 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  transition: border-color 0.3s ease;
+}
+.hp-wardrobe:hover {
+  border-color: var(--gold);
+}
+.hp-wardrobe__rail {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.7rem;
+  padding-top: 10px;
+}
+.hp-wardrobe__rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--gold);
+}
+.hp-wardrobe__piece {
+  position: relative;
+  /* Toujours un tiers : une armoire d’une seule pièce ne devient pas une affiche géante. */
+  flex: 0 0 calc((100% - 12px) / 3);
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cream);
+  transform-origin: 50% 0;
+  transition: transform 0.5s ease;
+}
+.hp-wardrobe:hover .hp-wardrobe__piece:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+.hp-wardrobe:hover .hp-wardrobe__piece:nth-child(even) {
+  transform: rotate(2deg);
+}
+.hp-wardrobe__name {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.2rem;
+}
+.hp-wardrobe__meta,
+.hp-wardrobe__brands {
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+}
+.hp-wardrobe__brands {
+  color: var(--goldink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 6. Grille des dernières pièces */
+.hp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 14px;
+}
+@media (min-width: 900px) {
+  .hp-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* 7. Vendre */
+.hp-sell__doors {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 760px) {
+  .hp-sell__doors {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.hp-door {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: clamp(1.3rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+}
+.hp-door__icon {
+  width: 34px;
+  height: 34px;
+  color: var(--goldink);
+}
+.hp-door__title {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.5rem;
+}
+.hp-door__steps {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  counter-reset: step;
+  color: var(--muted-foreground);
+}
+.hp-door__steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 0.6rem;
+}
+.hp-door__steps li::before {
+  content: counter(step);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.hp-door .hp-btn {
+  margin-top: auto;
+}
+.hp-sell__more {
+  margin-top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp *,
+  .hp *::before,
+  .hp *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Les rails défilent dans leur propre largeur : la page ne déborde jamais. */
+.hp-tabs,
+.hp-rail,
+.hp-reels {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.hp-rail > li,
+.hp-reels > li {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+/* Arrivages et boutiques : les rails existants (lx-arrivals, lx-shops) défilent sans élargir la page. */
+.hp-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* L'atelier : quatre outils, une rangée sur ordinateur, deux colonnes sur téléphone. */
+.hp-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .hp-tools {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+.hp-tool {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1.1rem 1.1rem 2.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  transition: border-color 0.3s ease;
+}
+.hp-tool:hover {
+  border-color: var(--gold);
+}
+.hp-tool__icon {
+  width: 28px;
+  height: 28px;
+  color: var(--goldink);
+}
+.hp-tool__title {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.hp-tool__body {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+.hp-tool__go {
+  position: absolute;
+  bottom: 1rem;
+  inset-inline-end: 1rem;
+  color: var(--goldink);
+  transition: translate 0.3s ease;
+}
+/* translate, pas transform : le retournement RTL de l'icône (propriété scale) reste intact. */
+.hp-tool:hover .hp-tool__go {
+  translate: 4px 0;
+}
+html[dir="rtl"] .hp-tool:hover .hp-tool__go {
+  translate: -4px 0;
+}

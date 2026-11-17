@@ -115,7 +115,7 @@ export function VdHero({
                   <span key={piece.id} className="vd-wardrobe__piece" style={{ "--k": index } as CSSProperties}>
                     <Hanger className="vd-wardrobe__hanger" />
                     <span className="vd-wardrobe__photo">
-                      {piece.imageUrl ? <Image src={piece.imageUrl} alt="" fill unoptimized priority={index < 2} sizes="8rem" className="object-cover" /> : null}
+                      {piece.imageUrl ? <Image src={piece.imageUrl} alt="" fill priority={index < 2} sizes="8rem" className="object-cover" /> : null}
                     </span>
                     <span className="vd-wardrobe__tag">{formatPrice(piece.priceMillimes, locale)}</span>
                   </span>

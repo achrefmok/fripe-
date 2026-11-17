@@ -75,7 +75,7 @@ export function RunwayRing({ products }: { products: ProductCardData[] }) {
                 <Link href={`/produit/${product.id}`} tabIndex={index === active ? undefined : -1} aria-hidden={index === active ? undefined : true}>
                   <span className="lx-ring__photo">
                     {product.imagePath ? (
-                      <Image src={productImageUrl(product.imagePath)} alt={product.title} fill unoptimized sizes="11rem" className="object-cover" />
+                      <Image src={productImageUrl(product.imagePath)} alt={product.title} fill sizes="11rem" className="object-cover" />
                     ) : null}
                   </span>
                   <span className="lx-ring__caption">

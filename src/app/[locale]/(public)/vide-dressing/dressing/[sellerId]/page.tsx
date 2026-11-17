@@ -1,9 +1,12 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { DressingCloset } from "@/features/dressing/components/dressing-closet";
 import { DressingFavorites } from "@/features/dressing/components/favorites";
-import { getDressing } from "@/features/dressing/queries";
+import { DressingWardrobe, type Rayon } from "@/features/dressing/components/dressing-wardrobe";
+import { getDressing, getDressingOverview } from "@/features/dressing/queries";
+import { getCategories } from "@/features/catalog/queries";
 import { dressingFirstName, dressingMonogram, dressingTone } from "@/features/dressing/tone";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
@@ -26,8 +29,22 @@ export default async function DressingPage({ params }: PageProps<"/[locale]/vide
   setRequestLocale(locale);
   if (!UUID.test(sellerId)) notFound();
 
-  const [dressing, t] = await Promise.all([getDressing(sellerId), getTranslations("dressing")]);
+  const [dressing, t, categories, overview] = await Promise.all([
+    getDressing(sellerId),
+    getTranslations("dressing"),
+    getCategories("mode").catch(() => []),
+    getDressingOverview().catch(() => ({ dressings: [] })),
+  ]);
   if (!dressing) notFound();
+
+  // Chaque pièce dans son rayon de l'armoire, d'après la racine de sa catégorie.
+  const RAYON_OF: Record<string, Rayon> = { chaussures: "chaussures", sneakers: "chaussures", accessoires: "accessoires", hauts: "vetements", bas: "vetements", "vestes-manteaux": "vetements", robes: "vetements" };
+  const rootSlug = (categoryId: string) => {
+    const category = categories.find((entry) => entry.id === categoryId);
+    return category?.parentId ? categories.find((entry) => entry.id === category.parentId)?.slug : category?.slug;
+  };
+  const rayons = Object.fromEntries(dressing.items.map((item) => [item.id, RAYON_OF[rootSlug(item.categoryId) ?? ""] ?? "autres"])) as Record<string, Rayon>;
+  const otherWardrobes = overview.dressings.filter((entry) => entry.sellerId !== dressing.sellerId).slice(0, 4);
 
   const tone = dressingTone(dressing.sellerId);
   const name = dressingFirstName(dressing.sellerName);
@@ -93,7 +110,32 @@ export default async function DressingPage({ params }: PageProps<"/[locale]/vide
           ))}
         </dl>
 
+        <DressingWardrobe name={name} items={dressing.items} rayons={rayons} />
+
         <DressingCloset sellerId={dressing.sellerId} name={name} items={dressing.items} />
+
+        {otherWardrobes.length ? (
+          <nav className="mt-10" aria-labelledby="autres-armoires">
+            <h2 id="autres-armoires" className="font-display text-[clamp(22px,3vw,30px)]">{t("otherWardrobes")}</h2>
+            <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {otherWardrobes.map((entry) => (
+                <li key={entry.sellerId}>
+                  <Link href={`/vide-dressing/dressing/${entry.sellerId}`} className="group block rounded-[18px] border border-border p-2.5 transition-colors hover:border-[var(--vd-gold)]">
+                    <span className="grid grid-cols-3 gap-1">
+                      {entry.previews.slice(0, 3).map((url, index) => (
+                        <span key={`${index}-${url}`} className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
+                          <Image src={url} alt="" fill sizes="6rem" className="object-cover" />
+                        </span>
+                      ))}
+                    </span>
+                    <span className="mt-2 block truncate font-medium" dir="auto">{t("dressingOf", { name: dressingFirstName(entry.sellerName) })}</span>
+                    <span className="block text-xs text-muted-foreground">{t("otherWardrobeCount", { count: entry.count })}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : null}
       </div>
     </DressingFavorites>
   );

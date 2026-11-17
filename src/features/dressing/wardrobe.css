@@ -1,0 +1,428 @@
+/* L'armoire d'un dressing (Vide-Dressing). Bois chaud éclairé par une réglette, tringle d'or pour les
+   vêtements, étagères pour les chaussures et les accessoires, fiche en verre pour la pièce choisie.
+   Seuls transform et opacity s'animent. Les portes pivotent en relief seulement si data-depth="3d"
+   (appareil assez puissant, mouvement non réduit) ; sinon elles s'effacent. Propriétés logiques : RTL. */
+
+.vw {
+  --vw-wood: oklch(0.42 0.05 55);
+  --vw-wood-deep: oklch(0.3 0.04 50);
+  --vw-glow: oklch(0.9 0.08 85 / 0.55);
+  margin-top: 28px;
+}
+
+.vw-head__title {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  line-height: 1.15;
+}
+.vw-head__body {
+  margin-top: 0.35rem;
+  color: var(--muted-foreground);
+  max-width: 40rem;
+}
+
+.vw-stage {
+  position: relative;
+  margin-top: 16px;
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 960px) {
+  .vw-stage:has(.vw-panel) {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    align-items: start;
+  }
+}
+
+/* Le meuble */
+.vw-cabinet {
+  position: relative;
+  min-height: 320px;
+  padding: 26px 18px 18px;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, var(--vw-glow), transparent 70%),
+    linear-gradient(180deg, var(--vw-wood), var(--vw-wood-deep));
+  box-shadow: inset 0 0 0 8px oklch(0.24 0.03 45), inset 0 18px 30px -18px oklch(0 0 0 / 0.6);
+  overflow: hidden;
+  perspective: 1400px;
+}
+/* La réglette lumineuse sous le haut du meuble */
+.vw-cabinet::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  inset-inline: 10%;
+  height: 3px;
+  border-radius: 3px;
+  background: oklch(0.96 0.06 88);
+  box-shadow: 0 0 22px 6px var(--vw-glow);
+}
+
+/* Les portes : elles s'ouvrent une fois, au premier affichage. */
+.vw-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 50.5%;
+  background:
+    repeating-linear-gradient(90deg, oklch(0.36 0.05 55) 0 2px, transparent 2px 40px),
+    linear-gradient(160deg, oklch(0.46 0.05 58), oklch(0.32 0.04 50));
+  box-shadow: inset 0 0 0 6px oklch(0.26 0.03 45);
+  pointer-events: none;
+  animation: vw-fade 0.9s 0.2s var(--vd-ease) forwards;
+}
+.vw-door--start {
+  inset-inline-start: 0;
+  transform-origin: left center;
+}
+.vw-door--end {
+  inset-inline-end: 0;
+  transform-origin: right center;
+}
+html[dir="rtl"] .vw-door--start {
+  transform-origin: right center;
+}
+html[dir="rtl"] .vw-door--end {
+  transform-origin: left center;
+}
+.vw[data-depth="3d"] .vw-door--start {
+  animation: vw-swing-start 1.2s 0.25s var(--vd-ease) forwards;
+}
+.vw[data-depth="3d"] .vw-door--end {
+  animation: vw-swing-end 1.2s 0.25s var(--vd-ease) forwards;
+}
+html[dir="rtl"] .vw[data-depth="3d"] .vw-door--start {
+  animation-name: vw-swing-end;
+}
+html[dir="rtl"] .vw[data-depth="3d"] .vw-door--end {
+  animation-name: vw-swing-start;
+}
+@keyframes vw-fade {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes vw-swing-start {
+  70% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(-105deg);
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes vw-swing-end {
+  70% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(105deg);
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* L'intérieur, rejoué à chaque changement de rayon */
+.vw-inside {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  animation: vw-enter 0.5s var(--vd-ease) both;
+}
+@keyframes vw-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.vw-rail {
+  position: relative;
+  padding-top: 8px;
+}
+.vw-rail__rod {
+  position: absolute;
+  top: 8px;
+  inset-inline: 0;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--vd-rod);
+  box-shadow: 0 3px 6px oklch(0 0 0 / 0.35);
+}
+.vw-rail__pieces,
+.vw-shelf {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+  margin: 0;
+  list-style: none;
+}
+.vw-rail__pieces::-webkit-scrollbar,
+.vw-shelf::-webkit-scrollbar {
+  display: none;
+}
+.vw-shelves {
+  position: relative;
+  padding-bottom: 14px;
+}
+/* La planche de l'étagère */
+.vw-shelves::after {
+  content: "";
+  position: absolute;
+  inset-inline: -18px;
+  bottom: 0;
+  height: 12px;
+  background: linear-gradient(oklch(0.5 0.05 60), oklch(0.32 0.04 50));
+  box-shadow: 0 6px 10px -4px oklch(0 0 0 / 0.5);
+}
+
+.vw-piece {
+  flex: 0 0 auto;
+  width: clamp(7.5rem, 22vw, 9rem);
+  scroll-snap-align: start;
+}
+.vw-piece__button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  border-radius: 14px;
+  text-align: center;
+  transform-origin: 50% 0;
+  transition: transform 0.35s var(--vd-ease);
+}
+.vw-piece__button:hover,
+.vw-piece__button[aria-pressed="true"] {
+  transform: translateY(-4px);
+}
+.vw-piece__button:focus-visible {
+  outline: 2px solid var(--vd-gold);
+  outline-offset: 3px;
+}
+.vw-piece__hanger {
+  width: 70%;
+  height: auto;
+  margin-bottom: -4px;
+  color: var(--vd-gold);
+}
+.vw-piece__photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--vd-paper);
+  box-shadow: 0 10px 20px -10px oklch(0 0 0 / 0.65);
+  outline: 2px solid transparent;
+  transition: outline-color 0.25s ease;
+}
+.vw-shelf .vw-piece__photo {
+  aspect-ratio: 1;
+}
+.vw-piece__button[aria-pressed="true"] .vw-piece__photo {
+  outline-color: var(--vd-gold);
+}
+.vw-piece__empty {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, var(--vd-paper) 0 10px, oklch(0.9 0.02 85) 10px 20px);
+}
+.vw-piece__price {
+  margin-top: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--vd-paper);
+  color: var(--vd-paper-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.vw-empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--vd-ink);
+}
+
+/* La fiche de la pièce choisie : en verre, à côté du meuble (ordinateur) ou en bas d'écran (téléphone). */
+.vw-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid oklch(1 0 0 / 0.5);
+  background: color-mix(in oklch, var(--background) 82%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 50px -24px oklch(0 0 0 / 0.5);
+  animation: vw-enter 0.35s var(--vd-ease) both;
+}
+.vw-panel:focus {
+  outline: none;
+}
+@media (max-width: 959px) {
+  .vw-panel {
+    position: fixed;
+    inset-inline: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 60;
+    max-height: 72svh;
+    overflow-y: auto;
+  }
+}
+.vw-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.vw-panel__kicker {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--goldink);
+}
+html[dir="rtl"] .vw-panel__kicker {
+  letter-spacing: 0;
+}
+.vw-panel__close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+.vw-panel__piece {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 12px;
+}
+.vw-panel__photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--vd-paper);
+}
+.vw-panel__title {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+.vw-panel__price {
+  margin-top: 4px;
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.15rem;
+  color: var(--goldink);
+}
+.vw-panel__meta {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+}
+.vw-panel__reserved {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--harissa);
+}
+.vw-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.vw-panel__cta,
+.vw-panel__ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding-inline: 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.vw-panel__cta {
+  background: var(--vd);
+  color: var(--vd-ink);
+}
+.vw-panel__ghost {
+  border: 1px solid var(--border);
+}
+.vw-panel__others-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.vw-panel__others {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vw-panel__other {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--vd-paper);
+  transition: transform 0.25s var(--vd-ease);
+}
+.vw-panel__other:hover {
+  transform: scale(1.04);
+}
+
+/* Les rayons : une barre de pilules sous le meuble */
+.vw-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px auto 0;
+  padding: 5px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: var(--cream);
+}
+.vw-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding-inline: 14px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.vw-tab[aria-selected="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+.vw-tab__count {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vw *,
+  .vw *::before,
+  .vw *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .vw-door {
+    display: none;
+  }
+}

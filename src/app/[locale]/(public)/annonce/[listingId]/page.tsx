@@ -194,6 +194,16 @@ export default async function ListingPage({ params }: PageProps<"/[locale]/annon
             </section>
           ) : null}
 
+          {/* Les défauts déclarés par le vendeur. Null : annonce antérieure, jamais déclarée, on n'affiche rien. */}
+          {listing.defects !== null ? (
+            <section className="mt-6" aria-labelledby="defauts-titre">
+              <h2 id="defauts-titre" className="font-semibold">{t("defectsTitle")}</h2>
+              <p className="mt-1 leading-relaxed break-words whitespace-pre-line text-muted-foreground" dir="auto">
+                {listing.defects || t("defectsNone")}
+              </p>
+            </section>
+          ) : null}
+
           <aside className="mt-6 flex gap-3 rounded-[18px] bg-cream p-4 text-sm leading-relaxed">
             <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
             <span>

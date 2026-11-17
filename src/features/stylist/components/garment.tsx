@@ -25,7 +25,7 @@ export function Garment({ src, sizes, slot }: { src: string; sizes: string; slot
 
   return (
     <span className="lx-garment" data-slot={slot} data-state={!ready ? "pending" : cut ? "cut" : "plain"}>
-      <Image src={cut ?? src} alt="" fill unoptimized sizes={sizes} draggable={false} />
+      <Image src={cut ?? src} alt="" fill sizes={sizes} draggable={false} />
     </span>
   );
 }

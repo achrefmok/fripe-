@@ -31,22 +31,29 @@ const price = z
   });
 
 // Une annonce est complète dès sa création : un particulier n'a pas de brouillon à finir plus tard.
-export const listingSchema = z.object({
-  section: z.enum(LISTING_SECTIONS),
-  categoryId: z.uuid("categoryRequired"),
-  title: z.string().trim().min(3, "nameTooShort").max(120, "textTooLong"),
-  description: z.string().trim().max(3000, "textTooLong"),
-  brand: optionalText(60),
-  size: optionalText(20),
-  condition: z.enum(CONDITIONS, "conditionRequired"),
-  price,
-  governorateId: z.coerce.number("governorateRequired").int().positive("governorateRequired"),
-  cityId: z.union([z.coerce.number().int().positive(), z.literal("")]).transform((value) => value || null),
-  attributes: z
-    .record(z.string().regex(/^[a-z][a-z0-9_]{1,30}$/), z.string().trim().max(60, "textTooLong"))
-    .transform((value) => Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== "")))
-    .refine((value) => Object.keys(value).length <= 12, "invalidAttributes"),
-});
+export const listingSchema = z
+  .object({
+    section: z.enum(LISTING_SECTIONS),
+    categoryId: z.uuid("categoryRequired"),
+    title: z.string().trim().min(3, "nameTooShort").max(120, "textTooLong"),
+    description: z.string().trim().max(3000, "textTooLong"),
+    brand: optionalText(60),
+    size: optionalText(20),
+    condition: z.enum(CONDITIONS, "conditionRequired"),
+    price,
+    governorateId: z.coerce.number("governorateRequired").int().positive("governorateRequired"),
+    cityId: z.union([z.coerce.number().int().positive(), z.literal("")]).transform((value) => value || null),
+    attributes: z
+      .record(z.string().regex(/^[a-z][a-z0-9_]{1,30}$/), z.string().trim().max(60, "textTooLong"))
+      .transform((value) => Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== "")))
+      .refine((value) => Object.keys(value).length <= 12, "invalidAttributes"),
+    // Les défauts se déclarent toujours : une description, ou « aucun défaut » coché explicitement.
+    defects: z.string().trim().max(500, "textTooLong").default(""),
+    noDefects: z.boolean().default(false),
+  })
+  .superRefine((data, context) => {
+    if (!data.noDefects && !data.defects) context.addIssue({ code: "custom", path: ["defects"], message: "defectsRequired" });
+  });
 
 export type ListingInput = z.input<typeof listingSchema>;
 

@@ -1,6 +1,7 @@
 import "server-only";
 import { getCategories, searchTokens } from "@/features/catalog/queries";
 import { MARKET_PAGE_SIZE, type MarketFilters } from "@/features/marketplace/schemas";
+import { categoryScope } from "@/features/catalog/category-scope";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parsePriceToMillimes } from "@/lib/utils/price";
 import { listingImageUrl } from "@/lib/utils/storage";
@@ -42,6 +43,8 @@ export type DressingItem = {
   favoriteCount: number;
   place: { name_fr: string; name_ar: string } | null;
   publishedAt: string | null;
+  // La catégorie de la pièce : l'armoire range chaque pièce dans son rayon (vêtements, chaussures, accessoires).
+  categoryId: string;
 };
 
 export type DressingPreview = {
@@ -70,6 +73,7 @@ function toItem(row: Row): DressingItem {
     sellerId: row.seller_id,
     sellerName: row.seller_name,
     favoriteCount: row.favorite_count,
+    categoryId: row.category_id,
     place: row.governorates,
     publishedAt: row.published_at,
   };
@@ -92,17 +96,7 @@ function visibleListings(columns: string, count = false) {
 }
 
 // Une catégorie racine englobe ses sous-catégories, comme dans le catalogue mode.
-function categoryScope(categories: Awaited<ReturnType<typeof getCategories>>, slug: string) {
-  const selected = categories.find((category) => category.slug === slug);
-  if (!selected) return null;
-
-  const root = categories.find((category) => category.id === selected.parentId) ?? selected;
-  const ids = categories
-    .filter((category) => category.id === selected.id || category.parentId === selected.id)
-    .map((category) => category.id);
-
-  return { selected, root, ids };
-}
+// La portée d'un filtre de catégorie est partagée avec le catalogue : voir category-scope.ts.
 
 export async function searchDressing(filters: MarketFilters) {
   const categories = await getCategories("mode");
@@ -149,7 +143,7 @@ function topValues(values: (string | null)[], limit: number) {
   return [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)).slice(0, limit);
 }
 
-const FINE_CONDITIONS: Condition[] = ["new_with_tags", "like_new", "very_good"];
+const FINE_CONDITIONS: Condition[] = ["new_with_tags", "new_without_tags", "like_new", "very_good"];
 
 // La vitrine du Vide-Dressing, calculée sur les annonces les plus récentes : les dressings à
 // découvrir, les marques et les tailles présentes, les bonnes occasions et les pièces de marque.

@@ -13,6 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
 import { productImageUrl } from "@/lib/utils/storage";
+import { TryOnButton } from "../tryon/tryon-button";
 import { FittingBooth } from "./fitting-booth";
 
 // Le curseur du budget, en dinars : de quoi couvrir une tenue de friperie, du petit au grand budget.
@@ -241,7 +242,7 @@ export function OutfitBuilder({
                     >
                       <HangerHook />
                       <span className="lx-cabrail__photo">
-                        {item.imagePath ? <Image src={productImageUrl(item.imagePath)} alt="" fill unoptimized sizes="6rem" className="object-cover" /> : null}
+                        {item.imagePath ? <Image src={productImageUrl(item.imagePath)} alt="" fill sizes="6rem" className="object-cover" /> : null}
                       </span>
                       <span className="mt-1.5 text-xs font-semibold tabular-nums">{formatPrice(item.priceMillimes, locale)}</span>
                     </button>
@@ -308,6 +309,7 @@ export function OutfitBuilder({
             <Dices className="size-4" aria-hidden="true" />
             {t("random")}
           </button>
+          <TryOnButton pieces={pieces} className="lx-cabbtn flex-[1_1_120px]" />
           <button type="button" className="lx-cabbtn lx-cabbtn--gold flex-[1_1_100%]" onClick={addLookToCart} disabled={pending || !selected.length}>
             {t("addToCart")}
           </button>
