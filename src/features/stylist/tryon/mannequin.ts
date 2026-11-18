@@ -1,218 +1,151 @@
-// Le mannequin de la cabine : une silhouette 3D (three.js) rendue une fois dans le navigateur, de face,
-// comme un mannequin de vitrine. On connaît chaque partie du corps, donc chaque zone que couvre une pièce :
-// buste et haut des bras pour le haut, bassin et jambes pour le bas, pieds pour les chaussures.
-import type { Slot } from "../engine";
-import type { Frame } from "./pose";
+// La cabine 3D, côté données : les mannequins (mis en cache par silhouette), les pièces détourées
+// et leur mise en place. La scène (scene/fitting-scene.ts) ne fait qu'afficher ce qui est construit ici.
+import { CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, type Object3D, PlaneGeometry, SRGBColorSpace } from "three";
+import type { Slot, StyleItem } from "../engine";
+import { FIT_RULES, GARMENT_KINDS, type GarmentKind, kindSuits, ruleKey } from "./garments/garment-config";
+import { type Adjust, cardPlacement, type FitMaps, type Reference, referenceOf, shellGeometry, shoeGeometries } from "./garments/garment-fitting";
+import { LAYER_ORDER } from "./garments/garment-layers";
+import { bottomFromShape, type GarmentShape, keepCore, measureAlpha } from "./garments/garment-measure";
+import { type BuiltMannequin, buildMannequin } from "./mannequin/build-mannequin";
+import { createDepthMap } from "./mannequin/depth-map";
+import { FEMALE } from "./mannequin/female-mannequin";
+import { MALE } from "./mannequin/male-mannequin";
+import type { Gender, Morph } from "./mannequin/mannequin-types";
+import { createFittingScene } from "./scene/fitting-scene";
 
-export type Mannequin = {
-  photo: HTMLCanvasElement;
-  body: HTMLCanvasElement;
-  regions: Partial<Record<Slot, HTMLCanvasElement>>;
-  frames: Partial<Record<Slot, Frame>>;
-};
+export type Body = { mannequin: BuiltMannequin; maps: FitMaps; reference: Reference };
+export type PreparedGarment = { slot: Slot; item: StyleItem; kind: GarmentKind | null; canvas: HTMLCanvasElement; shape: GarmentShape; texture: CanvasTexture };
 
-const WIDTH = 600;
-const HEIGHT = 900;
+const DEFINITIONS = { femme: FEMALE, homme: MALE } as const;
+const TORSO_PARTS = ["torso", "head", "legL", "legR", "footL", "footR"] as const;
+const bodies = new Map<string, Body>();
 
-type Part = "head" | "neck" | "torso" | "shoulder" | "upperArm" | "lowerArm" | "hand" | "pelvis" | "thigh" | "shin" | "foot";
+function mapsOf(mannequin: BuiltMannequin): FitMaps {
+  return {
+    full: createDepthMap(mannequin, ["torso", "head", "armL", "armR", "legL", "legR", "footL", "footR"]),
+    torso: createDepthMap(mannequin, [...TORSO_PARTS]),
+  };
+}
 
-// Les parties couvertes par chaque type de pièce.
-const REGIONS: Partial<Record<Slot, Part[]>> = {
-  top: ["torso", "shoulder", "upperArm"],
-  bottom: ["pelvis", "thigh", "shin"],
-  shoes: ["foot"],
-};
+// Le mannequin d'une silhouette, avec ses cartes de profondeur et l'échelle de référence (standard).
+export function getBody(gender: Gender, morph: Morph): Body {
+  const key = `${gender}:${morph}`;
+  const cached = bodies.get(key);
+  if (cached) return cached;
+  const mannequin = buildMannequin(DEFINITIONS[gender], morph);
+  const maps = mapsOf(mannequin);
+  const standard = morph === "standard" ? { mannequin, maps } : getBody(gender, "standard");
+  const body = { mannequin, maps, reference: referenceOf(standard.mannequin, standard.maps.torso) };
+  bodies.set(key, body);
+  return body;
+}
 
-function layer() {
+export function itemKind(item: Pick<StyleItem, "kind">): GarmentKind | null {
+  return GARMENT_KINDS.includes(item.kind as GarmentKind) ? (item.kind as GarmentKind) : null;
+}
+
+// Une bordure transparente autour de la photo : les bords de la texture ne bavent pas.
+function padded(source: HTMLCanvasElement) {
   const canvas = document.createElement("canvas");
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
+  canvas.width = source.width + 4;
+  canvas.height = source.height + 4;
+  canvas.getContext("2d")!.drawImage(source, 2, 2);
   return canvas;
 }
 
-// Le rectangle occupé par ce qui n'est pas transparent.
-function bounds(canvas: HTMLCanvasElement) {
-  const { data } = canvas.getContext("2d")!.getImageData(0, 0, WIDTH, HEIGHT);
-  let minX = WIDTH;
-  let minY = HEIGHT;
-  let maxX = -1;
-  let maxY = -1;
-  for (let y = 0; y < HEIGHT; y++) {
-    for (let x = 0; x < WIDTH; x++) {
-      if (data[(y * WIDTH + x) * 4 + 3] > 60) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+export function prepareGarment(slot: Slot, item: StyleItem, cutout: HTMLCanvasElement): PreparedGarment {
+  const canvas = padded(cutout);
+  const context = canvas.getContext("2d", { willReadFrequently: true })!;
+  const image = context.getImageData(0, 0, canvas.width, canvas.height);
+  const shape = measureAlpha(image.data, canvas.width, canvas.height);
+  let kind = itemKind(item);
+  // Jupe ou short non précisé : la forme de la photo tranche si elle est nette, sinon rien n'est forcé.
+  if (!kind && slot === "bottom") kind = bottomFromShape(shape);
+  // Hauts, vestes, robes : les manches détachées du corps sur la photo ne sont pas posées.
+  if (FIT_RULES[ruleKey(kind, slot)].anchor === "neck") {
+    keepCore(image.data, shape);
+    context.putImageData(image, 0, 0);
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.anisotropy = 4;
+  return { slot, item, kind, canvas, shape, texture };
+}
+
+// Ce que le mannequin choisi porte, et ce qu'il ne peut pas porter (une robe sur le mannequin homme).
+export function wornBy(gender: Gender, garments: PreparedGarment[]) {
+  return {
+    worn: garments.filter((garment) => kindSuits(garment.kind, gender)),
+    skipped: garments.filter((garment) => !kindSuits(garment.kind, gender)),
+  };
+}
+
+function material(garment: PreparedGarment) {
+  return new MeshStandardMaterial({ map: garment.texture, alphaTest: 0.45, side: DoubleSide, roughness: 0.9, metalness: 0 });
+}
+
+// Les maillages des pièces portées, dans l'ordre où l'on s'habille.
+export function dressBody(body: Body, garments: PreparedGarment[], adjusts: Partial<Record<Slot, Adjust>>): Object3D[] {
+  const objects: Object3D[] = [];
+  const ordered = [...garments].sort((a, b) => LAYER_ORDER.indexOf(a.slot) - LAYER_ORDER.indexOf(b.slot));
+  for (const [order, garment] of ordered.entries()) {
+    const rule = FIT_RULES[ruleKey(garment.kind, garment.slot)];
+    const adjust = adjusts[garment.slot] ?? { scale: 1, dy: 0 };
+    const common = { mannequin: body.mannequin, shape: garment.shape, rule, reference: body.reference, adjust };
+    // Une texture partagée par plusieurs maillages ne doit être libérée qu'une fois : chaque maillage a la sienne.
+    const texture = garment.texture.clone();
+    const own = { ...garment, texture };
+    if (rule.wrap === "foot") {
+      for (const geometry of shoeGeometries(common)) {
+        const mesh = new Mesh(geometry, material({ ...own, texture: texture.clone() }));
+        mesh.renderOrder = order;
+        mesh.userData.slot = garment.slot;
+        objects.push(mesh);
+      }
+      texture.dispose();
+      continue;
+    }
+    if (rule.wrap === "card") {
+      const place = cardPlacement({ ...common, side: garment.kind === "bag" ? 1 : -1 });
+      const mesh = new Mesh(new PlaneGeometry(place.width, place.height), material(own));
+      mesh.position.set(place.x, place.y, place.z);
+      mesh.rotation.y = place.rotateY;
+      mesh.renderOrder = order;
+      mesh.userData.slot = garment.slot;
+      objects.push(mesh);
+      continue;
+    }
+    const { geometry } = shellGeometry({ ...common, maps: body.maps });
+    const mesh = new Mesh(geometry, material(own));
+    mesh.receiveShadow = true;
+    mesh.renderOrder = order;
+    mesh.userData.slot = garment.slot;
+    objects.push(mesh);
+  }
+  return objects;
+}
+
+// Les vignettes du choix homme/femme : le mannequin standard, rendu une fois puis libéré.
+let thumbnails: Promise<Record<Gender, string>> | null = null;
+export function mannequinThumbnails() {
+  thumbnails ??= (async () => {
+    const result = {} as Record<Gender, string>;
+    for (const gender of ["femme", "homme"] as const) {
+      const canvas = document.createElement("canvas");
+      const scene = createFittingScene(canvas, { lowPower: true });
+      try {
+        scene.setBody(getBody(gender, "standard").mannequin);
+        scene.resize(240, 320);
+        await scene.snapshot();
+        result[gender] = canvas.toDataURL("image/png");
+      } finally {
+        scene.dispose();
       }
     }
-  }
-  return maxX < 0 ? null : { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
-}
-
-// Le tissu est un peu plus large que le corps : la zone est élargie de quelques pixels.
-function dilate(source: HTMLCanvasElement, radius: number) {
-  const out = layer();
-  const context = out.getContext("2d")!;
-  for (let dx = -radius; dx <= radius; dx += radius) {
-    for (let dy = -radius; dy <= radius; dy += radius) context.drawImage(source, dx, dy);
-  }
-  return out;
-}
-
-let cached: Promise<Mannequin> | null = null;
-export function renderMannequin() {
-  cached ??= build();
-  cached.catch(() => {
-    cached = null;
+    return result;
+  })();
+  thumbnails.catch(() => {
+    thumbnails = null;
   });
-  return cached;
-}
-
-async function build(): Promise<Mannequin> {
-  const THREE = await import("three");
-  const { RoomEnvironment } = await import("three/examples/jsm/environments/RoomEnvironment.js");
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-  try {
-    renderer.setPixelRatio(1);
-    renderer.setSize(WIDTH, HEIGHT, false);
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-    const scene = new THREE.Scene();
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    const key = new THREE.DirectionalLight(0xffffff, 1.4);
-    key.position.set(-1.5, 3, 4);
-    scene.add(key, new THREE.HemisphereLight(0xffffff, 0xd9cfc2, 0.5));
-
-    const camera = new THREE.PerspectiveCamera(18, WIDTH / HEIGHT, 0.1, 50);
-    camera.position.set(0, 0.92, 6.4);
-    camera.lookAt(0, 0.9, 0);
-
-    // Gris de vitrine, laqué.
-    const material = new THREE.MeshPhysicalMaterial({ color: 0xbfc3ca, roughness: 0.28, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.2 });
-    const meshes: { mesh: InstanceType<typeof THREE.Mesh>; part: Part }[] = [];
-    const add = (mesh: InstanceType<typeof THREE.Mesh>, part: Part) => {
-      scene.add(mesh);
-      meshes.push({ mesh, part });
-    };
-    const V = (x: number, y: number, z = 0) => new THREE.Vector3(x, y, z);
-    const up = V(0, 1, 0);
-
-    const joint = (at: InstanceType<typeof THREE.Vector3>, radius: number, part: Part, scale: [number, number, number] = [1, 1, 1]) => {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 40, 24), material);
-      mesh.position.copy(at);
-      mesh.scale.set(...scale);
-      add(mesh, part);
-    };
-    const limb = (from: InstanceType<typeof THREE.Vector3>, to: InstanceType<typeof THREE.Vector3>, r1: number, r2: number, part: Part) => {
-      const direction = to.clone().sub(from);
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r2, r1, direction.length(), 40, 1, true), material);
-      mesh.position.copy(from).addScaledVector(direction, 0.5);
-      mesh.quaternion.setFromUnitVectors(up, direction.normalize());
-      add(mesh, part);
-    };
-    const lathe = (profile: [number, number][], part: Part, depth: number) => {
-      const mesh = new THREE.Mesh(new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), 64), material);
-      mesh.scale.set(1, 1, depth);
-      add(mesh, part);
-    };
-
-    // Tête et cou.
-    joint(V(0, 1.66), 0.1, "head", [0.82, 1.12, 0.95]);
-    limb(V(0, 1.45), V(0, 1.57), 0.05, 0.043, "neck");
-    // Buste : taille marquée, épaules arrondies.
-    lathe([[0, 0.99], [0.145, 0.99], [0.128, 1.08], [0.134, 1.16], [0.152, 1.24], [0.165, 1.32], [0.172, 1.38], [0.16, 1.43], [0.115, 1.465], [0.055, 1.485], [0, 1.49]], "torso", 0.6);
-    lathe([[0, 0.84], [0.1, 0.85], [0.152, 0.9], [0.163, 0.96], [0.148, 1.03], [0, 1.03]], "pelvis", 0.62);
-
-    for (const side of [-1, 1]) {
-      // Bras légèrement écartés, comme sur un mannequin de vitrine.
-      const shoulder = V(side * 0.185, 1.4);
-      const middle = V(side * 0.212, 1.27);
-      const elbow = V(side * 0.24, 1.13);
-      const wrist = V(side * 0.275, 0.87);
-      joint(shoulder, 0.05, "shoulder");
-      limb(shoulder, middle, 0.049, 0.043, "upperArm");
-      joint(middle, 0.043, "lowerArm");
-      limb(middle, elbow, 0.043, 0.035, "lowerArm");
-      joint(elbow, 0.035, "lowerArm");
-      limb(elbow, wrist, 0.034, 0.024, "lowerArm");
-      joint(wrist, 0.024, "lowerArm");
-      joint(V(side * 0.285, 0.805), 0.03, "hand", [0.7, 1.75, 0.9]);
-
-      const hip = V(side * 0.085, 0.9);
-      const knee = V(side * 0.08, 0.5);
-      const ankle = V(side * 0.078, 0.09);
-      joint(hip, 0.078, "thigh");
-      limb(hip, knee, 0.08, 0.053, "thigh");
-      joint(knee, 0.056, "shin");
-      limb(knee, ankle, 0.055, 0.033, "shin");
-      joint(ankle, 0.034, "foot");
-      joint(V(side * 0.092, 0.042, 0.07), 0.04, "foot", [0.95, 0.85, 2.4]);
-    }
-
-    const snapshot = () => {
-      renderer.render(scene, camera);
-      const out = layer();
-      out.getContext("2d")!.drawImage(renderer.domElement, 0, 0);
-      return out;
-    };
-
-    const figure = snapshot();
-
-    // Les zones : chaque groupe de parties rendu seul, en blanc uni.
-    scene.overrideMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const show = (parts: Part[] | null) => meshes.forEach(({ mesh, part }) => (mesh.visible = !parts || parts.includes(part)));
-    const regions: Partial<Record<Slot, HTMLCanvasElement>> = {};
-    for (const [slot, parts] of Object.entries(REGIONS) as [Slot, Part[]][]) {
-      show(parts);
-      regions[slot] = dilate(snapshot(), 3);
-    }
-    show(null);
-    const body = snapshot();
-
-    // Le décor : un fond crème dégradé et l'ombre portée au sol.
-    const photo = layer();
-    const context = photo.getContext("2d")!;
-    const wall = context.createLinearGradient(0, 0, 0, HEIGHT);
-    wall.addColorStop(0, "#e4ddd5");
-    wall.addColorStop(0.62, "#ece5dc");
-    wall.addColorStop(1, "#f4eee6");
-    context.fillStyle = wall;
-    context.fillRect(0, 0, WIDTH, HEIGHT);
-    const feet = bounds(regions.shoes!);
-    if (feet) {
-      const shadow = context.createRadialGradient(0, 0, 0, 0, 0, 1);
-      shadow.addColorStop(0, "rgba(60, 48, 36, 0.28)");
-      shadow.addColorStop(1, "rgba(60, 48, 36, 0)");
-      context.save();
-      context.translate(feet.x + feet.width / 2, feet.y + feet.height * 0.85);
-      context.scale(feet.width * 0.9, feet.height * 0.55);
-      context.fillStyle = shadow;
-      context.beginPath();
-      context.arc(0, 0, 1, 0, Math.PI * 2);
-      context.fill();
-      context.restore();
-    }
-    context.drawImage(figure, 0, 0);
-
-    // Les cadres : le haut, le bas et les chaussures épousent exactement leur zone.
-    const frames: Partial<Record<Slot, Frame>> = {};
-    for (const slot of Object.keys(REGIONS) as Slot[]) {
-      const box = bounds(regions[slot]!);
-      if (box) frames[slot] = { ...box, rotate: 0, fit: true, clip: true };
-    }
-    // Le sac ou l'accessoire, posé à côté de la main.
-    const top = frames.top;
-    if (top) frames.accessory = { x: top.x + top.width * 0.86, y: HEIGHT * 0.42, width: WIDTH * 0.22, height: WIDTH * 0.28, rotate: 0, fit: false, clip: false };
-
-    pmrem.dispose();
-    return { photo, body, regions, frames };
-  } finally {
-    renderer.dispose();
-    renderer.forceContextLoss();
-  }
+  return thumbnails;
 }

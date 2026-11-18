@@ -55,11 +55,13 @@ export async function detectPose(image: TexImageSource): Promise<{ pose: Pose | 
 // Où poser chaque pièce, en fractions de la photo (repli sans silhouette, et tests unitaires).
 export type Placement = { left: number; top: number; width: number; rotate: number };
 
-const L = { shoulderL: 11, shoulderR: 12, wristL: 15, wristR: 16, hipL: 23, hipR: 24, ankleL: 27, ankleR: 28 } as const;
+const L = { shoulderL: 11, shoulderR: 12, wristL: 15, wristR: 16, hipL: 23, hipR: 24, kneeL: 25, kneeR: 26, ankleL: 27, ankleR: 28 } as const;
 
 export function placeGarments(pose: Pose | null, aspect: number): Record<Slot, Placement> {
   const fallback: Record<Slot, Placement> = {
     top: { left: 0.3, top: 0.18, width: 0.4, rotate: 0 },
+    outer: { left: 0.27, top: 0.17, width: 0.46, rotate: 0 },
+    dress: { left: 0.3, top: 0.18, width: 0.4, rotate: 0 },
     bottom: { left: 0.33, top: 0.48, width: 0.34, rotate: 0 },
     shoes: { left: 0.36, top: 0.86, width: 0.28, rotate: 0 },
     accessory: { left: 0.68, top: 0.42, width: 0.18, rotate: 0 },
@@ -80,6 +82,8 @@ export function placeGarments(pose: Pose | null, aspect: number): Record<Slot, P
     const span = distance(L.shoulderL, L.shoulderR);
     const width = span * 1.9;
     placements.top = { left: shoulders.x - width / 2, top: shoulders.y - (span * 0.3) / aspect, width, rotate: angle(L.shoulderR, L.shoulderL) };
+    placements.dress = placements.top;
+    placements.outer = { ...placements.top, left: shoulders.x - (width * 1.12) / 2, width: width * 1.12 };
     placements.accessory = { left: (seen(L.wristL) ? pose[L.wristL].x : shoulders.x + span) - span * 0.25, top: seen(L.wristL) ? pose[L.wristL].y - (span * 0.2) / aspect : shoulders.y + (span * 1.4) / aspect, width: span * 0.55, rotate: 0 };
   }
   if (seen(L.hipL) && seen(L.hipR)) {
@@ -105,7 +109,7 @@ export type Frame = { x: number; y: number; width: number; height: number; rotat
 export function fitFrames(pose: Pose | null, width: number, height: number): Partial<Record<Slot, Frame>> {
   if (!pose) return {};
   const p = (index: number) => ({ x: pose[index].x * width, y: pose[index].y * height, ok: (pose[index]?.visibility ?? 1) > 0.4 });
-  const [sl, sr, hl, hr, al, ar, wl, wr] = [L.shoulderL, L.shoulderR, L.hipL, L.hipR, L.ankleL, L.ankleR, L.wristL, L.wristR].map(p);
+  const [sl, sr, hl, hr, al, ar, wl, wr, kl, kr] = [L.shoulderL, L.shoulderR, L.hipL, L.hipR, L.ankleL, L.ankleR, L.wristL, L.wristR, L.kneeL, L.kneeR].map(p);
   const frames: Partial<Record<Slot, Frame>> = {};
 
   if (sl.ok && sr.ok) {
@@ -125,6 +129,12 @@ export function fitFrames(pose: Pose | null, width: number, height: number): Par
       fit: true,
       clip: true,
     };
+    // La veste, un peu plus large et plus longue que le haut, passe par-dessus.
+    const upper = frames.top;
+    frames.outer = { ...upper, x: upper.x - upper.width * 0.06, width: upper.width * 1.12, height: upper.height * 1.08 };
+    // La robe, des épaules jusque sous les genoux (ou une longueur de jambe estimée).
+    const kneeY = kl.ok && kr.ok ? (kl.y + kr.y) / 2 : hipY + torso * 1.25;
+    frames.dress = { ...upper, height: kneeY + torso * 0.15 - upper.y };
     const wrist = wl.ok && (!wr.ok || wl.y >= wr.y) ? wl : wr.ok ? wr : null;
     const size = span * 0.5;
     frames.accessory = { x: (wrist?.x ?? shoulders.x + span) - size / 2, y: (wrist?.y ?? hipY) - size * 0.2, width: size, height: size, rotate: 0, fit: false, clip: false };

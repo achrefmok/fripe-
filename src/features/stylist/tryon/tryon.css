@@ -91,3 +91,233 @@
   font-size: 0.8rem;
   color: var(--muted-foreground);
 }
+
+/* Le choix du mannequin : deux cartes, chacune avec sa silhouette. */
+.vt-choose {
+  display: grid;
+  gap: 12px;
+}
+.vt-choose__lead {
+  font-size: 0.92rem;
+  color: var(--muted-foreground);
+}
+.vt-choose__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.vt-card {
+  display: grid;
+  gap: 8px;
+  padding: 8px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.vt-card:hover {
+  border-color: var(--foreground);
+}
+.vt-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.vt-card__figure {
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ebe4db;
+}
+.vt-card__figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vt-card__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(100deg, #e6dfd6 30%, #f1ebe3 50%, #e6dfd6 70%);
+  background-size: 200% 100%;
+  animation: vt-shimmer 1.4s linear infinite;
+}
+.vt-card__label {
+  font-weight: 600;
+}
+@keyframes vt-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* La cabine 3D : le mannequin d'abord, les réglages autour, jamais par-dessus. */
+.vt-stage {
+  display: grid;
+  gap: 12px;
+}
+.vt-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.vt-segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--secondary);
+}
+.vt-segment__item {
+  min-height: 36px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.vt-segment__item[aria-checked="true"] {
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px oklch(0.17 0.008 60 / 0.14);
+}
+.vt-segment__item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+.vt-viewport {
+  position: relative;
+  width: min(100%, 26rem);
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #ebe4db;
+}
+.vt-viewport__canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1.3;
+  touch-action: none;
+  cursor: grab;
+}
+.vt-viewport__canvas:active {
+  cursor: grabbing;
+}
+.vt-viewport__busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--muted-foreground);
+}
+/* Sous la scène, jamais par-dessus : le mannequin reste entièrement visible. */
+.vt-viewport__tools {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  width: min(100%, 26rem);
+  margin-inline: auto;
+}
+.vt-toolgroup {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--secondary);
+}
+.vt-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding-inline: 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.vt-tool:hover {
+  background: oklch(0.17 0.008 60 / 0.07);
+}
+.vt-tool:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+.vt-tool:disabled {
+  opacity: 0.4;
+}
+.vt-tool--icon {
+  padding-inline: 0;
+}
+.vt-tool[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+.vt-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+.vt-pieces {
+  display: grid;
+  gap: 6px;
+}
+.vt-piece {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.vt-piece.is-selected {
+  border-color: var(--gold);
+}
+.vt-piece.is-off .vt-piece__photo,
+.vt-piece.is-off .vt-piece__text {
+  opacity: 0.45;
+}
+.vt-piece__photo {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--secondary);
+}
+.vt-piece__text {
+  display: grid;
+  min-width: 0;
+}
+.vt-piece__title {
+  overflow: hidden;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-piece__meta {
+  overflow: hidden;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-piece__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.vt-piece .vt-tool {
+  color: var(--foreground);
+}
+.vt-total {
+  font-size: 0.92rem;
+  text-align: end;
+}

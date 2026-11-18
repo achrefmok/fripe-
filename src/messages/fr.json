@@ -222,7 +222,8 @@
     "messageEmpty": "Écris un message.",
     "phoneRequired": "Indique ton numéro de téléphone.",
     "codeInvalid": "Le code contient 6 chiffres.",
-    "arrivalTitleShort": "Indique un titre d'au moins 3 caractères."
+    "arrivalTitleShort": "Indique un titre d'au moins 3 caractères.",
+    "outfitIncoherent": "Une robe ne se porte ni avec un haut ni avec un bas."
   },
   "errors": {
     "invalidInput": "Vérifie les champs signalés.",
@@ -1107,7 +1108,9 @@
       "top": "Haut",
       "bottom": "Bas",
       "shoes": "Chaussures",
-      "accessory": "Accessoire"
+      "accessory": "Accessoire",
+      "outer": "Veste",
+      "dress": "Robe"
     },
     "emptySlot": "Rien de choisi",
     "choose": "Choisir",
@@ -1154,7 +1157,14 @@
     "mirrorKicker": "Devant le miroir",
     "mirrorHint": "Touche une pièce pour la changer : le reste du look ne bouge pas.",
     "backToBooth": "Retour en cabine",
-    "emptyLook": "Choisis au moins une pièce avant de tirer le rideau."
+    "emptyLook": "Choisis au moins une pièce avant de tirer le rideau.",
+    "forWhom": "Pour",
+    "forWhomOptions": {
+      "all": "Tous",
+      "femme": "Femme",
+      "homme": "Homme"
+    },
+    "replacedBy": "Retiré de la tenue : {slots}. Une robe ne se porte ni avec un haut ni avec un bas."
   },
   "moderation": {
     "report": "Signaler",
@@ -2131,7 +2141,7 @@
   "tryon": {
     "open": "Essayer la tenue",
     "title": "Essayage virtuel",
-    "description": "Aperçu de la tenue sur ta photo, calculé par une IA de détection de pose.",
+    "description": "La tenue sur un mannequin 3D femme ou homme, ou sur ta photo. Tout est calculé sur ton appareil.",
     "privacy": "Ta photo reste sur ton appareil : elle n’est jamais envoyée ni enregistrée.",
     "intro": "Choisis une photo de toi : l’IA repère tes épaules, tes hanches et tes chevilles, puis y pose les pièces de la tenue. Tu peux ensuite les déplacer du doigt et ajuster leur taille.",
     "tipFull": "En pied, de face, debout.",
@@ -2146,7 +2156,6 @@
       "ready": "Tenue ajustée à ta silhouette. Touche une pièce pour la déplacer ou régler sa taille.",
       "manual": "Aucune silhouette détectée : les pièces sont posées au centre, place-les à la main.",
       "error": "L’analyse n’est pas disponible sur cet appareil : place les pièces à la main.",
-      "mannequin": "La tenue sur le mannequin. Touche une pièce pour la déplacer ou régler sa taille, ou essaie-la sur ta photo.",
       "mannequinError": "Le mannequin 3D n’est pas disponible sur cet appareil : essaie la tenue sur ta photo."
     },
     "size": "Taille de {piece} sur la photo",
@@ -2156,6 +2165,40 @@
     "weakCutout": "Certaines photos de pièces n’ont pas pu être détourées : elles apparaissent avec leur fond.",
     "save": "Enregistrer l’image",
     "useMannequin": "Revenir au mannequin",
-    "mannequinAlt": "La tenue sur le mannequin de la cabine"
+    "mannequinAlt": "La tenue sur le mannequin de la cabine",
+    "chooseLead": "Sur quel mannequin veux-tu essayer la tenue ?",
+    "gender": {
+      "femme": "Femme",
+      "homme": "Homme"
+    },
+    "genderLabel": "Mannequin",
+    "morphLabel": "Silhouette",
+    "morph": {
+      "mince": "Mince",
+      "standard": "Standard",
+      "large": "Large"
+    },
+    "building": "Préparation du mannequin…",
+    "viewLabel": "Vue",
+    "view": {
+      "left": "¾ gauche",
+      "front": "Face",
+      "right": "¾ droite"
+    },
+    "zoomLabel": "Zoom",
+    "zoomIn": "Zoomer",
+    "zoomOut": "Dézoomer",
+    "rotateHint": "Fais glisser pour tourner le mannequin, pince pour zoomer.",
+    "skipped": "Non portée par ce mannequin : {pieces}.",
+    "piecesLabel": "Les pièces de la tenue",
+    "sizeLabel": "taille {size}",
+    "available": "Disponible",
+    "adjustPiece": "Ajuster {piece}",
+    "showPiece": "Remettre {piece}",
+    "hidePiece": "Retirer {piece} du mannequin",
+    "total": "Total de la tenue :",
+    "heightAdjust": "Hauteur sur le mannequin",
+    "onMyPhoto": "Essayer sur ma photo",
+    "mannequinWarning": "Aperçu indicatif : chaque pièce garde les proportions de sa photo et s’enroule sur le mannequin, sans simulation de tissu. Vues de face et de trois-quarts seulement, les photos ne montrant pas le dos. Les silhouettes ne correspondent pas à des tailles : vérifie les mesures dans chaque annonce."
   }
 }

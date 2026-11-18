@@ -3334,7 +3334,7 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-      outfit_slot: "top" | "bottom" | "shoes" | "accessory"
+      outfit_slot: "top" | "outer" | "dress" | "bottom" | "shoes" | "accessory"
       product_condition:
         | "new_with_tags"
         | "new_without_tags"
@@ -3506,7 +3506,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      outfit_slot: ["top", "bottom", "shoes", "accessory"],
+      outfit_slot: ["top", "outer", "dress", "bottom", "shoes", "accessory"],
       product_condition: [
         "new_with_tags",
         "new_without_tags",

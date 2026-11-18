@@ -3239,7 +3239,7 @@
     position: absolute;
     inset: 16% 10% 6%;
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.35fr 1fr 0.85fr;
     grid-template-rows: 1.15fr 1.15fr 0.7fr;
     gap: 8px;
   }
@@ -3261,13 +3261,24 @@
     grid-row: 2;
   }
 
-  .lx-booth__slot--accessory {
+  /* La veste à côté du haut qu'elle recouvre, la robe à côté du bas qu'elle remplace. */
+  .lx-booth__slot--outer {
     grid-column: 2;
+    grid-row: 1;
+  }
+
+  .lx-booth__slot--dress {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .lx-booth__slot--accessory {
+    grid-column: 3;
     grid-row: 1 / span 2;
   }
 
   .lx-booth__slot--shoes {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3;
     grid-row: 3;
   }
 
@@ -8871,6 +8882,60 @@
     .lx-garment {
       transition: none;
     }
+  }
+}
+
+/* La veste par-dessus le haut, la robe des épaules aux genoux. */
+@layer components {
+  .lx-mirror__piece--outer {
+    z-index: 4;
+    top: 9.5%;
+    left: 12%;
+    width: 76%;
+    height: 44%;
+    aspect-ratio: auto;
+    rotate: none;
+  }
+
+  .lx-mirror__piece--outer .lx-garment img {
+    object-position: 50% 0;
+  }
+
+  .lx-mirror__piece--dress {
+    z-index: 2;
+    top: 11%;
+    left: 19%;
+    width: 62%;
+    height: 72%;
+    aspect-ratio: auto;
+    rotate: none;
+  }
+
+  .lx-mirror__piece--dress .lx-garment img {
+    object-position: 50% 0;
+  }
+
+  .lx-garment[data-slot="outer"]:not([data-state="cut"]) img {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 102'%3E%3Cpath d='M42 5 Q60 19 78 5 L105 15 L119 45 L100 55 L92 43 L92 96 Q60 101 28 96 L28 43 L20 55 L1 45 L15 15 Z' stroke='%23000' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-position: 50% 0;
+  }
+
+  .lx-garment[data-slot="dress"]:not([data-state="cut"]) img {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Cpath d='M34 2 Q50 12 66 2 L74 30 L68 52 L96 146 H4 L32 52 L26 30 Z' stroke='%23000' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-position: 50% 0;
+  }
+
+  .lx-cabfor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lx-cabfor__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
   }
 }
 

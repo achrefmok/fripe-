@@ -9,7 +9,9 @@ import { parsePriceToMillimes } from "@/lib/utils/price";
 import {
   COLORS,
   findCheaperOutfit,
+  GENDERS,
   getStylistEngine,
+  isCoherentLook,
   OCCASIONS,
   SLOTS,
   STYLES,
@@ -58,18 +60,19 @@ export async function recommendOutfits(input: unknown): Promise<ActionResult<Rec
   return success(outfits);
 }
 
-export async function searchSlotItems(slot: string, search: string): Promise<ActionResult<StyleItem[]>> {
+export async function searchSlotItems(slot: string, search: string, gender: string | null = null): Promise<ActionResult<StyleItem[]>> {
   const parsedSlot = z.enum(SLOTS).safeParse(slot);
-  if (!parsedSlot.success) return failure("invalidInput");
+  const parsedGender = z.enum(GENDERS).nullable().safeParse(gender);
+  if (!parsedSlot.success || !parsedGender.success) return failure("invalidInput");
 
-  const items = await getStyleCatalog({ slot: parsedSlot.data, search: search.trim().slice(0, 60) });
+  const items = await getStyleCatalog({ slot: parsedSlot.data, search: search.trim().slice(0, 60), gender: parsedGender.data });
   return success(items.slice(0, 30));
 }
 
 export async function suggestCheaperOutfit(
   productIds: string[],
 ): Promise<ActionResult<{ items: StyleItem[]; savingMillimes: number } | null>> {
-  const ids = z.array(z.uuid()).min(1).max(4).safeParse(productIds);
+  const ids = z.array(z.uuid()).min(1).max(SLOTS.length).safeParse(productIds);
   if (!ids.success) return failure("invalidInput");
 
   const catalog = await getStyleCatalog();
@@ -83,7 +86,12 @@ const outfitSchema = z.object({
   name: z.string().trim().min(2, "nameTooShort").max(60, "nameTooLong"),
   budget: z.string().trim(),
   isPublic: z.boolean(),
-  items: z.array(z.object({ slot: z.enum(SLOTS), productId: z.uuid() })).min(1, "outfitEmpty").max(4),
+  items: z
+    .array(z.object({ slot: z.enum(SLOTS), productId: z.uuid() }))
+    .min(1, "outfitEmpty")
+    .max(SLOTS.length)
+    // Une robe ne se porte ni avec un haut ni avec un bas.
+    .refine((items) => isCoherentLook(items.map((item) => item.slot)), "outfitIncoherent"),
 });
 
 export async function saveOutfit(input: unknown): Promise<ActionResult<{ outfitId: string }>> {
@@ -130,7 +138,7 @@ export async function deleteOutfit(outfitId: string): Promise<ActionResult> {
 }
 
 export async function addItemsToCart(productIds: string[]): Promise<ActionResult> {
-  const ids = z.array(z.uuid()).min(1).max(4).safeParse(productIds);
+  const ids = z.array(z.uuid()).min(1).max(SLOTS.length).safeParse(productIds);
   if (!ids.success) return failure("invalidInput");
 
   const viewer = await getViewer();

@@ -1,8 +1,14 @@
 // Moteur de recommandation déterministe : mêmes entrées, mêmes tenues. Aucun service externe.
 // `StylistEngine` permettra de brancher un modèle plus tard sans toucher à l'interface.
 
-export const SLOTS = ["top", "bottom", "shoes", "accessory"] as const;
+// Le haut, la veste portée par-dessus, la robe (qui remplace le haut et le bas), le bas, les chaussures
+// et l'accessoire. L'ordre est celui des cases de la cabine.
+export const SLOTS = ["top", "outer", "dress", "bottom", "shoes", "accessory"] as const;
 export type Slot = (typeof SLOTS)[number];
+
+// Pour qui la pièce est prévue (attribut « Pour » de l'annonce) ; absent ou « mixte » : pour tous.
+export const GENDERS = ["femme", "homme"] as const;
+export type Gender = (typeof GENDERS)[number];
 
 export const STYLES = ["streetwear", "casual", "chic", "sport", "vintage"] as const;
 export type Style = (typeof STYLES)[number];
@@ -25,7 +31,30 @@ export type StyleItem = {
   categoryId: string;
   shopName: string;
   imagePath: string | null;
+  // Type précis de la pièce (t-shirt, jupe, robe…), déduit de la catégorie et du titre ; null si incertain.
+  kind?: string | null;
+  // Valeur de l'attribut « Pour » : femme, homme, mixte, enfant, ou null.
+  gender?: string | null;
 };
+
+// Une pièce convient au mannequin choisi si elle lui est destinée, mixte ou sans précision.
+export function suitsGender(item: Pick<StyleItem, "gender">, gender: Gender | null) {
+  return !gender || !item.gender || item.gender === gender || item.gender === "mixte";
+}
+
+// La robe se porte seule : elle remplace le haut et le bas, et inversement.
+const EXCLUSIVE: Partial<Record<Slot, Slot[]>> = { dress: ["top", "bottom"], top: ["dress"], bottom: ["dress"] };
+
+export function wearPiece<T>(pieces: Partial<Record<Slot, T>>, slot: Slot, item: T) {
+  const next = { ...pieces, [slot]: item };
+  const removed = (EXCLUSIVE[slot] ?? []).filter((other) => next[other]);
+  removed.forEach((other) => delete next[other]);
+  return { pieces: next, removed };
+}
+
+export function isCoherentLook(slots: Slot[]) {
+  return !(slots.includes("dress") && (slots.includes("top") || slots.includes("bottom")));
+}
 
 export type StylistInput = {
   size: string;
@@ -48,8 +77,8 @@ export interface StylistEngine {
 
 const ROOT_TO_SLOT: Record<string, Slot> = {
   hauts: "top",
-  "vestes-manteaux": "top",
-  robes: "top",
+  "vestes-manteaux": "outer",
+  robes: "dress",
   bas: "bottom",
   chaussures: "shoes",
   sneakers: "shoes",
@@ -130,7 +159,7 @@ export function scoreItem(item: StyleItem, input: StylistInput) {
   return score;
 }
 
-const CANDIDATES_PER_SLOT = { top: 6, bottom: 6, shoes: 4, accessory: 4 };
+const CANDIDATES_PER_SLOT = { top: 6, outer: 4, dress: 6, bottom: 6, shoes: 4, accessory: 4 };
 
 function bySlot(catalog: StyleItem[], input: StylistInput) {
   const groups = new Map<Slot, { item: StyleItem; score: number }[]>();
@@ -165,13 +194,19 @@ const deterministicEngine: StylistEngine = {
     const bottoms = groups.get("bottom") ?? [];
     const shoes = [null, ...(groups.get("shoes") ?? [])];
     const accessories = [null, ...(groups.get("accessory") ?? [])];
+    const outers = [null, ...(groups.get("outer") ?? [])];
+    // Deux silhouettes : un haut avec un bas, ou une robe seule ; la veste se porte sur l'une ou l'autre.
+    const bases = [
+      ...tops.flatMap((top) => bottoms.map((bottom) => [top, bottom])),
+      ...(groups.get("dress") ?? []).map((dress) => [dress]),
+    ];
     const outfits: RecommendedOutfit[] = [];
 
-    for (const top of tops) {
-      for (const bottom of bottoms) {
+    for (const base of bases) {
+      for (const outer of outers) {
         for (const shoe of shoes) {
           for (const accessory of accessories) {
-            const parts = [top, bottom, shoe, accessory].filter((part) => part !== null);
+            const parts = [...base, outer, shoe, accessory].filter((part) => part !== null);
             const total = parts.reduce((sum, part) => sum + part.item.priceMillimes, 0);
 
             if (total > input.budgetMillimes) continue;

@@ -18,6 +18,9 @@ const PORT = Number(process.env.MOCK_PORT ?? 54997);
 const BASE = `http://localhost:${PORT}`;
 const PHOTOS = fileURLToPath(new URL("../seed-photos/", import.meta.url));
 const photos = readdirSync(PHOTOS).filter((file) => file.endsWith(".jpg"));
+// Les pièces dessinées pour la cabine (robe, jupe, short, pantalon, manteau) : voir vetements/SOURCES.md.
+const DRAWN = fileURLToPath(new URL("./vetements/", import.meta.url));
+const drawn = readdirSync(DRAWN).filter((file) => file.endsWith(".jpg"));
 const { relations, functions } = loadSchema();
 
 export const USER = {
@@ -43,6 +46,11 @@ const ago = (hours) => new Date(Date.now() - hours * 3_600_000).toISOString();
 function valueFor(table, column, spec, index) {
   if (spec.array && spec.kind !== "object") return [];
   const name = column.toLowerCase();
+  // Les pièces de boutique : un public cohérent avec leur catégorie (cabine d'essayage).
+  if (table === "products" && name === "attributes") {
+    const genre = wardrobeFor(SHOP_CATEGORIES[(index * 3) % SHOP_CATEGORIES.length].id, index).genre;
+    return genre ? { genre } : {};
+  }
   switch (spec.kind) {
     case "enum": {
       const preferred = PREFERRED.find((value) => spec.values.includes(value));
@@ -72,7 +80,7 @@ function valueFor(table, column, spec, index) {
   // Texte
   if (name === "id") return uuid(`${table}:${index}`);
   if (name === "user_id" || name === "buyer_id" || name === "client_id" || name === "owner_id" || name === "author_id") return USER.id;
-  if (name === "category_id" && table === "products") return MODE_LEAVES[(index * 3) % MODE_LEAVES.length].id;
+  if (name === "category_id" && table === "products") return SHOP_CATEGORIES[(index * 3) % SHOP_CATEGORIES.length].id;
   if (name === "category_id" && table === "listings") return LEAVES[(index * 7 + 23) % LEAVES.length].id;
   if (name.endsWith("_id")) return uuid(`${name.replace(/_id$/, "")}:${index}`);
   if (name.endsWith("_at") || name.endsWith("_on") || name === "date" || name.endsWith("_date") || name.includes("expires")) return ago(index * 6 + 2);
@@ -138,7 +146,41 @@ function loadCategories() {
 const CATEGORIES = loadCategories();
 const LEAVES = CATEGORIES.filter((category) => category.parent_id);
 // Les produits de boutique sont toujours de la mode, comme en vrai ; les annonces vont partout.
-const MODE_LEAVES = LEAVES.filter((category) => category.section === "mode");
+// Les catégories où l'on range une pièce de mode : les feuilles, et les racines sans sous-catégorie (Robes).
+const SHOP_CATEGORIES = CATEGORIES.filter((category) => category.section === "mode" && !CATEGORIES.some((child) => child.parent_id === category.id));
+
+// La garde-robe de démonstration : pour chaque catégorie, des pièces au vrai nom et à la vraie photo
+// (photos Unsplash de seed-photos, ou pièces dessinées de vetements/). [intitulé, photo, public]
+const WARDROBE = {
+  "t-shirts": [["T-shirt noir en coton", "tshirt-noir.jpg"]],
+  chemises: [["Chemise en jean", "chemise-jean.jpg"]],
+  "pulls-sweats": [["Sweat blanc", "sweat-blanc.jpg"]],
+  "vestes-sport": [["Veste en cuir", "veste-cuir.jpg"]],
+  "vestes-jean": [["Veste en cuir vintage", "veste-cuir.jpg"]],
+  manteaux: [["Manteau camel", "manteau-camel.jpg", "homme"]],
+  robes: [["Robe d'été à pois", "robe-ete.jpg", "femme"]],
+  jeans: [["Jean brut", "jean-brut.jpg"], ["Jean délavé", "jeans-delaves.jpg"]],
+  pantalons: [["Pantalon chino", "pantalon-chino.jpg"]],
+  "jupes-shorts": [["Jupe plissée", "jupe-plissee.jpg", "femme"], ["Short en lin", "short-lin.jpg"]],
+  bottes: [["Bottines en cuir", "bottines-cuir.jpg"]],
+  "sandales-claquettes": [["Escarpins fleuris", "escarpins-fleuris.jpg", "femme"]],
+  "chaussures-ville": [["Chaussures en cuir", "chaussures-cuir.jpg"]],
+  baskets: [["Baskets colorées", "baskets-couleurs.jpg"]],
+  "running-training": [["Baskets de running", "baskets-couleurs.jpg"]],
+  "basketball-skate": [["Baskets montantes", "baskets-couleurs.jpg"]],
+  "sneakers-collection": [["Sneakers de collection", "baskets-couleurs.jpg"]],
+  sacs: [["Sac rouge", "sac-rouge.jpg", "femme"], ["Sac en osier", "sac-osier.jpg"]],
+  "casquettes-bonnets": [["Casquette grise", "casquette-grise.jpg"]],
+  ceintures: [["Ceinture en cuir", "ceinture-cuir.jpg"]],
+};
+
+function wardrobeFor(categoryId, index) {
+  const slug = CATEGORIES.find((category) => category.id === categoryId)?.slug;
+  const pieces = WARDROBE[slug];
+  if (!pieces) return { title: `قطعة ${index + 1}`, photo: null, genre: null };
+  const [title, photo, genre] = pieces[Math.floor(index / SHOP_CATEGORIES.length) % pieces.length];
+  return { title, photo, genre: genre ?? null };
+}
 
 function categoryRows(params) {
   return CATEGORIES.filter((row) => {
@@ -234,6 +276,9 @@ function project(table, row, select, index, depth = 0) {
     }
     const make = (position) => project(resolved.target, makeRow(resolved.target, relations[resolved.target].columns, position), inner, position, depth + 1);
     const value = resolved.one ? make(index) : [make(0), make(1)];
+    // La photo d'une pièce de boutique est celle de sa garde-robe de démonstration.
+    const photo = table === "products" && resolved.target === "product_images" ? wardrobeFor(row.category_id, index).photo : null;
+    if (photo && Array.isArray(value)) value.forEach((image) => "path" in image && (image.path = `demo/${photo}`));
     if (item.spread && resolved.one) Object.assign(out, value);
     else out[item.alias] = value;
   }
@@ -291,8 +336,14 @@ function rowsFor(table, url, accept) {
     const tree = categoryRows(params);
     return (single ? tree.slice(0, 1) : tree).map((row, index) => project(table, row, select, index));
   }
-  const count = single || targetsOne(params) ? 1 : Math.max(1, Math.min(limit || 3, 3));
-  return Array.from({ length: count }, (_, index) => project(table, applyFilters(table, makeRow(table, columns, index), params), select, index));
+  // Le catalogue de la cabine (limite large) reçoit une pièce de chaque catégorie, deux fois.
+  const wide = table === "products" && limit >= 500 && !single && !targetsOne(params);
+  const count = wide ? SHOP_CATEGORIES.length * 2 : single || targetsOne(params) ? 1 : Math.max(1, Math.min(limit || 3, 3));
+  const rows = Array.from({ length: count }, (_, index) => project(table, applyFilters(table, makeRow(table, columns, index), params), select, index));
+  // Dans le catalogue de la cabine seulement, les pièces portent leur vrai nom (T-shirt, Robe…) ; ailleurs
+  // les titres restent ceux par défaut, pour que les pages en arabe le restent entièrement.
+  if (wide) rows.forEach((row, index) => "title" in row && (row.title = wardrobeFor(row.category_id ?? SHOP_CATEGORIES[(index * 3) % SHOP_CATEGORIES.length].id, index).title));
+  return rows;
 }
 
 function rpcResult(name) {
@@ -384,7 +435,7 @@ export function startMock(port = PORT) {
       if (path.startsWith("/storage/v1/object/public/") || path.startsWith("/storage/v1/object/sign/") || path.startsWith("/storage/v1/render/")) {
         if (request.method === "POST") return send(200, { signedURL: `/storage/v1/object/public/demo/${photos[0]}` });
         const name = path.split("/").pop();
-        const file = join(PHOTOS, photos.includes(name) ? name : photos[parseInt(hash(path).slice(0, 4), 16) % photos.length]);
+        const file = drawn.includes(name) ? join(DRAWN, name) : join(PHOTOS, photos.includes(name) ? name : photos[parseInt(hash(path).slice(0, 4), 16) % photos.length]);
         if (/\.(mp4|webm)$/.test(path)) return send(404, {});
         // Comme le Storage public de Supabase : lisible par un canvas (texture 3D de la page Découvrir).
         response.writeHead(200, { "content-type": "image/jpeg", "cache-control": "max-age=3600", "access-control-allow-origin": "*" });

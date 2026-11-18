@@ -7,11 +7,13 @@ import { productImageUrl } from "@/lib/utils/storage";
 import { SLOTS, type Slot, type StyleItem } from "../engine";
 import { type Adjust, hitTest, maskCanvas, render } from "./compositor";
 import { detectPose, fitFrames, type Frame, placeGarments } from "./pose";
-import { renderMannequin } from "./mannequin";
+import { FittingStage } from "./fitting-stage";
+import { useMannequinChoice } from "./mannequin-choice";
+import { MannequinChooser } from "./mannequin-chooser";
 import { garmentCutout } from "./segment";
 import "./tryon.css";
 
-type Status = "loading" | "ready" | "manual" | "error" | "mannequin" | "mannequinError";
+type Status = "loading" | "ready" | "manual" | "error";
 const MAX_SIDE = 1080;
 const NONE: Adjust = { dx: 0, dy: 0, scale: 1 };
 
@@ -26,9 +28,10 @@ function fallbackFrames(width: number, height: number): Partial<Record<Slot, Fra
   );
 }
 
-// L'essayage virtuel : l'IA détoure chaque pièce, repère la pose et la silhouette de la personne,
-// étire chaque vêtement entre épaules, hanches et chevilles, le découpe selon le corps et y reporte
-// la lumière de la photo. Tout se passe sur l'appareil : la photo n'est jamais envoyée.
+// L'essayage virtuel, en deux modes. Sur le mannequin 3D (femme ou homme, au choix) : la tenue
+// s'enroule sur la silhouette (fitting-stage.tsx). Sur sa propre photo : l'IA repère la pose et la
+// silhouette, étire chaque vêtement entre épaules, hanches et chevilles, le découpe selon le corps et
+// y reporte la lumière. L'IA détoure chaque pièce pour les deux modes. Tout se passe sur l'appareil.
 export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleItem>> }) {
   const t = useTranslations("tryon");
   const [status, setStatus] = useState<Status | null>(null);
@@ -42,8 +45,8 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
   const canvas = useRef<HTMLCanvasElement>(null);
   const photo = useRef<HTMLCanvasElement | null>(null);
   const body = useRef<HTMLCanvasElement | null>(null);
-  const regions = useRef<Partial<Record<Slot, HTMLCanvasElement>>>({});
-  const [onMannequin, setOnMannequin] = useState(true);
+  const choice = useMannequinChoice();
+  const [mode, setMode] = useState<"mannequin" | "photo">("mannequin");
   const drag = useRef<{ slot: Slot; x: number; y: number; dx: number; dy: number } | null>(null);
   const worn = SLOTS.filter((slot) => pieces[slot]?.imagePath);
 
@@ -70,50 +73,23 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Par défaut, la tenue est posée sur le mannequin 3D de la cabine.
-  useEffect(() => {
-    void showMannequin();
-  }, []);
-
   // Le rendu suit chaque changement : pièces détourées, cadres, réglages, pièce choisie.
   useEffect(() => {
     const target = canvas.current;
-    if (!target || !photo.current || status === "loading") return;
+    if (mode !== "photo" || !target || !photo.current || status === "loading") return;
     if (target.width !== photo.current.width || target.height !== photo.current.height) {
       target.width = photo.current.width;
       target.height = photo.current.height;
     }
-    render(target, photo.current, body.current, garments, frames, adjusts, selected, regions.current, onMannequin ? "multiply" : "soft-light");
-  }, [garments, frames, adjusts, selected, status, onMannequin]);
-
-  async function showMannequin() {
-    setStatus("loading");
-    setHasPhoto(true);
-    setOnMannequin(true);
-    setSelected(null);
-    setAdjusts({});
-    try {
-      const mannequin = await renderMannequin();
-      photo.current = mannequin.photo;
-      body.current = mannequin.body;
-      regions.current = mannequin.regions;
-      setFrames(mannequin.frames);
-      setStatus("mannequin");
-    } catch {
-      // Pas de WebGL sur cet appareil : on propose directement la photo.
-      photo.current = null;
-      setHasPhoto(false);
-      setStatus("mannequinError");
-    }
-  }
+    render(target, photo.current, body.current, garments, frames, adjusts, selected);
+  }, [garments, frames, adjusts, selected, status, mode, hasPhoto]);
 
   async function choose(file: File | undefined) {
     if (!file || !file.type.startsWith("image/")) return;
     const url = URL.createObjectURL(file);
     setStatus("loading");
     setHasPhoto(true);
-    setOnMannequin(false);
-    regions.current = {};
+    setMode("photo");
     setSelected(null);
     setAdjusts({});
     try {
@@ -183,6 +159,9 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
   const busy = status === "loading";
   const preparing = worn.some((slot) => !garments[slot] && !failed.includes(slot));
 
+  const onMannequin = mode === "mannequin";
+  const gender = choice.gender;
+
   return (
     <div className="vt">
       <p className="vt-disclaimer">
@@ -190,98 +169,104 @@ export function VirtualTryOn({ pieces }: { pieces: Partial<Record<Slot, StyleIte
         <span>{t("privacy")}</span>
       </p>
 
-      {!hasPhoto || onMannequin ? (
-        <div className="vt-intro">
-          <p>{t("intro")}</p>
-          <ul className="vt-tips">
-            <li>{t("tipFull")}</li>
-            <li>{t("tipLight")}</li>
-            <li>{t("tipAlone")}</li>
-          </ul>
-        </div>
-      ) : null}
-
-      <div className="vt-actions">
-        <label className="vt-btn vt-btn--primary">
-          <ImageUp className="size-4" aria-hidden="true" />
-          {hasPhoto && !onMannequin ? t("changePhoto") : t("choosePhoto")}
-          <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
-        </label>
-        <label className="vt-btn">
-          <Camera className="size-4" aria-hidden="true" />
-          {t("takePhoto")}
-          <input type="file" accept="image/*" capture="user" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
-        </label>
-        {!onMannequin && status !== "mannequinError" ? (
-          <button type="button" className="vt-btn" disabled={busy} onClick={() => void showMannequin()}>
-            <PersonStanding className="size-4" aria-hidden="true" />
-            {t("useMannequin")}
-          </button>
-        ) : null}
-      </div>
-      {status === "mannequinError" ? <p className="vt-status">{t("status.mannequinError")}</p> : null}
-
-      {preparing ? (
-        <p className="vt-status">
-          <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-          {t("preparing")}
-        </p>
-      ) : null}
-
-      {hasPhoto ? (
+      {onMannequin ? (
+        gender ? (
+          <FittingStage pieces={pieces} cutouts={garments} choice={{ ...choice, gender }} onPhoto={() => setMode("photo")} />
+        ) : (
+          <MannequinChooser onPhoto={() => setMode("photo")} />
+        )
+      ) : (
         <>
-          {status ? (
-            <p role="status" className="vt-status">
-              {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-              {t(`status.${status}`)}
+          {!hasPhoto ? (
+            <div className="vt-intro">
+              <p>{t("intro")}</p>
+              <ul className="vt-tips">
+                <li>{t("tipFull")}</li>
+                <li>{t("tipLight")}</li>
+                <li>{t("tipAlone")}</li>
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="vt-actions">
+            <label className="vt-btn vt-btn--primary">
+              <ImageUp className="size-4" aria-hidden="true" />
+              {hasPhoto ? t("changePhoto") : t("choosePhoto")}
+              <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
+            </label>
+            <label className="vt-btn">
+              <Camera className="size-4" aria-hidden="true" />
+              {t("takePhoto")}
+              <input type="file" accept="image/*" capture="user" className="sr-only" disabled={busy} onChange={(event) => void choose(event.target.files?.[0])} />
+            </label>
+            <button type="button" className="vt-btn" disabled={busy} onClick={() => setMode("mannequin")}>
+              <PersonStanding className="size-4" aria-hidden="true" />
+              {t("useMannequin")}
+            </button>
+          </div>
+
+          {preparing ? (
+            <p className="vt-status">
+              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+              {t("preparing")}
             </p>
           ) : null}
-          <canvas
-            ref={canvas}
-            className="vt-canvas"
-            role="img"
-            aria-label={onMannequin ? t("mannequinAlt") : t("photoAlt")}
-            onPointerDown={down}
-            onPointerMove={move}
-            onPointerUp={() => (drag.current = null)}
-            onPointerCancel={() => (drag.current = null)}
-          />
 
-          {weak.length ? <p className="vt-note">{t("weakCutout")}</p> : null}
-
-          {selected ? (
-            <div className="vt-adjust">
-              <label htmlFor="vt-size" className="text-sm font-medium">
-                {t("size", { piece: pieces[selected]!.title })}
-              </label>
-              <input
-                id="vt-size"
-                type="range"
-                min={0.6}
-                max={1.6}
-                step={0.02}
-                value={adjusts[selected]?.scale ?? 1}
-                onChange={(event) => setAdjusts({ ...adjusts, [selected]: { ...(adjusts[selected] ?? NONE), scale: Number(event.target.value) } })}
+          {hasPhoto ? (
+            <>
+              {status ? (
+                <p role="status" className="vt-status">
+                  {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
+                  {t(`status.${status}`)}
+                </p>
+              ) : null}
+              <canvas
+                ref={canvas}
+                className="vt-canvas"
+                role="img"
+                aria-label={t("photoAlt")}
+                onPointerDown={down}
+                onPointerMove={move}
+                onPointerUp={() => (drag.current = null)}
+                onPointerCancel={() => (drag.current = null)}
               />
-            </div>
-          ) : null}
 
-          {!busy ? (
-            <div className="vt-actions">
-              <button type="button" className="vt-btn" onClick={() => setAdjusts({})}>
-                <RotateCcw className="size-4" aria-hidden="true" />
-                {t("reset")}
-              </button>
-              <button type="button" className="vt-btn" onClick={save}>
-                <Download className="size-4" aria-hidden="true" />
-                {t("save")}
-              </button>
-            </div>
+              {selected ? (
+                <div className="vt-adjust">
+                  <label htmlFor="vt-size" className="text-sm font-medium">
+                    {t("size", { piece: pieces[selected]!.title })}
+                  </label>
+                  <input
+                    id="vt-size"
+                    type="range"
+                    min={0.6}
+                    max={1.6}
+                    step={0.02}
+                    value={adjusts[selected]?.scale ?? 1}
+                    onChange={(event) => setAdjusts({ ...adjusts, [selected]: { ...(adjusts[selected] ?? NONE), scale: Number(event.target.value) } })}
+                  />
+                </div>
+              ) : null}
+
+              {!busy ? (
+                <div className="vt-actions">
+                  <button type="button" className="vt-btn" onClick={() => setAdjusts({})}>
+                    <RotateCcw className="size-4" aria-hidden="true" />
+                    {t("reset")}
+                  </button>
+                  <button type="button" className="vt-btn" onClick={save}>
+                    <Download className="size-4" aria-hidden="true" />
+                    {t("save")}
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : null}
+          <p className="vt-warning">{t("warning")}</p>
         </>
-      ) : null}
+      )}
 
-      <p className="vt-warning">{t("warning")}</p>
+      {weak.length ? <p className="vt-note">{t("weakCutout")}</p> : null}
     </div>
   );
 }

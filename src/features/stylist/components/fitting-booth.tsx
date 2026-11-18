@@ -14,14 +14,16 @@ import { Garment } from "./garment";
 
 const PLACES: Record<Slot, string> = {
   top: "lx-booth__slot--top",
+  outer: "lx-booth__slot--outer",
+  dress: "lx-booth__slot--dress",
   bottom: "lx-booth__slot--bottom",
   accessory: "lx-booth__slot--accessory",
   shoes: "lx-booth__slot--shoes",
 };
 
-// Devant le miroir, les pièces détourées se superposent comme on s'habille : le bas, le haut qui
-// retombe dessus, les chaussures au sol, l'accessoire à portée de main.
-const LOOK_ORDER: Slot[] = ["bottom", "top", "shoes", "accessory"];
+// Devant le miroir, les pièces détourées se superposent comme on s'habille : le bas, la robe, le haut
+// qui retombe dessus, la veste par-dessus, les chaussures au sol, l'accessoire à portée de main.
+const LOOK_ORDER: Slot[] = ["bottom", "dress", "top", "outer", "shoes", "accessory"];
 
 function HangerHook() {
   return (

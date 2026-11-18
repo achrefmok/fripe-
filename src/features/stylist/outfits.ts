@@ -33,7 +33,10 @@ export async function getOutfit(outfitId: string) {
 
   const items = data.outfit_items.flatMap((row) => {
     const item = available.find((candidate) => candidate.id === row.product_id);
-    return item ? [{ ...item, slot: row.slot as Slot }] : [];
+    if (!item) return [];
+    // Avant les cases « veste » et « robe », ces pièces étaient rangées dans « haut » : elles retrouvent leur case.
+    const legacy = row.slot === "top" && (item.slot === "outer" || item.slot === "dress");
+    return [{ ...item, slot: legacy ? item.slot : (row.slot as Slot) }];
   });
 
   const missing = data.outfit_items

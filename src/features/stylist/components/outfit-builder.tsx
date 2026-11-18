@@ -8,11 +8,12 @@ import { toast } from "sonner";
 import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { addItemsToCart, saveOutfit, searchSlotItems, suggestCheaperOutfit } from "@/features/stylist/actions";
-import { outfitTotal, SLOTS, type Slot, type StyleItem } from "@/features/stylist/engine";
+import { GENDERS, outfitTotal, SLOTS, type Slot, type StyleItem, wearPiece } from "@/features/stylist/engine";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
 import { productImageUrl } from "@/lib/utils/storage";
+import { setMannequinChoice, useMannequinChoice } from "../tryon/mannequin-choice";
 import { TryOnButton } from "../tryon/tryon-button";
 import { FittingBooth } from "./fitting-booth";
 
@@ -59,6 +60,8 @@ export function OutfitBuilder({
   const [fields, setFields] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Pour qui : le même choix que le mannequin de la cabine. Les pièces mixtes ou sans précision restent visibles.
+  const { gender } = useMannequinChoice();
   // Seule la dernière recherche compte : une réponse plus ancienne n'écrase jamais la nouvelle.
   const request = useRef(0);
 
@@ -69,10 +72,10 @@ export function OutfitBuilder({
   const ratio = budgetMillimes ? Math.min(1, total / budgetMillimes) : 0;
   const rangeValue = Math.min(RANGE_MAX, Math.max(RANGE_MIN, budgetMillimes ? Math.round(budgetMillimes / 1000) : RANGE_MIN));
 
-  async function loadRail(target: Slot, term: string) {
+  async function loadRail(target: Slot, term: string, forWhom = gender) {
     const id = ++request.current;
     setRailLoading(true);
-    const result = await searchSlotItems(target, term);
+    const result = await searchSlotItems(target, term, forWhom);
     if (id !== request.current) return;
     setRail(result.ok ? result.data : []);
     setRailLoading(false);
@@ -81,7 +84,7 @@ export function OutfitBuilder({
   useEffect(() => {
     let cancelled = false;
     const id = ++request.current;
-    searchSlotItems("top", "").then((result) => {
+    searchSlotItems("top", "", gender).then((result) => {
       if (cancelled || id !== request.current) return;
       setRail(result.ok ? result.data : []);
       setRailLoading(false);
@@ -89,6 +92,8 @@ export function OutfitBuilder({
     return () => {
       cancelled = true;
     };
+    // Premier chargement seulement : ensuite, choose() et le choix « Pour » rechargent le rail.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function choose(target: Slot) {
@@ -98,7 +103,10 @@ export function OutfitBuilder({
   }
 
   function pick(item: StyleItem) {
-    setPieces((current) => ({ ...current, [slot]: item }));
+    const { pieces: next, removed } = wearPiece(pieces, slot, item);
+    setPieces(next);
+    // Une robe se porte seule : elle remplace le haut et le bas, et inversement.
+    if (removed.length) toast.info(t("replacedBy", { slots: new Intl.ListFormat(locale).format(removed.map((other) => t(`slots.${other}`))) }));
   }
 
   function remove(target: Slot) {
@@ -113,12 +121,19 @@ export function OutfitBuilder({
 
   function randomLook() {
     startTransition(async () => {
-      const results = await Promise.all(SLOTS.map((key) => searchSlotItems(key, "")));
+      const results = await Promise.all(SLOTS.map((key) => searchSlotItems(key, "", gender)));
       const next: Partial<Record<Slot, StyleItem>> = {};
       SLOTS.forEach((key, index) => {
         const result = results[index];
         if (result.ok && result.data.length) next[key] = result.data[Math.floor(Math.random() * result.data.length)];
       });
+      // Une silhouette cohérente : une robe, ou un haut avec un bas, jamais les deux.
+      if (next.dress && (next.top || next.bottom)) {
+        if (Math.random() < 0.3) {
+          delete next.top;
+          delete next.bottom;
+        } else delete next.dress;
+      }
       if (!Object.keys(next).length) {
         toast.info(t("randomEmpty"));
         return;
@@ -185,6 +200,25 @@ export function OutfitBuilder({
   return (
     <div className="flex flex-wrap items-start gap-[30px]">
       <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-3.5">
+        <div role="radiogroup" aria-label={t("forWhom")} className="lx-cabfor">
+          <span className="lx-cabfor__label" aria-hidden="true">{t("forWhom")}</span>
+          {[null, ...GENDERS].map((value) => (
+            <button
+              key={value ?? "all"}
+              type="button"
+              role="radio"
+              aria-checked={gender === value}
+              className={cn("lx-cabchip", gender === value && "is-active")}
+              onClick={() => {
+                setMannequinChoice({ gender: value });
+                void loadRail(slot, search, value);
+              }}
+            >
+              {t(`forWhomOptions.${value ?? "all"}`)}
+            </button>
+          ))}
+        </div>
+
         <div role="group" aria-label={t("lookLabel")} className="flex flex-wrap gap-2">
           {SLOTS.map((key) => {
             const label = t(`slots.${key}`);

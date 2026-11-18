@@ -115,7 +115,8 @@ describe("moteur de recommandation", () => {
 
   it("classe les catégories par emplacement de tenue", () => {
     expect(slotOfCategory("hauts")).toBe("top");
-    expect(slotOfCategory("vestes-manteaux")).toBe("top");
+    expect(slotOfCategory("vestes-manteaux")).toBe("outer");
+    expect(slotOfCategory("robes")).toBe("dress");
     expect(slotOfCategory("bas")).toBe("bottom");
     expect(slotOfCategory("chaussures")).toBe("shoes");
     expect(slotOfCategory("accessoires")).toBe("accessory");
