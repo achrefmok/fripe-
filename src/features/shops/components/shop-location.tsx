@@ -50,10 +50,12 @@ export function ShopLocation({ shopName, address, place, coordinates }: { shopNa
           <p className="flex items-start gap-2">
             <MapPin className="mt-0.5 size-4 shrink-0 text-goldink" aria-hidden="true" />
             <span>
-              <span className="block font-medium" dir="auto">
-                {address}
-              </span>
-              <span className="block text-sm text-muted-foreground">{place}</span>
+              {address ? (
+                <span className="block font-medium" dir="auto">
+                  {address}
+                </span>
+              ) : null}
+              <span className={address ? "block text-sm text-muted-foreground" : "block font-medium"}>{place}</span>
             </span>
           </p>
 
@@ -97,7 +99,7 @@ export function ShopLocation({ shopName, address, place, coordinates }: { shopNa
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("noPosition")}</p>
+            <p className="text-sm text-muted-foreground">{address ? t("noPosition") : t("noAddress")}</p>
           )}
         </div>
 

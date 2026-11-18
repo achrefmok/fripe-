@@ -86,14 +86,10 @@ export default async function PublicShopPage({
               {t("piecesCount", { count: total })}
               {" · "}
               {t("verified")}
-              {place ? (
-                <>
-                  {" · "}
-                  <a href="#adresse" className="underline underline-offset-4">
-                    {where("heroLink")}
-                  </a>
-                </>
-              ) : null}
+              {" · "}
+              <a href="#adresse" className="underline underline-offset-4">
+                {where("heroLink")}
+              </a>
             </p>
             {shop.rating_count ? (
               <a href="#avis" className="mt-1.5 inline-flex items-center gap-2 text-sm font-medium">
@@ -200,14 +196,17 @@ export default async function PublicShopPage({
       </section>
       )}
 
-      {place ? (
-        <ShopLocation
-          shopName={shop.name}
-          address={place.addressLine}
-          place={[place.city && localizedName(place.city, locale), place.governorate && localizedName(place.governorate, locale)].filter(Boolean).join(", ")}
-          coordinates={place.coordinates}
-        />
-      ) : null}
+      {/* Toujours présent : l'adresse exacte si la boutique l'a indiquée, sinon sa ville. */}
+      <ShopLocation
+        shopName={shop.name}
+        address={place?.addressLine ?? ""}
+        place={
+          place
+            ? [place.city && localizedName(place.city, locale), place.governorate && localizedName(place.governorate, locale)].filter(Boolean).join(", ")
+            : [shop.cities && localizedName(shop.cities, locale), shop.governorates && localizedName(shop.governorates, locale)].filter(Boolean).join(", ")
+        }
+        coordinates={place?.coordinates ?? null}
+      />
 
       <section id="avis" className="mt-10 scroll-mt-20">
         <h2 className="font-display text-2xl">{reviewLabels("title")}</h2>

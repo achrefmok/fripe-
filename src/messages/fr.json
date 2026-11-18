@@ -2248,6 +2248,7 @@
     "mapTitle": "Position de la boutique",
     "remove": "Retirer l’adresse",
     "removed": "Adresse retirée.",
-    "removeFailed": "L’adresse n’a pas pu être retirée."
+    "removeFailed": "L’adresse n’a pas pu être retirée.",
+    "noAddress": "La boutique n’a pas encore indiqué son adresse exacte : le guidage t’amène dans sa ville. Contacte-la pour l’adresse précise."
   }
 }
