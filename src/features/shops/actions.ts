@@ -12,7 +12,7 @@ import {
 } from "@/lib/utils/action-result";
 import { MAX_IMAGE_BYTES } from "@/features/catalog/constants";
 import { detectImageKind } from "@/lib/utils/image-file";
-import { createShopSchema, shopIdSchema, updateShopSchema } from "./schemas";
+import { createShopSchema, shopIdSchema, shopLocationSchema, updateShopSchema } from "./schemas";
 
 
 async function requireActiveViewer() {
@@ -149,5 +149,63 @@ export async function uploadShopLogo(shopId: string, formData: FormData): Promis
   }
 
   revalidateSeller();
+  return success();
+}
+
+// L'adresse principale de la boutique, avec sa position : créée ou remplacée. Les politiques RLS de
+// shop_addresses réservent l'écriture au propriétaire et aux gérants d'une boutique modifiable.
+export async function saveShopLocation(shopId: string, input: unknown): Promise<ActionResult> {
+  const id = shopIdSchema.safeParse(shopId);
+  if (!id.success) return failure("not_found");
+
+  const parsed = shopLocationSchema.safeParse(input);
+  if (!parsed.success) return validationFailure(parsed.error);
+
+  const viewer = await requireActiveViewer();
+  if ("ok" in viewer) return viewer;
+
+  const supabase = await createClient();
+  const values = {
+    label: "Boutique",
+    address_line: parsed.data.addressLine,
+    governorate_id: parsed.data.governorateId,
+    city_id: parsed.data.cityId,
+    latitude: parsed.data.latitude,
+    longitude: parsed.data.longitude,
+  };
+  const { data: current, error: readError } = await supabase
+    .from("shop_addresses")
+    .select("id")
+    .eq("shop_id", id.data)
+    .eq("is_primary", true)
+    .limit(1)
+    .maybeSingle();
+  if (readError) return rpcFailure(readError);
+
+  const { data, error } = current
+    ? await supabase.from("shop_addresses").update(values).eq("id", current.id).select("id")
+    : await supabase.from("shop_addresses").insert({ ...values, shop_id: id.data, is_primary: true }).select("id");
+
+  if (error) return error.code === "23503" ? failure("invalid_location") : rpcFailure(error);
+  if (!data.length) return failure("forbidden");
+
+  revalidateSeller();
+  revalidatePath("/[locale]/boutique/[slug]", "page");
+  return success();
+}
+
+export async function removeShopLocation(shopId: string): Promise<ActionResult> {
+  const id = shopIdSchema.safeParse(shopId);
+  if (!id.success) return failure("not_found");
+
+  const viewer = await requireActiveViewer();
+  if ("ok" in viewer) return viewer;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("shop_addresses").delete().eq("shop_id", id.data).eq("is_primary", true);
+  if (error) return rpcFailure(error);
+
+  revalidateSeller();
+  revalidatePath("/[locale]/boutique/[slug]", "page");
   return success();
 }

@@ -34,6 +34,8 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
+  // La carte de la boutique (OpenStreetMap), chargée seulement quand le client la demande.
+  "frame-src https://www.openstreetmap.org",
 ].join("; ");
 
 // Images : l'optimiseur de Next redimensionne les photos du Storage et les sert en WebP depuis le site.

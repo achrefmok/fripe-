@@ -20,7 +20,9 @@ import { Link } from "@/i18n/navigation";
 import { getViewer } from "@/lib/permissions/viewer";
 import { localizedName } from "@/lib/utils/format";
 import { shopAssetUrl } from "@/lib/utils/storage";
+import { ShopLocation } from "@/features/shops/components/shop-location";
 import { ShopMark } from "@/features/shops/components/shop-mark";
+import { getShopLocation } from "@/features/shops/queries";
 import Image from "next/image";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/boutique/[slug]">) {
@@ -44,7 +46,7 @@ export default async function PublicShopPage({
 
   const currentPage = Math.max(Number(page) || 1, 1);
 
-  const [{ products, total }, stock, collections, t, requests, locale, viewer, reviews, reviewLabels, messaging] = await Promise.all([
+  const [{ products, total }, stock, collections, t, requests, locale, viewer, reviews, reviewLabels, messaging, place, where] = await Promise.all([
     getShopCatalog(shop.id, currentPage),
     listPublicInventory(shop.id),
     listPublicShopCollections(shop.id),
@@ -55,6 +57,8 @@ export default async function PublicShopPage({
     listPublicReviews(shop.id),
     getTranslations("reviews"),
     getTranslations("messaging"),
+    getShopLocation(shop.id),
+    getTranslations("shopLocation"),
   ]);
 
   const [following, blockSides] = viewer
@@ -82,6 +86,14 @@ export default async function PublicShopPage({
               {t("piecesCount", { count: total })}
               {" · "}
               {t("verified")}
+              {place ? (
+                <>
+                  {" · "}
+                  <a href="#adresse" className="underline underline-offset-4">
+                    {where("heroLink")}
+                  </a>
+                </>
+              ) : null}
             </p>
             {shop.rating_count ? (
               <a href="#avis" className="mt-1.5 inline-flex items-center gap-2 text-sm font-medium">
@@ -187,6 +199,15 @@ export default async function PublicShopPage({
         />
       </section>
       )}
+
+      {place ? (
+        <ShopLocation
+          shopName={shop.name}
+          address={place.addressLine}
+          place={[place.city && localizedName(place.city, locale), place.governorate && localizedName(place.governorate, locale)].filter(Boolean).join(", ")}
+          coordinates={place.coordinates}
+        />
+      ) : null}
 
       <section id="avis" className="mt-10 scroll-mt-20">
         <h2 className="font-display text-2xl">{reviewLabels("title")}</h2>

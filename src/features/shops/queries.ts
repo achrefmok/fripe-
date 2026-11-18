@@ -75,3 +75,38 @@ export async function getShopLogoUrl(path: string | null) {
   const supabase = await createClient();
   return supabase.storage.from("shop-assets").getPublicUrl(path).data.publicUrl;
 }
+
+export type ShopLocation = {
+  addressLine: string;
+  governorateId: number;
+  cityId: number;
+  governorate: { name_fr: string; name_ar: string } | null;
+  city: { name_fr: string; name_ar: string } | null;
+  coordinates: { latitude: number; longitude: number } | null;
+};
+
+// L'adresse principale d'une boutique (lisible par tous tant que la boutique est visible : RLS).
+export async function getShopLocation(shopId: string): Promise<ShopLocation | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("shop_addresses")
+    .select("address_line, governorate_id, city_id, latitude, longitude, governorates (name_fr, name_ar), cities (name_fr, name_ar)")
+    .eq("shop_id", shopId)
+    .eq("is_primary", true)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const latitude = data.latitude === null ? null : Number(data.latitude);
+  const longitude = data.longitude === null ? null : Number(data.longitude);
+  return {
+    addressLine: data.address_line,
+    governorateId: data.governorate_id,
+    cityId: data.city_id,
+    governorate: data.governorates,
+    city: data.cities,
+    coordinates: latitude !== null && longitude !== null && Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null,
+  };
+}
