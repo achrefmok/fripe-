@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { FooterLanguage } from "./footer-language";
+import { PartnerCredit } from "./partner-credit";
 
 const EXPLORE_LINKS = [
   ["/catalogue", "mode"],
@@ -61,6 +62,9 @@ export function SiteFooter() {
         </nav>
 
         <FooterLanguage title={t("language")} hint={t("languageHint")} />
+      </div>
+      <div className="border-t border-border px-[18px] py-5">
+        <PartnerCredit variant="footer" />
       </div>
     </footer>
   );

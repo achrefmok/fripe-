@@ -24,6 +24,11 @@
     "notifications": "Notifications",
     "close": "Fermer"
   },
+  "partner": {
+    "by": "Avec la contribution de",
+    "name": "Gafsa Today",
+    "label": "Avec la contribution de Gafsa Today"
+  },
   "nav": {
     "home": "Accueil",
     "sell": "Vendre",

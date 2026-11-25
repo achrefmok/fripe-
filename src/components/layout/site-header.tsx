@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { BrandLink } from "./brand";
 import { HeaderNav } from "./header-nav";
 import { LocaleSwitch, ThemeToggle } from "./header-controls";
+import { PartnerCredit } from "./partner-credit";
 
 // Friptex Luxe : un bandeau de verre, la marque, les rubriques soulignées d'or, puis les gestes rapides.
 // Sous l'en-tête, une frise de zellige fine.
@@ -15,6 +16,7 @@ export function SiteHeader() {
       <header className="luxe-header">
         <div className="mx-auto flex max-w-[1200px] items-center gap-3 px-[18px] py-2.5">
           <BrandLink />
+          <PartnerCredit />
           <HeaderNav
             label={t("mainLabel")}
             links={[
