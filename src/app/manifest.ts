@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FRIPE",
-    short_name: "FRIPE",
+    name: "Friptex",
+    short_name: "Friptex",
     description: "La marketplace de fripe en Tunisie.",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#f3efe4",
+    background_color: "#f9f6f1",
     theme_color: "#c23f28",
     lang: "fr",
     icons: [

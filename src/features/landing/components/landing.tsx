@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "@/i18n/navigation";
 import type { GarmentShape, LandingData, LandingPiece } from "../data";
+import logoDark from "../../../../public/brand/friptex-logo-dark.png";
 import "../landing.css";
 
 const RackFilm = dynamic(() => import("./rack-film").then((module) => module.RackFilm), { ssr: false });
@@ -68,14 +69,6 @@ function PieceVisual({ piece, sizes }: { piece: LandingPiece; sizes: string }) {
     <span className="ld-ph" style={{ background: piece.tone.ground }}>
       <Garment shape={piece.garment} color={piece.tone.cloth} />
     </span>
-  );
-}
-
-function Mark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
-      <path d="M20 4c-3 0-5 2-5 4.5S17 12 20 13v4L4 30h32L20 17" fill="none" stroke="#cca45e" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -338,7 +331,7 @@ export function Landing({ data }: { data: LandingData }) {
           <svg viewBox="0 0 110 90">
             <path d="M55 8c-6 0-10 4-10 9s4 8 10 10v8L8 76h94L55 35" fill="none" stroke="#cca45e" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
           </svg>
-          <div className="ld-intro__word" dir="ltr">FRIPE</div>
+          <div className="ld-intro__word" dir="ltr">Friptex</div>
           <div className="ld-intro__sub">{t("introSub")}</div>
         </div>
       </div>
@@ -346,8 +339,7 @@ export function Landing({ data }: { data: LandingData }) {
       <header className="ld-nav">
         <div className="ld-wrap ld-nav__in">
           <Link href="/" className="ld-logo" dir="ltr">
-            <Mark className="ld-logo__mark" />
-            FRIPE
+            <Image src={logoDark} alt="Friptex" priority className="ld-logo__img" />
           </Link>
           <nav className="ld-nav__links" aria-label={t("navLabel")}>
             <a href="#pepites">{t("navPieces")}</a>
@@ -719,7 +711,9 @@ export function Landing({ data }: { data: LandingData }) {
         <div className="ld-wrap">
           <div className="ld-fcols">
             <div>
-              <Link href="/" className="ld-logo ld-logo--small" dir="ltr">FRIPE</Link>
+              <Link href="/" className="ld-logo ld-logo--small" dir="ltr">
+                <Image src={logoDark} alt="Friptex" className="ld-logo__img" />
+              </Link>
               <p>{t("footTagline")}</p>
             </div>
             <nav aria-label={t("footBuy")}>
@@ -729,7 +723,7 @@ export function Landing({ data }: { data: LandingData }) {
               ))}
             </nav>
             <nav aria-label={footer("explore")}>
-              <h2 dir="ltr">FRIPE</h2>
+              <h2 dir="ltr">Friptex</h2>
               <Link href="/chine">{t("c1Title")}</Link>
               <Link href="/tenues/nouvelle">{nav("outfitBuilder")}</Link>
               <Link href="/walk">{nav("walk")}</Link>
@@ -746,7 +740,7 @@ export function Landing({ data }: { data: LandingData }) {
             </nav>
           </div>
           <div className="ld-fbot">
-            <span>© {data.year} <span dir="ltr">FRIPE</span> · {t("introSub")}</span>
+            <span>© {data.year} <span dir="ltr">Friptex</span> · {t("introSub")}</span>
             <span>{t("madeIn")}</span>
           </div>
         </div>

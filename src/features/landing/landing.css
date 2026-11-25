@@ -118,7 +118,8 @@ html:has(.ld) { scroll-behavior: smooth; background: #110c09; }
 .ld-nav.is-scrolled { background: rgba(17, 12, 9, 0.75); backdrop-filter: blur(14px); border-color: var(--ld-line); }
 .ld-nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 74px; }
 .ld-logo { font-family: var(--font-wordmark), Georgia, serif; font-size: 1.7rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-.ld-logo__mark { width: 30px; height: 30px; }
+.ld-logo__img { height: 46px; width: auto; }
+.ld-logo--small .ld-logo__img { height: 56px; }
 .ld-logo--small { font-size: 1.4rem; margin-bottom: 1rem; }
 .ld-nav__links { display: flex; gap: 2rem; font-size: 0.92rem; color: var(--ld-muted); }
 .ld-nav__links a:hover { color: var(--ld-night-ink); }
@@ -130,6 +131,7 @@ html:has(.ld) { scroll-behavior: smooth; background: #110c09; }
 @media (max-width: 520px) {
   .ld-nav .ld-btn { padding: 0.55rem 0.9rem; font-size: 0.8rem; }
   .ld-logo { font-size: 1.35rem; }
+  .ld-nav .ld-logo__img { height: 38px; }
   .ld-nav__end { gap: 0.7rem; }
 }
 
