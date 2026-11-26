@@ -7,6 +7,7 @@ import { getViewer } from "@/lib/permissions/viewer";
 import { createClient } from "@/lib/supabase/server";
 import { failure, rpcFailure, success, type ActionResult } from "@/lib/utils/action-result";
 import { detectVideoKind } from "@/lib/utils/image-file";
+import { moderateMedia } from "@/features/media-moderation/moderate";
 import { getWalkPage, type WalkItem } from "./queries";
 
 const idSchema = z.uuid();
@@ -49,6 +50,25 @@ export async function createVideoDraft(
   return success({ videoId: data });
 }
 
+// Les fichiers déposés par le navigateur sont relus en entier pour l'analyse (60 s, 50 Mo au plus).
+async function moderateUploadedVideo(userId: string, videoPath: string, thumbnailPath: string, mime: string) {
+  const base = `${getPublicEnv().url}/storage/v1/object/public/shop-videos/`;
+  const [video, thumbnail] = await Promise.all(
+    [videoPath, thumbnailPath].map((path) => fetch(base + path, { cache: "no-store" }).then((response) => (response.ok ? response.arrayBuffer() : null))),
+  );
+  if (!video || !thumbnail) return { ok: false as const, error: "video_missing" };
+
+  return moderateMedia({
+    userId,
+    context: "shop_video",
+    mediaKind: "video",
+    parts: [
+      { bytes: new Uint8Array(video), mime, kind: "video" },
+      { bytes: new Uint8Array(thumbnail), mime: "image/jpeg", kind: "image" },
+    ],
+  });
+}
+
 // Le navigateur a déposé les fichiers : on relit l'en-tête réel avant de publier.
 export async function finalizeVideo(shopId: string, input: unknown): Promise<ActionResult> {
   const parsed = finalizeSchema.safeParse(input);
@@ -69,10 +89,21 @@ export async function finalizeVideo(shopId: string, input: unknown): Promise<Act
     { headers: { Range: "bytes=0-31" }, cache: "no-store" },
   );
 
-  if (!header.ok || !detectVideoKind(new Uint8Array(await header.arrayBuffer()))) {
+  const kind = header.ok ? detectVideoKind(new Uint8Array(await header.arrayBuffer())) : null;
+  if (!kind) {
     await bucket.remove([videoPath, thumbnailPath]);
     await supabase.from("videos").delete().eq("id", videoId);
     return failure("invalidVideo");
+  }
+
+  // La vidéo et sa miniature sont analysées avant la publication ; bloquées, elles sont effacées.
+  const viewer = await getViewer();
+  if (!viewer) return failure("sessionExpired");
+  const moderation = await moderateUploadedVideo(viewer.id, videoPath, thumbnailPath, kind.mime);
+  if (!moderation.ok) {
+    await bucket.remove([videoPath, thumbnailPath]);
+    await supabase.from("videos").delete().eq("id", videoId);
+    return failure(moderation.error);
   }
 
   const { error } = await supabase.rpc("finalize_video", {

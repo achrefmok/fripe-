@@ -2,6 +2,7 @@ import "server-only";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { parsePriceToMillimes } from "@/lib/utils/price";
+import { AUDIENCE_COLUMN, audienceValues } from "./audience";
 import { CATALOG_PAGE_SIZE } from "./constants";
 import type { CategoryOption } from "./csv-import";
 import { categoryScope } from "./category-scope";
@@ -136,6 +137,7 @@ export async function searchProducts(filters: CatalogFilters) {
   if (filters.taille) query = query.ilike("size", escapeLike(filters.taille));
   if (filters.marque) query = query.ilike("brand", `%${escapeLike(filters.marque)}%`);
   if (filters.etat) query = query.eq("condition", filters.etat);
+  if (filters.pour) query = query.in(AUDIENCE_COLUMN, audienceValues(filters.pour));
 
   if (filters.gouvernorat) {
     query = query.eq("shops.governorate_id", Number(filters.gouvernorat) || 0);

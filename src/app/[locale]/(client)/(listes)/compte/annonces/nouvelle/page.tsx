@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ListingForm } from "@/features/marketplace/components/listing-form";
 import { getCategoryAttributes, sectionCategories } from "@/features/marketplace/queries";
+import { sectionAttributes } from "@/features/catalog/audience";
 import { getLocations } from "@/features/shops/queries";
 import { requireViewer } from "@/lib/permissions/viewer";
 
@@ -19,7 +20,8 @@ export default async function NewListingPage({ searchParams }: PageProps<"/[loca
     getLocations(),
     getTranslations("market"),
   ]);
-  const attributes = section === "marketplace" ? await getCategoryAttributes(categories.map((category) => category.id)) : [];
+  // Au Vide-Dressing, seule la caractéristique « Pour » (femme, homme, enfant) est proposée.
+  const attributes = sectionAttributes(section, await getCategoryAttributes(categories.map((category) => category.id)));
 
   return (
     <>

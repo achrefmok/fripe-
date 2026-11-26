@@ -8,6 +8,7 @@ import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { sectionAttributes } from "@/features/catalog/audience";
 import { CONDITIONS } from "@/features/catalog/constants";
 import { useRouter } from "@/i18n/navigation";
 import { createListing, updateListing } from "../actions";
@@ -63,8 +64,11 @@ export function ListingForm({
   // Les caractéristiques de la catégorie choisie, puis celles de sa racine.
   const relevant = useMemo(
     () =>
-      section === "marketplace" && selected
-        ? attributes.filter((attribute) => attribute.categoryId === selected.id || attribute.categoryId === selected.parentId)
+      selected
+        ? sectionAttributes(
+            section,
+            attributes.filter((attribute) => attribute.categoryId === selected.id || attribute.categoryId === selected.parentId),
+          )
         : [],
     [attributes, section, selected],
   );

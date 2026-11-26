@@ -14,6 +14,9 @@ Chaque environnement a ses propres valeurs. **Une valeur ne passe jamais d'un en
 | `CLOUDFLARE_TURN_KEY_ID` | Absente, vidéo des Lives en STUN seul | Clé TURN Cloudflare | Autre clé | **Serveur uniquement** | Non |
 | `CLOUDFLARE_TURN_API_TOKEN` | Absente | Vercel, Sensitive | Autre valeur | **Serveur uniquement** | **Oui** |
 | `TURN_URLS`, `TURN_USERNAME`, `TURN_PASSWORD` | Relais à identifiants fixes, si Cloudflare est absent | Idem | Cloudflare de préférence | **Serveur uniquement** | **Oui** (mot de passe) |
+| `SIGHTENGINE_API_USER`, `SIGHTENGINE_API_SECRET` | Absentes : contenu sexuel **non détecté**, seule la provenance IA déclarée est lue | Compte Sightengine | Autre compte | **Serveur uniquement** | **Oui** (secret) |
+| `MEDIA_MODERATION_REQUIRED` | Absente | `true` | `true` : sans service d'analyse, tout envoi de média est refusé | Serveur | Non |
+| `MEDIA_MODERATION_PROVIDER` | Absente (`none` coupe l'analyse) | Absente | Absente. `fixture` est réservé au stack de test | Serveur | Non |
 
 **Outils, jamais sur Vercel :**
 

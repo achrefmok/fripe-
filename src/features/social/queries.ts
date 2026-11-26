@@ -53,7 +53,7 @@ export async function listNotifications(userId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("notifications")
-    .select("id, kind, read_at, created_at, product_id, listing_thread_id, products (title, price_millimes), drop_alerts (name), listing_threads (listing_title)")
+    .select("id, kind, read_at, created_at, product_id, listing_thread_id, media_event_id, products (title, price_millimes), drop_alerts (name), listing_threads (listing_title), media_moderation_events (user_id, category, context, sanction)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);

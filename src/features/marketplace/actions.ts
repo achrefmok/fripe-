@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { sectionAttributeValues } from "@/features/catalog/audience";
 import { MAX_IMAGE_BYTES } from "@/features/catalog/constants";
 import { processStoragePurge } from "@/lib/maintenance";
 import { getViewer } from "@/lib/permissions/viewer";
 import { createClient } from "@/lib/supabase/server";
 import { failure, rpcFailure, success, validationFailure, type ActionResult } from "@/lib/utils/action-result";
 import { detectImageKind } from "@/lib/utils/image-file";
+import { moderateMedia } from "@/features/media-moderation/moderate";
 import { listingSchema, messageSchema } from "./schemas";
 
 const idSchema = z.uuid();
@@ -37,7 +39,8 @@ function toRow(data: z.output<typeof listingSchema>) {
     price_millimes: data.price,
     governorate_id: data.governorateId,
     city_id: data.cityId,
-    attributes: data.section === "marketplace" ? data.attributes : {},
+    // Au Vide-Dressing, seul le « Pour qui » (femme, homme, enfant) est conservé.
+    attributes: sectionAttributeValues(data.section, data.attributes),
     // Chaîne vide : « aucun défaut » déclaré. Null reste réservé aux annonces antérieures, jamais déclarées.
     defects: data.noDefects ? "" : data.defects,
   };
@@ -165,6 +168,10 @@ export async function uploadListingImage(listingId: string, formData: FormData):
     .maybeSingle();
 
   if (!listing) return failure("forbidden");
+
+  // Avant tout stockage : un contenu sexuel n'atteint jamais le bucket public.
+  const moderation = await moderateMedia({ userId: viewer.id, context: "listing_image", mediaKind: "image", parts: [{ bytes, mime: kind.mime, kind: "image" }] });
+  if (!moderation.ok) return failure(moderation.error);
 
   const path = `${viewer.id}/${listingId}/${crypto.randomUUID()}.${kind.extension}`;
   const bucket = supabase.storage.from("listing-images");

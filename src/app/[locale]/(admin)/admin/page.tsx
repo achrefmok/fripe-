@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { ShopReviewActions } from "@/features/admin/components/admin-actions";
 import { getAdminStats, getLastMaintenance, getModerationCounts, listShops } from "@/features/admin/queries";
+import { countBlockedMedia } from "@/features/media-moderation/queries";
 import { Link } from "@/i18n/navigation";
 import { requireAdmin } from "@/lib/permissions/viewer";
 import { formatDate, localizedName } from "@/lib/utils/format";
@@ -12,13 +13,15 @@ export async function generateMetadata() {
 
 export default async function AdminOverviewPage() {
   await requireAdmin("/admin");
-  const [stats, moderation, maintenance, queue, t, locale] = await Promise.all([
+  const [stats, moderation, maintenance, queue, t, locale, blockedMedia, media] = await Promise.all([
     getAdminStats(),
     getModerationCounts(),
     getLastMaintenance(),
     listShops("pending", 1),
     getTranslations("admin"),
     getLocale(),
+    countBlockedMedia(7).catch(() => 0),
+    getTranslations("mediaModeration"),
   ]);
 
   const figures = [
@@ -28,6 +31,7 @@ export default async function AdminOverviewPage() {
     { label: t("statSuspended"), value: stats.suspendedUsers, href: "/admin/utilisateurs" },
     { label: t("statReports"), value: moderation.openReports, href: "/admin/signalements" },
     { label: t("statHiddenReviews"), value: moderation.hiddenReviews, href: "/admin/avis?statut=hidden" },
+    { label: media("statBlocked"), value: blockedMedia, href: "/admin/medias?decision=block" },
   ];
 
   return (

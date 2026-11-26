@@ -1217,6 +1217,60 @@ export type Database = {
         }
         Relationships: []
       }
+      media_moderation_events: {
+        Row: {
+          ai_signals: Json
+          attempts_30d: number
+          category: string
+          context: string
+          created_at: string
+          decision: string
+          id: string
+          media_kind: string
+          provider: string
+          reason: string
+          sanction: string
+          scores: Json
+          severity: string
+          sha256: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_signals?: Json
+          attempts_30d?: number
+          category: string
+          context: string
+          created_at?: string
+          decision: string
+          id?: string
+          media_kind: string
+          provider: string
+          reason: string
+          sanction?: string
+          scores?: Json
+          severity: string
+          sha256?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_signals?: Json
+          attempts_30d?: number
+          category?: string
+          context?: string
+          created_at?: string
+          decision?: string
+          id?: string
+          media_kind?: string
+          provider?: string
+          reason?: string
+          sanction?: string
+          scores?: Json
+          severity?: string
+          sha256?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -1325,6 +1379,7 @@ export type Database = {
           id: string
           kind: string
           listing_thread_id: string | null
+          media_event_id: string | null
           product_id: string | null
           read_at: string | null
           user_id: string
@@ -1335,6 +1390,7 @@ export type Database = {
           id?: string
           kind: string
           listing_thread_id?: string | null
+          media_event_id?: string | null
           product_id?: string | null
           read_at?: string | null
           user_id: string
@@ -1345,6 +1401,7 @@ export type Database = {
           id?: string
           kind?: string
           listing_thread_id?: string | null
+          media_event_id?: string | null
           product_id?: string | null
           read_at?: string | null
           user_id?: string
@@ -1362,6 +1419,13 @@ export type Database = {
             columns: ["listing_thread_id"]
             isOneToOne: false
             referencedRelation: "listing_threads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_media_event_id_fkey"
+            columns: ["media_event_id"]
+            isOneToOne: false
+            referencedRelation: "media_moderation_events"
             referencedColumns: ["id"]
           },
           {
@@ -3148,6 +3212,22 @@ export type Database = {
       post_live_comment: {
         Args: { p_body: string; p_live_id: string }
         Returns: number
+      }
+      record_media_moderation: {
+        Args: {
+          p_ai_signals: Json
+          p_category: string
+          p_context: string
+          p_decision: string
+          p_media_kind: string
+          p_provider: string
+          p_reason: string
+          p_scores: Json
+          p_severity: string
+          p_sha256: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       reply_review: {
         Args: { p_reply: string; p_review_id: string }

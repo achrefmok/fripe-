@@ -13,6 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const listings = await getTranslations("market");
   const delivery = await getTranslations("delivery");
   const arrivals = await getTranslations("arrivals");
+  const media = await getTranslations("mediaModeration");
 
   return (
     <AppShell
@@ -28,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/livraison", label: delivery("adminTitle"), icon: "delivery" },
         { href: "/admin/utilisateurs", label: t("navUsers"), icon: "users" },
         { href: "/admin/signalements", label: moderation("adminTitle"), icon: "reports" },
+        { href: "/admin/medias", label: media("navTitle"), icon: "media" },
         { href: "/admin/avis", label: reviews("title"), icon: "reviews" },
         { href: "/admin/categories", label: reference("categoriesTitle"), icon: "categories" },
         { href: "/admin/lieux", label: reference("locationsTitle"), icon: "locations" },

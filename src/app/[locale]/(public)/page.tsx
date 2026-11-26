@@ -76,11 +76,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const rackPhotos = feed.arrivals.filter((product) => product.imagePath).slice(0, 3);
   const cabinPhoto = feed.recent.find((product) => product.imagePath)?.imagePath ?? rackPhotos[0]?.imagePath ?? null;
-  const rubriques = [
-    { href: "/", label: t("rubriqueMode"), active: true },
-    { href: "/marketplace", label: market("marketplaceTitle"), active: false },
-    { href: "/vide-dressing", label: market("videDressingTitle"), active: false },
-  ];
   const sections = [
     { href: "/marketplace", kicker: t("marketKicker"), title: market("marketplaceTitle"), body: t("marketBody"), image: marketLatest[0]?.imageUrl ?? null, tone: "lx-section--indigo" },
     { href: "/vide-dressing", kicker: t("dressingKicker"), title: market("videDressingTitle"), body: t("dressingBody"), image: dressingLatest[0]?.imageUrl ?? null, tone: "lx-section--bordeaux" },
@@ -95,16 +90,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   return (
     <>
       <div className="mx-auto w-full max-w-[1200px] px-[18px] pt-[18px]">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <HomeGreeting />
-          <nav aria-label={t("rubriquesLabel")} className="lx-segment">
-            {rubriques.map((rubrique) => (
-              <Link key={rubrique.href} href={rubrique.href} aria-current={rubrique.active ? "page" : undefined} className="lx-segment__item">
-                {rubrique.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        {/* Les rubriques Mode, Marketplace et Vide-Dressing sont dans la barre sous l'en-tête. */}
+        <HomeGreeting />
 
         {/* Une vraie recherche : elle mène au catalogue, filtres compris. */}
         <form action={getPathname({ href: "/catalogue", locale: currentLocale })} role="search" className="lx-search">

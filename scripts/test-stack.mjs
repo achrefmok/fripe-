@@ -64,6 +64,8 @@ writeFileSync(
     MAILPIT_URL: status.MAILPIT_URL,
     MAINTENANCE_TOKEN: randomBytes(24).toString("hex"),
     COURIER_API_TOKEN: randomBytes(24).toString("hex"),
+    // Modération des médias : un classifieur de test, piloté par un marqueur placé dans les fichiers.
+    MEDIA_MODERATION_PROVIDER: "fixture",
   }),
 );
 

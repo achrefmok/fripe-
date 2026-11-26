@@ -5,7 +5,6 @@ import { Alexandria, Bodoni_Moda, Jost } from "next/font/google";
 import { notFound } from "next/navigation";
 import { PageCurtain } from "@/components/layout/page-curtain";
 import { Providers } from "@/components/layout/providers";
-import { StagingBanner } from "@/components/layout/staging-banner";
 import { directionOf, routing } from "@/i18n/routing";
 import { getSiteUrl } from "@/lib/env";
 import { Contentsquare } from "./contentsquare";
@@ -80,7 +79,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <Contentsquare />
         <NextIntlClientProvider>
           <Providers dir={dir}>
-            <StagingBanner />
             {children}
             <PageCurtain />
           </Providers>

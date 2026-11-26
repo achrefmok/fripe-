@@ -1,6 +1,7 @@
 import "server-only";
 import { getCategories, searchTokens } from "@/features/catalog/queries";
 import { MARKET_PAGE_SIZE, type MarketFilters } from "@/features/marketplace/schemas";
+import { AUDIENCE_COLUMN, audienceValues } from "@/features/catalog/audience";
 import { categoryScope } from "@/features/catalog/category-scope";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parsePriceToMillimes } from "@/lib/utils/price";
@@ -110,6 +111,7 @@ export async function searchDressing(filters: MarketFilters) {
   if (filters.gouvernorat) query = query.eq("governorate_id", Number(filters.gouvernorat) || 0);
   if (filters.marque) query = query.ilike("brand", escapeLike(filters.marque));
   if (filters.taille) query = query.ilike("size", escapeLike(filters.taille));
+  if (filters.pour) query = query.in(AUDIENCE_COLUMN, audienceValues(filters.pour));
 
   const minimum = parsePriceToMillimes(filters.prixMin);
   const maximum = parsePriceToMillimes(filters.prixMax);

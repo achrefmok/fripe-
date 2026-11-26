@@ -317,7 +317,10 @@
     "live_pieces": "Choisis jusqu'à 30 pièces en ligne de ta boutique.",
     "live_schedule": "Choisis une date à venir, dans les 60 prochains jours.",
     "live_running": "Un Live est déjà en cours pour cette boutique.",
-    "live_not_live": "Ce Live n'est pas en direct."
+    "live_not_live": "Ce Live n'est pas en direct.",
+    "media_blocked": "Ce média a été bloqué : les contenus sexuels, pornographiques ou réservés aux adultes sont interdits sur FRIPE, qu'ils soient photographiés ou générés par IA. La tentative a été signalée à la modération.",
+    "media_blocked_suspended": "Ce média a été bloqué et ton compte est suspendu : les contenus sexuels ou pornographiques sont interdits sur FRIPE. L'équipe de modération a reçu un rapport.",
+    "moderation_unavailable": "La vérification automatique des médias est momentanément indisponible. Réessaie dans quelques minutes."
   },
   "account": {
     "title": "Mon compte",
@@ -1301,9 +1304,6 @@
     "noFactorTitle": "Accès administrateur suspendu",
     "noFactorLead": "Ce compte n'a plus de second facteur. Contacte l'opérateur : l'accès ne peut pas être rétabli avec le seul mot de passe."
   },
-  "staging": {
-    "banner": "Version de test. Les données sont fictives et peuvent être effacées."
-  },
   "market": {
     "fieldDefects": "Défauts",
     "defectsHint": "Taches, accrocs, pièce manquante, usure : décris ce que l’acheteur verra en recevant la pièce.",
@@ -2255,5 +2255,76 @@
     "removed": "Adresse retirée.",
     "removeFailed": "L’adresse n’a pas pu être retirée.",
     "noAddress": "La boutique n’a pas encore indiqué son adresse exacte : le guidage t’amène dans sa ville. Contacte-la pour l’adresse précise."
+  },
+  "audience": {
+    "label": "Pour qui",
+    "short": "Pour",
+    "all": "Tous",
+    "femme": "Femme",
+    "homme": "Homme",
+    "enfant": "Enfant",
+    "chip": "Pour : {audience}"
+  },
+  "mediaModeration": {
+    "navTitle": "Médias bloqués",
+    "title": "Modération des médias",
+    "lead": "Chaque photo et chaque vidéo envoyée est analysée avant publication. Les contenus sexuels, pornographiques ou +18 sont bloqués et le compte est sanctionné selon la gravité. Les images très suggestives et les indices d'IA sont seulement signalés ici.",
+    "aiCaveat": "Les indices d'IA ne sont jamais une certitude : une provenance déclarée dans le fichier (souvent effacée à la compression) ou un score de détecteur statistique.",
+    "providerOff": "Aucun service d'analyse n'est configuré : le contenu sexuel n'est pas détecté. Seuls les indices de provenance IA déclarés dans les fichiers sont lus. Renseigner SIGHTENGINE_API_USER et SIGHTENGINE_API_SECRET, puis MEDIA_MODERATION_REQUIRED=true en production.",
+    "providerOn": "Service d'analyse actif : {provider}.",
+    "filterLabel": "Filtrer les rapports",
+    "filterAll": "Tous",
+    "filterBlock": "Bloqués",
+    "filterFlag": "Signalés",
+    "accountId": "Identifiant du compte",
+    "contentType": "Type de contenu",
+    "date": "Date",
+    "reason": "Motif du blocage",
+    "sanction": "Sanction",
+    "attempts": "{count, plural, one {# tentative} other {# tentatives}} sur 30 jours",
+    "aiSignals": "Indices d'IA",
+    "provider": "Analyse",
+    "fingerprint": "Empreinte SHA-256",
+    "seeAccount": "Voir le compte",
+    "onlyAccount": "Rapports de ce compte",
+    "empty": "Aucun média bloqué ni signalé.",
+    "statBlocked": "Médias bloqués (7 jours)",
+    "notification": "Média bloqué · {category} · {context}",
+    "notificationBody": "Compte {account} · sanction : {sanction}",
+    "unknownAccount": "compte supprimé",
+    "categories": {
+      "sexual_explicit": "Sexuel explicite ou pornographique",
+      "sexual_erotica": "Nudité ou érotisme (+18)",
+      "sexual_suggestive": "Très suggestif",
+      "ai_generated": "Probablement généré ou retouché par IA"
+    },
+    "contexts": {
+      "product_image": "Photo de produit",
+      "listing_image": "Photo d'annonce",
+      "shop_logo": "Logo de boutique",
+      "shop_video": "Vidéo Fripe Walk",
+      "video_thumbnail": "Miniature de vidéo"
+    },
+    "severities": {
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "critical": "Critique"
+    },
+    "sanctions": {
+      "none": "Aucune",
+      "suspended": "Compte suspendu automatiquement",
+      "already_suspended": "Compte déjà suspendu",
+      "protected_account": "Compte administrateur, non suspendu"
+    },
+    "decisions": {
+      "block": "Bloqué",
+      "flag": "Signalé"
+    },
+    "kinds": {
+      "image": "Image",
+      "video": "Vidéo"
+    },
+    "detectorScore": "détecteur, score {score}"
   }
 }

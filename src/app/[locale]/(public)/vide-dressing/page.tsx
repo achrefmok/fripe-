@@ -16,6 +16,7 @@ import { getPathname, Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/utils/format";
 import { formatPrice, parsePriceToMillimes } from "@/lib/utils/price";
 import { subcategoriesOf } from "@/features/catalog/category-scope";
+import { AUDIENCES } from "@/features/catalog/audience";
 
 const ROUTE = "/vide-dressing";
 const SELL = "/compte/annonces/nouvelle?rubrique=vide_dressing";
@@ -31,13 +32,14 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
 
   const raw = await searchParams;
   const filters = parseMarketFilters(raw);
-  const [result, overview, locations, t, market, conditions] = await Promise.all([
+  const [result, overview, locations, t, market, conditions, audience] = await Promise.all([
     searchDressing(filters),
     getDressingOverview(),
     getLocations(),
     getTranslations("dressing"),
     getTranslations("market"),
     getTranslations("conditions"),
+    getTranslations("audience"),
   ]);
 
   const { items, total, categories, scope } = result;
@@ -49,6 +51,7 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
     Object.entries({
       q: filters.q,
       categorie: filters.categorie,
+      pour: filters.pour ?? "",
       marque: filters.marque,
       taille: filters.taille,
       etat: filters.etat ?? "",
@@ -83,6 +86,7 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
   const chips: (Chip | null)[] = [
     filters.q ? { key: "q", label: `« ${filters.q} »`, changes: { q: "" } } : null,
     scope ? { key: "categorie", label: label(scope.selected), changes: { categorie: "" } } : null,
+    filters.pour ? { key: "pour", label: audience("chip", { audience: audience(filters.pour) }), changes: { pour: "" } } : null,
     filters.marque ? { key: "marque", label: filters.marque, changes: { marque: "" } } : null,
     filters.taille ? { key: "taille", label: t("sizeShort", { size: filters.taille }), changes: { taille: "" } } : null,
     filters.etat ? { key: "etat", label: conditions(filters.etat), changes: { etat: "" } } : null,
@@ -233,6 +237,18 @@ export default async function VideDressingPage({ params, searchParams }: PagePro
             {roots.map((category) => (
               <Link key={category.id} href={href({ categorie: category.slug })} className="vd-chip" aria-current={scope?.root.id === category.id ? "page" : undefined}>
                 {label(category)}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Pour qui : Femme, Homme, Enfant. Une pièce mixte convient à une femme comme à un homme. */}
+          <nav aria-label={audience("label")} className="vd-cats rail-scroll mt-2">
+            <Link href={href({ pour: "" })} className="vd-chip" aria-current={!filters.pour ? "page" : undefined}>
+              {audience("all")}
+            </Link>
+            {AUDIENCES.map((value) => (
+              <Link key={value} href={href({ pour: value })} className="vd-chip" aria-current={filters.pour === value ? "page" : undefined}>
+                {audience(value)}
               </Link>
             ))}
           </nav>

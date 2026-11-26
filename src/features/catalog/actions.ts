@@ -14,6 +14,7 @@ import {
   type ActionResult,
 } from "@/lib/utils/action-result";
 import { detectImageKind } from "@/lib/utils/image-file";
+import { moderateMedia } from "@/features/media-moderation/moderate";
 import { MAX_CSV_ROWS, MAX_IMAGE_BYTES } from "./constants";
 import { validateCsvRows } from "./csv-import";
 import { getCategories } from "./queries";
@@ -235,6 +236,7 @@ export async function setProductAvailability(
 
 async function attachImage(
   supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
   shopId: string,
   productId: string,
   file: FormDataEntryValue | null,
@@ -245,6 +247,10 @@ async function attachImage(
   const bytes = new Uint8Array(await file.arrayBuffer());
   const kind = detectImageKind(bytes);
   if (!kind) return failure("invalidImage");
+
+  // Avant tout stockage : un contenu sexuel n'atteint jamais le bucket public.
+  const moderation = await moderateMedia({ userId, context: "product_image", mediaKind: "image", parts: [{ bytes, mime: kind.mime, kind: "image" }] });
+  if (!moderation.ok) return failure(moderation.error);
 
   const { count } = await supabase
     .from("product_images")
@@ -295,7 +301,7 @@ export async function uploadProductImage(
 
   if (!product) return failure("forbidden");
 
-  const result = await attachImage(supabase, shopId, productId, formData.get("image"));
+  const result = await attachImage(supabase, viewer.id, shopId, productId, formData.get("image"));
   if (result.ok) revalidateShop(shopId);
 
   return result;
@@ -342,7 +348,10 @@ export async function createDraftFromPhoto(
 
   if (error) return productFailure(error);
 
-  return attachImage(supabase, shopId, data.id, formData.get("image"));
+  const result = await attachImage(supabase, viewer.id, shopId, data.id, formData.get("image"));
+  // Photo refusée (illisible ou bloquée par la modération) : le brouillon vide ne reste pas.
+  if (!result.ok) await supabase.from("products").delete().eq("id", data.id);
+  return result;
 }
 
 export async function importProductsCsv(

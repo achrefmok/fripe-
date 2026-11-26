@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { AUDIENCES } from "@/features/catalog/audience";
 import { CONDITIONS } from "@/features/catalog/constants";
 import type { CatalogFilters } from "@/features/catalog/schemas";
 import { Link } from "@/i18n/navigation";
@@ -25,9 +26,11 @@ export function CatalogFiltersForm({
 }) {
   const t = useTranslations("catalog");
   const conditions = useTranslations("conditions");
+  const audience = useTranslations("audience");
   const locale = useLocale();
   const hasFilters = Boolean(
     filters.categorie ||
+      filters.pour ||
       filters.taille ||
       filters.marque ||
       filters.etat ||
@@ -74,6 +77,15 @@ export function CatalogFiltersForm({
             <option value="">{t("all")}</option>
             {categories.map((category) => (
               <option key={category.value} value={category.value}>{label(category)}</option>
+            ))}
+          </NativeSelect>
+        </div>
+        <div>
+          <Label htmlFor="pour" className="text-[0.8rem] font-semibold">{audience("label")}</Label>
+          <NativeSelect id="pour" name="pour" defaultValue={filters.pour ?? ""}>
+            <option value="">{audience("all")}</option>
+            {AUDIENCES.map((value) => (
+              <option key={value} value={value}>{audience(value)}</option>
             ))}
           </NativeSelect>
         </div>

@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import type { CSSProperties } from "react";
 import { EmptyState } from "@/components/layout/empty-state";
 import { Pagination } from "@/features/admin/components/pagination";
+import { AUDIENCES } from "@/features/catalog/audience";
 import { CatalogFiltersForm } from "@/features/catalog/components/catalog-filters";
 import { CATALOG_PAGE_SIZE } from "@/features/catalog/constants";
 import { getCategories, searchProducts } from "@/features/catalog/queries";
@@ -22,11 +23,12 @@ export async function generateMetadata() {
 export default async function CataloguePage({ searchParams }: PageProps<"/[locale]/catalogue">) {
   const filters = catalogFiltersSchema.parse(await searchParams);
 
-  const [{ products, total }, categories, locations, t, locale] = await Promise.all([
+  const [{ products, total }, categories, locations, t, audience, locale] = await Promise.all([
     searchProducts(filters),
     getCategories(),
     getLocations(),
     getTranslations("catalog"),
+    getTranslations("audience"),
     getLocale(),
   ]);
 
@@ -69,6 +71,21 @@ export default async function CataloguePage({ searchParams }: PageProps<"/[local
         {roots.map((category) => (
           <Link key={category.id} href={chipHref(category.slug)} aria-current={root?.id === category.id ? "page" : undefined} className="lx-chip">
             {name(category)}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Pour qui : Femme, Homme, Enfant. Les pièces mixtes apparaissent pour une femme comme pour un homme. */}
+      <nav aria-label={audience("label")} className="lx-quick">
+        <span className="text-muted-foreground">{audience("short")}</span>
+        {(["", ...AUDIENCES] as const).map((value) => (
+          <Link
+            key={value || "tous"}
+            href={{ pathname: "/catalogue", query: { ...params, pour: value || undefined, page: undefined } }}
+            aria-current={(filters.pour ?? "") === value ? "true" : undefined}
+            className="lx-quick__link"
+          >
+            {value ? audience(value) : audience("all")}
           </Link>
         ))}
       </nav>

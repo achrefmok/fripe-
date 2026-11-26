@@ -61,6 +61,18 @@ if (env.TURN_URLS && env.TURN_URLS.split(",").some((url) => !/^(turns?:)?[\w.-]+
   problems.push("TURN_URLS : adresses de la forme turn:hôte:port, séparées par des virgules");
 }
 
+if (Boolean(env.SIGHTENGINE_API_USER) !== Boolean(env.SIGHTENGINE_API_SECRET)) {
+  problems.push("SIGHTENGINE_API_USER et SIGHTENGINE_API_SECRET vont ensemble");
+}
+
+if (env.MEDIA_MODERATION_REQUIRED === "true" && !env.SIGHTENGINE_API_USER) {
+  problems.push("MEDIA_MODERATION_REQUIRED exige un service d'analyse (SIGHTENGINE_API_USER et SIGHTENGINE_API_SECRET)");
+}
+
+if (env.MEDIA_MODERATION_PROVIDER === "fixture") {
+  problems.push("MEDIA_MODERATION_PROVIDER=fixture est réservé au stack de test");
+}
+
 const isLocalUrl = (value) => /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(value ?? "");
 
 if (remote) {

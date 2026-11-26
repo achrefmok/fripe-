@@ -1,5 +1,6 @@
 import "server-only";
 import { getCategories, searchTokens } from "@/features/catalog/queries";
+import { AUDIENCE_COLUMN, audienceValues } from "@/features/catalog/audience";
 import { categoryScope } from "@/features/catalog/category-scope";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -81,6 +82,7 @@ export async function searchMarketplace(filters: MarketFilters) {
   for (const token of searchTokens(filters.q)) query = query.ilike("search_text", `%${escapeLike(token)}%`);
   if (filters.etat) query = query.eq("condition", filters.etat);
   if (filters.vendeur) query = query.eq("seller_type", filters.vendeur);
+  if (filters.pour) query = query.in(AUDIENCE_COLUMN, audienceValues(filters.pour));
   if (filters.gouvernorat) query = query.eq("governorate_id", Number(filters.gouvernorat) || 0);
 
   const minimum = parsePriceToMillimes(filters.prixMin);
@@ -171,6 +173,7 @@ export async function searchVideDressing(filters: MarketFilters) {
   for (const token of searchTokens(filters.q)) query = query.ilike("search_text", `%${escapeLike(token)}%`);
   if (filters.etat) query = query.eq("condition", filters.etat);
   if (filters.gouvernorat) query = query.eq("governorate_id", Number(filters.gouvernorat) || 0);
+  if (filters.pour) query = query.in(AUDIENCE_COLUMN, audienceValues(filters.pour));
 
   const minimum = parsePriceToMillimes(filters.prixMin);
   const maximum = parsePriceToMillimes(filters.prixMax);

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { AUDIENCES } from "@/features/catalog/audience";
 import { CONDITIONS } from "@/features/catalog/constants";
 import type { CategoryAttribute } from "../queries";
 import type { ListingSection, MarketFilters } from "../schemas";
@@ -33,12 +34,13 @@ export function MarketFiltersBar({
 }) {
   const t = useTranslations("market");
   const conditions = useTranslations("conditions");
+  const audience = useTranslations("audience");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const label = (option: { nameFr: string; nameAr: string }) => (locale === "ar" ? option.nameAr : option.nameFr);
 
   const activeCount =
-    [filters.etat, filters.gouvernorat, filters.prixMin, filters.prixMax, filters.vendeur].filter(Boolean).length +
+    [filters.etat, filters.gouvernorat, filters.prixMin, filters.prixMax, filters.vendeur, filters.pour].filter(Boolean).length +
     Object.keys(filters.attributes).length +
     (filters.tri !== "recent" ? 1 : 0);
 
@@ -48,6 +50,7 @@ export function MarketFiltersBar({
         {filters.categorie ? <input type="hidden" name="categorie" value={filters.categorie} /> : null}
         {filters.marque ? <input type="hidden" name="marque" value={filters.marque} /> : null}
         {filters.taille ? <input type="hidden" name="taille" value={filters.taille} /> : null}
+        {filters.pour ? <input type="hidden" name="pour" value={filters.pour} /> : null}
         <Label htmlFor="q" className="sr-only">
           {t("searchLabel")}
         </Label>
@@ -124,6 +127,22 @@ export function MarketFiltersBar({
                   )}
                 </div>
               ))}
+
+              {section === "vide_dressing" ? (
+                <fieldset className="col-span-2 md:col-span-3">
+                  <legend className="text-[0.8rem] font-semibold">{audience("label")}</legend>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {(["", ...AUDIENCES] as const).map((value) => (
+                      <label key={value || "tous"} className="market-chip">
+                        <input type="radio" name="pour" value={value} defaultChecked={(filters.pour ?? "") === value} className="sr-only" />
+                        {value ? audience(value) : audience("all")}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ) : filters.pour ? (
+                <input type="hidden" name="pour" value={filters.pour} />
+              ) : null}
 
               <div>
                 <Label htmlFor="f-etat" className="text-[0.8rem] font-semibold">{t("condition")}</Label>

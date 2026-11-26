@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils/action-result";
 import { MAX_IMAGE_BYTES } from "@/features/catalog/constants";
 import { detectImageKind } from "@/lib/utils/image-file";
+import { moderateMedia } from "@/features/media-moderation/moderate";
 import { createShopSchema, shopIdSchema, shopLocationSchema, updateShopSchema } from "./schemas";
 
 
@@ -123,6 +124,10 @@ export async function uploadShopLogo(shopId: string, formData: FormData): Promis
     .maybeSingle();
 
   if (!shop) return failure("forbidden");
+
+  // Avant tout stockage : un contenu sexuel n'atteint jamais le bucket public.
+  const moderation = await moderateMedia({ userId: viewer.id, context: "shop_logo", mediaKind: "image", parts: [{ bytes, mime: kind.mime, kind: "image" }] });
+  if (!moderation.ok) return failure(moderation.error);
 
   const path = `${id.data}/logo-${Date.now()}.${kind.extension}`;
   const storage = supabase.storage.from("shop-assets");

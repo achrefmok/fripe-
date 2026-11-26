@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parsePriceToMillimes } from "@/lib/utils/price";
+import { audienceParam } from "./audience";
 import { CONDITIONS, SORTS } from "./constants";
 
 const optionalText = (max: number) =>
@@ -81,6 +82,7 @@ export const catalogFiltersSchema = z.object({
   marque: text(60),
   etat: z.preprocess(firstValue, z.enum(CONDITIONS).optional().catch(undefined)),
   gouvernorat: text(40),
+  pour: audienceParam,
   prixMin: text(10),
   prixMax: text(10),
   tri: z.preprocess(firstValue, z.enum(SORTS).catch("recent").default("recent")),

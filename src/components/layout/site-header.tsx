@@ -5,6 +5,7 @@ import { BrandLink } from "./brand";
 import { HeaderNav } from "./header-nav";
 import { LocaleSwitch, ThemeToggle } from "./header-controls";
 import { PartnerCredit } from "./partner-credit";
+import { UniverseNav } from "./universe-nav";
 
 // Friptex Luxe : un bandeau de verre, la marque, les rubriques soulignées d'or, puis les gestes rapides.
 // Sous l'en-tête, une frise de zellige fine.
@@ -20,9 +21,7 @@ export function SiteHeader() {
           <HeaderNav
             label={t("mainLabel")}
             links={[
-              { href: "/catalogue", label: t("mode") },
-              { href: "/marketplace", label: t("marketplace") },
-              { href: "/vide-dressing", label: t("videDressing") },
+              // Mode, Marketplace et Vide-Dressing vivent dans la barre des rubriques, juste dessous.
               { href: "/boutiques", label: t("shops"), wide: true },
               { href: "/walk", label: t("walk"), wide: true },
               { href: "/lives", label: t("lives"), wide: true },
@@ -46,6 +45,7 @@ export function SiteHeader() {
           </span>
         </div>
       </header>
+      <UniverseNav />
       <div className="zellige" aria-hidden="true" />
     </>
   );

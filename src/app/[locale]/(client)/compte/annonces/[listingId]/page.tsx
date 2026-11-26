@@ -4,6 +4,7 @@ import { OwnerListingActions } from "@/features/marketplace/components/listing-a
 import { ListingForm } from "@/features/marketplace/components/listing-form";
 import { ListingPhotos } from "@/features/marketplace/components/listing-photos";
 import { getCategoryAttributes, getListingForEdit, sectionCategories } from "@/features/marketplace/queries";
+import { sectionAttributes } from "@/features/catalog/audience";
 import { getLocations } from "@/features/shops/queries";
 import { Link } from "@/i18n/navigation";
 import { requireViewer } from "@/lib/permissions/viewer";
@@ -25,7 +26,8 @@ export default async function EditListingPage({ params }: PageProps<"/[locale]/c
     getLocations(),
     getTranslations("market"),
   ]);
-  const attributes = section === "marketplace" ? await getCategoryAttributes(categories.map((category) => category.id)) : [];
+  // Au Vide-Dressing, seule la caractéristique « Pour » (femme, homme, enfant) est proposée.
+  const attributes = sectionAttributes(section, await getCategoryAttributes(categories.map((category) => category.id)));
 
   const moderated = Boolean(listing.moderated_at);
 
