@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BrandLink } from "./brand";
 import { HeaderNav } from "./header-nav";
+import { InstallButton } from "./install-button";
 import { LocaleSwitch, ThemeToggle } from "./header-controls";
 import { PartnerCredit } from "./partner-credit";
 import { UniverseNav } from "./universe-nav";
@@ -30,7 +31,8 @@ export function SiteHeader() {
               { href: "/vendre", label: t("sell") },
             ]}
           />
-          <span className="ms-auto flex items-center gap-0.5">
+          <span className="ms-auto flex items-center gap-0.5 max-[359px]:gap-0">
+            <InstallButton />
             <ThemeToggle />
             <LocaleSwitch compact />
             <Link href="/compte/favoris" aria-label={t("favorites")} className="luxe-icon-button">

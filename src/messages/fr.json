@@ -2326,5 +2326,29 @@
       "video": "Vidéo"
     },
     "detectorScore": "détecteur, score {score}"
+  },
+  "install": {
+    "button": "Installer l'application FRIPE",
+    "short": "Installer",
+    "title": "Installer FRIPE",
+    "lead": {
+      "ios": "Sur iPhone et iPad, l'installation se fait depuis le menu Partager, en trois gestes.",
+      "android": "Ton navigateur n'a pas proposé l'installation automatique : elle se fait depuis son menu.",
+      "desktop": "Installe FRIPE depuis ton navigateur, comme une application.",
+      "inapp": "Tu es dans le navigateur d'une application (Instagram, Facebook, TikTok…) qui ne permet pas l'installation. Ouvre d'abord FRIPE dans ton navigateur."
+    },
+    "iosStep1": "Touche le bouton Partager de Safari, en bas de l'écran (en haut sur iPad).",
+    "iosStep2": "Fais défiler et choisis « Sur l'écran d'accueil ».",
+    "iosStep3": "Touche « Ajouter » : l'icône FRIPE apparaît sur ton écran d'accueil.",
+    "androidStep1": "Ouvre le menu du navigateur, en haut à droite.",
+    "androidStep2": "Choisis « Installer l'application » ou « Ajouter à l'écran d'accueil ».",
+    "androidStep3": "Confirme : l'icône FRIPE apparaît avec tes applications.",
+    "desktopStep1": "Clique sur l'icône d'installation dans la barre d'adresse, ou ouvre le menu du navigateur.",
+    "desktopStep2": "Choisis « Installer FRIPE » puis confirme.",
+    "inappStep1": "Ouvre le menu de l'application, en haut à droite.",
+    "inappStep2": "Choisis « Ouvrir dans le navigateur » (Safari ou Chrome), puis touche à nouveau « Installer ».",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "benefits": "L'application s'ouvre en plein écran depuis ton écran d'accueil, plus vite, sans passer par un store."
   }
 }

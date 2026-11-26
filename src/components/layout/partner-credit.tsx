@@ -24,7 +24,7 @@ export function PartnerCredit({ variant = "header", className }: { variant?: "he
   return (
     <span title={t("label")} className={cn("inline-flex shrink-0 items-center gap-1.5", className)}>
       <Image src={mark} alt={t("label")} className="h-7 w-auto object-contain md:h-8" />
-      <span aria-hidden="true" className="flex flex-col text-[10px] leading-[1.15] max-[379px]:hidden md:max-xl:hidden">
+      <span aria-hidden="true" className="flex flex-col text-[10px] leading-[1.15] max-[479px]:hidden md:max-xl:hidden">
         <span className="text-muted-foreground">{t("by")}</span>
         <span className="font-semibold text-[#a50f08] dark:text-[#e2554c]">{t("name")}</span>
       </span>

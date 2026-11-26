@@ -1359,6 +1359,60 @@
     background: var(--cream);
   }
 
+  /* « Installer l'app » : une pastille cerclée d'or ; l'icône seule sous la tablette. */
+  .luxe-install {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 38px;
+    height: 38px;
+    margin-inline-end: 4px;
+    padding-inline: 12px;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+  }
+
+  .luxe-install:hover {
+    background: var(--cream);
+  }
+
+  .luxe-install:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 767px) {
+    .luxe-install {
+      padding-inline: 0;
+      width: 38px;
+    }
+
+    .luxe-install__label {
+      display: none;
+    }
+  }
+
+  /* Sur les plus petits téléphones (320 px), les gestes de l'en-tête se resserrent. */
+  @media (max-width: 359px) {
+    .luxe-icon-button {
+      width: 34px;
+      height: 34px;
+    }
+
+    .luxe-install {
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      margin-inline-end: 0;
+    }
+  }
+
   .luxe-tabbar {
     position: fixed;
     inset-inline: 12px;
