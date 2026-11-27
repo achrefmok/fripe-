@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus, X } from "lucide-react";
+import { Camera, ImagePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
@@ -23,6 +23,7 @@ export function ProductImages({
   const t = useTranslations("sellerShop");
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -49,6 +50,7 @@ export function ProductImages({
 
       setProgress(null);
       if (input.current) input.current.value = "";
+      if (camera.current) camera.current.value = "";
       router.refresh();
     });
   }
@@ -87,7 +89,21 @@ export function ProductImages({
         aria-label={t("addPhotos")}
         onChange={(event) => upload(event.target.files)}
       />
-      <div className="flex items-center gap-3">
+      <input
+        ref={camera}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(event) => upload(event.target.files)}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="outline" disabled={pending} onClick={() => camera.current?.click()}>
+          <Camera />
+          {t("takePhoto")}
+        </Button>
         <Button type="button" variant="outline" disabled={pending} onClick={() => input.current?.click()}>
           <ImagePlus />
           {t("addPhotos")}

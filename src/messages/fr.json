@@ -917,7 +917,8 @@
     "allOrders": "Toutes les commandes",
     "noOrders": "Pas encore de commande. Publie des pièces et partage ta boutique pour lancer les ventes.",
     "orderPieces": "{count, plural, one {# pièce} other {# pièces}}",
-    "moreFigures": "En détail"
+    "moreFigures": "En détail",
+    "takePhoto": "Prendre une photo"
   },
   "adminMarket": {
     "navProducts": "Produits",
@@ -1542,8 +1543,25 @@
     "descColor": "Couleur : {color}.",
     "descCondition": "État : {condition}.",
     "descDefects": "À noter : {defects}",
-    "lead": "Choisis plutôt que d'écrire : la catégorie, l'état, la taille et la couleur se touchent du doigt. Les photos s'ajoutent juste après.",
-    "changeCategory": "Changer de rayon"
+    "lead": "Cinq étapes courtes : photos, catégorie, l'essentiel, détails, puis description. Choisis plutôt que d'écrire.",
+    "changeCategory": "Changer de rayon",
+    "photosLead": "Commence par les photos : ce sont elles qui font vendre.",
+    "cover": "Couverture",
+    "photosEmpty": "Aucune photo pour l’instant",
+    "photosTip": "Lumière du jour, fond uni, face, dos et étiquette.",
+    "takePhoto": "Prendre une photo",
+    "fromGallery": "Depuis la galerie",
+    "photosCount": "{count} sur {max} photos",
+    "photosOrder": "la première sert de couverture, les flèches changent l’ordre.",
+    "photoEarlier": "Avancer la photo",
+    "photoLater": "Reculer la photo",
+    "photosFailed": "Le produit est enregistré, mais une photo n’a pas pu être envoyée. Ajoute-la depuis sa fiche.",
+    "saveWithPhotos": "Enregistrer avec {count, plural, one {# photo} other {# photos}}",
+    "essentials": "L’essentiel",
+    "details": "Détails",
+    "detailsHint": "Facultatif, mais aide les clientes à trouver la pièce.",
+    "describe": "Description",
+    "describeHint": "Facultatif. Les puces ci-dessus peuvent la rédiger pour toi."
   },
   "studio": {
     "title": "Créer une vidéo",

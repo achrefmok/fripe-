@@ -917,7 +917,8 @@
     "allOrders": "كل الطلبيات",
     "noOrders": "مازال ما فماش طلبيات. انشر قطعك وشارك محلّك باش تبدأ المبيعات.",
     "orderPieces": "{count, plural, one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
-    "moreFigures": "بالتفصيل"
+    "moreFigures": "بالتفصيل",
+    "takePhoto": "التقاط صورة"
   },
   "adminMarket": {
     "navProducts": "المنتجات",
@@ -1542,8 +1543,25 @@
     "descColor": "اللون: {color}.",
     "descCondition": "الحالة: {condition}.",
     "descDefects": "ملاحظة: {defects}",
-    "lead": "اختر بدل أن تكتب: الصنف والحالة والمقاس واللون بلمسة واحدة. تُضاف الصور مباشرة بعد ذلك.",
-    "changeCategory": "تغيير الصنف"
+    "lead": "خمس خطوات قصيرة: الصور، الصنف، الأساسيات، التفاصيل، ثم الوصف. اختر بدل أن تكتب.",
+    "changeCategory": "تغيير الصنف",
+    "photosLead": "ابدأ بالصور: هي التي تبيع.",
+    "cover": "الغلاف",
+    "photosEmpty": "لا توجد صور بعد",
+    "photosTip": "ضوء النهار، خلفية موحدة، الأمام والخلف والملصق.",
+    "takePhoto": "التقاط صورة",
+    "fromGallery": "من المعرض",
+    "photosCount": "{count} من {max} صور",
+    "photosOrder": "الأولى هي صورة الغلاف، والأسهم تغيّر الترتيب.",
+    "photoEarlier": "تقديم الصورة",
+    "photoLater": "تأخير الصورة",
+    "photosFailed": "تم حفظ المنتج، لكن تعذّر إرسال صورة. أضفها من صفحته.",
+    "saveWithPhotos": "حفظ مع {count, plural, one {صورة واحدة} two {صورتين} few {# صور} many {# صورة} other {# صورة}}",
+    "essentials": "الأساسيات",
+    "details": "التفاصيل",
+    "detailsHint": "اختياري، لكنه يساعد الزبائن على إيجاد القطعة.",
+    "describe": "الوصف",
+    "describeHint": "اختياري. يمكن كتابته تلقائيا من اختياراتك."
   },
   "studio": {
     "title": "إنشاء فيديو",

@@ -3,14 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createProduct, getPriceHint, updateProduct } from "@/features/catalog/actions";
+import { createProduct, getPriceHint, updateProduct, uploadProductImage } from "@/features/catalog/actions";
 import { CONDITIONS } from "@/features/catalog/constants";
 import {
   brandSuggestions,
@@ -25,8 +25,10 @@ import { productSchema } from "@/features/catalog/schemas";
 import { useFormAction } from "@/hooks/use-form-action";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { compressImage } from "@/lib/utils/compress-image";
 import { formatPrice, millimesToInput } from "@/lib/utils/price";
 import { subcategoriesOf } from "../category-scope";
+import { type PickedPhoto, PhotoPicker } from "./photo-picker";
 
 export type ProductValues = {
   title: string;
@@ -107,6 +109,24 @@ function Chips({
         );
       })}
     </div>
+  );
+}
+
+// Une étape du formulaire : un numéro, un titre, puis ses champs.
+function Section({ step, title, hint, children }: { step: number; title: string; hint?: string; children: ReactNode }) {
+  return (
+    <section className="grid gap-5 rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <header className="flex items-start gap-3">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-bold text-background">
+          {step}
+        </span>
+        <div className="grid gap-0.5">
+          <h3 className="font-display text-lg font-bold leading-7">{title}</h3>
+          {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+        </div>
+      </header>
+      {children}
+    </section>
   );
 }
 
@@ -196,6 +216,9 @@ export function ProductForm({
     return parts.filter(Boolean).join(" ");
   };
 
+  const [photos, setPhotos] = useState<PickedPhoto[]>([]);
+  const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
+
   const { submit, pending, error } = useFormAction(
     form,
     async (input) => {
@@ -207,8 +230,24 @@ export function ProductForm({
       if (productId) return updateProduct(shopId, productId, payload);
 
       const result = await createProduct(shopId, payload);
-      if (result.ok) router.push(`/vendeur/boutique/${shopId}/produits/${result.data.productId}`);
-      return result.ok ? { ok: true, data: undefined } : result;
+      if (!result.ok) return result;
+
+      // Les photos partent une à une, dans l'ordre choisi : la première devient la couverture.
+      const { productId: created } = result.data;
+      for (const [index, photo] of photos.entries()) {
+        setUploading({ done: index + 1, total: photos.length });
+        const formData = new FormData();
+        formData.set("image", await compressImage(photo.file));
+        const upload = await uploadProductImage(shopId, created, formData);
+        if (!upload.ok) {
+          // Le produit existe déjà : on continue vers sa fiche, où les photos restantes s'ajoutent.
+          toast.error(p("photosFailed"));
+          break;
+        }
+      }
+      setUploading(null);
+      router.push(`/vendeur/boutique/${shopId}/produits/${created}`);
+      return { ok: true, data: undefined };
     },
     () => {
       toast.success(t("done"));
@@ -226,10 +265,21 @@ export function ProductForm({
     { key: "marketplace", label: nav("marketplace") },
   ].filter((section) => roots.some((category) => category.section === section.key));
 
+  // Sans photos à envoyer (édition), les étapes commencent à la catégorie.
+  const withPhotos = !productId;
+  const step = (n: number) => (withPhotos ? n : n - 1);
+
   return (
-    <form onSubmit={submit} noValidate className="grid gap-6">
+    <form onSubmit={submit} noValidate className="grid gap-4">
+      {withPhotos ? (
+        <Section step={1} title={t("photos")} hint={p("photosLead")}>
+          <PhotoPicker photos={photos} onChange={setPhotos} disabled={pending} />
+        </Section>
+      ) : null}
+
+      <Section step={step(2)} title={t("formCategory")}>
       <fieldset className="grid gap-3">
-        <legend className="mb-1 text-[0.8rem] font-semibold">{t("formCategory")}</legend>
+        <legend className="sr-only">{t("formCategory")}</legend>
         {showRoots ? sections.map((section) => (
           <div key={section.key} className="grid gap-1.5">
             <span className="text-xs font-semibold text-muted-foreground">{section.label}</span>
@@ -269,7 +319,9 @@ export function ProductForm({
           </div>
         ) : null}
       </fieldset>
+      </Section>
 
+      <Section step={step(3)} title={p("essentials")}>
       <div className="grid gap-1.5">
         <Field id="title" label={t("formTitle")} error={errors.title?.message}>
           <Input id="title" maxLength={120} aria-invalid={Boolean(errors.title)} {...form.register("title")} />
@@ -305,9 +357,12 @@ export function ProductForm({
           </button>
         ) : null}
       </div>
+      </Section>
 
+      <Section step={step(4)} title={p("details")} hint={p("detailsHint")}>
       {sizeOptions.length ? (
         <div className="grid gap-1.5">
+          <span className="text-[0.8rem] font-semibold">{p(kind === "shoes" ? "shoeSizes" : "sizes")}</span>
           <Chips
             label={p(kind === "shoes" ? "shoeSizes" : "sizes")}
             name="size-chips"
@@ -324,6 +379,7 @@ export function ProductForm({
 
       {kind !== "other" ? (
         <div className="grid gap-1.5">
+          <span className="text-[0.8rem] font-semibold">{p("colors")}</span>
           <Chips
             label={p("colors")}
             name="color-chips"
@@ -379,7 +435,9 @@ export function ProductForm({
           )}
         </fieldset>
       ))}
+      </Section>
 
+      <Section step={step(5)} title={p("describe")} hint={p("describeHint")}>
       <div className="grid gap-1.5">
         <Field id="description" label={t("formDescription")} optional error={errors.description?.message}>
           <Textarea id="description" rows={4} maxLength={2000} {...form.register("description")} />
@@ -404,11 +462,19 @@ export function ProductForm({
           </Field>
         </div>
       </details>
+      </Section>
 
       <FormError error={error} />
-      <Button type="submit" size="lg" disabled={pending} className="w-full sm:w-auto sm:justify-self-start">
-        {t("saveDraft")}
-      </Button>
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 bg-background/95 py-3 backdrop-blur sm:static sm:bg-transparent sm:backdrop-blur-none">
+        <Button type="submit" size="lg" disabled={pending} className="w-full sm:w-auto">
+          {withPhotos && photos.length ? p("saveWithPhotos", { count: photos.length }) : t("saveDraft")}
+        </Button>
+        {uploading ? (
+          <span role="status" className="text-sm text-muted-foreground">
+            {t("uploading", uploading)}
+          </span>
+        ) : null}
+      </div>
     </form>
   );
 }
